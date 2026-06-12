@@ -1,0 +1,257 @@
+/* Reset and base styles - no external fonts */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.login-container {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  background: #0D0D0D;
+  height: 100vh;
+  display: flex;
+  color: #F5F0E8;
+  overflow: hidden;
+}
+
+/* Left Panel */
+.left-panel {
+  width: 45%;
+  background: #111;
+  border-right: 0.5px solid rgba(245, 240, 232, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.5rem;
+  position: relative;
+}
+
+.right-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.form-box {
+  width: 100%;
+  max-width: 400px;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #F5B84C;
+  cursor: pointer;
+  letter-spacing: -0.5px;
+  position: absolute;
+  top: 2.5rem;
+  left: 2.5rem;
+}
+
+.logo span {
+  color: #F5F0E8;
+}
+
+.tagline {
+  text-align: center;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.tagline h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1.2;
+  color: #F5F0E8;
+  margin-bottom: 1rem;
+}
+
+.tagline h2 em {
+  font-style: normal;
+  color: #F5B84C;
+}
+
+.tagline p {
+  font-size: 0.85rem;
+  color: rgba(245, 240, 232, 0.5);
+  line-height: 1.6;
+}
+
+.hex-bg {
+  position: absolute;
+  bottom: -80px;
+  right: -80px;
+  opacity: 0.05;
+}
+
+/* Form Styles */
+.form-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: #F5F0E8;
+  margin-bottom: 0.4rem;
+  text-align: center;
+}
+
+.form-subtitle {
+  font-size: 0.85rem;
+  color: rgba(245, 240, 232, 0.45);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.form-subtitle a {
+  color: #F5B84C;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.field {
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.field label {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(245, 240, 232, 0.6);
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.3px;
+  text-align: left;
+}
+
+.field input {
+  width: 100%;
+  background: rgba(245, 240, 232, 0.05);
+  border: 0.5px solid rgba(245, 240, 232, 0.15);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  color: #F5F0E8;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  text-align: left;
+}
+
+.field input:focus {
+  border-color: #F5B84C;
+  background: rgba(245, 184, 76, 0.04);
+}
+
+.field input::placeholder {
+  color: rgba(245, 240, 232, 0.25);
+}
+
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap input {
+  padding-right: 3rem;
+}
+
+.toggle-pw {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(245, 240, 232, 0.4);
+  cursor: pointer;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.toggle-pw:hover {
+  color: #F5B84C;
+}
+
+.forgot-password {
+  text-align: right;
+  margin: 0.5rem 0 1rem;
+}
+
+.forgot-password a {
+  font-size: 0.75rem;
+  color: rgba(245, 240, 232, 0.45);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.forgot-password a:hover {
+  color: #F5B84C;
+}
+
+.error-msg {
+  background: rgba(226, 75, 74, 0.1);
+  border: 0.5px solid rgba(226, 75, 74, 0.3);
+  color: #f09595;
+  font-size: 0.8rem;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.submit-btn {
+  width: 100%;
+  background: #F5B84C;
+  color: #0D0D0D;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #f7c96d;
+  transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive - Laptop screens */
+@media (max-width: 1024px) {
+  .left-panel {
+    width: 40%;
+    padding: 2rem;
+  }
+  
+  .tagline h2 {
+    font-size: 1.6rem;
+  }
+  
+  .form-box {
+    max-width: 360px;
+  }
+}
+
+@media (max-width: 768px) {
+  .left-panel {
+    display: none;
+  }
+  
+  .right-panel {
+    padding: 1.5rem;
+  }
+  
+  .form-box {
+    max-width: 100%;
+  }
+}
