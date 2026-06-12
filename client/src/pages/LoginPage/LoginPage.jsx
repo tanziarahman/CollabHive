@@ -4,7 +4,7 @@ import "./LoginPage.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -15,7 +15,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     
-    if (!formData.email || !formData.password) {
+    if (!formData.username || !formData.password) {
       setError("Please fill in all fields");
       return;
     }
@@ -78,12 +78,12 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit}>
             <div className="field">
-              <label>Email</label>
+              <label>Username</label>
               <input 
-                name="email" 
-                type="email" 
-                placeholder="john@example.com" 
-                value={formData.email} 
+                name="username" 
+                type="text" 
+                placeholder="johndoe" 
+                value={formData.username} 
                 onChange={handleChange} 
                 required 
               />

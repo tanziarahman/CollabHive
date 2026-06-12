@@ -12,26 +12,36 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new Error('Please fill in all fields');
   }
 
+  // Convert to lowercase for consistency
+  const lowercaseUsername = username.toLowerCase();
+  const lowercaseEmail = email.toLowerCase();
+
   // Check if email already exists
-  const emailExists = await User.findOne({ email });
+  const emailExists = await User.findOne({ email: lowercaseEmail });
   if (emailExists) {
     res.status(400);
     throw new Error('Email already in use');
   }
 
   // Check if username already exists
-  const usernameExists = await User.findOne({ username });
+  const usernameExists = await User.findOne({ username: lowercaseUsername });
   if (usernameExists) {
     res.status(400);
     throw new Error('Username already taken');
   }
 
-  // Create user
+  // Check password length (additional validation)
+  if (password.length < 6) {
+    res.status(400);
+    throw new Error('Password must be at least 6 characters');
+  }
+
+  // Create user (password will be hashed by schema pre-save middleware)
   const user = await User.create({
     fullName,
-    username,
-    email,
-    password, // will be hashed automatically by User model
+    username: lowercaseUsername,
+    email: lowercaseEmail,
+    password, // No need to hash here, schema will handle it
   });
 
   if (user) {
@@ -51,34 +61,30 @@ export const registerUser = asyncHandler(async (req, res) => {
 
 
 export const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
-  // Check all fields are provided
-  if (!email || !password) {
+  // Check fields are provided
+  if (!username || !password) {
     res.status(400);
-    throw new Error('Please fill in all fields');
+    throw new Error('Please provide username and password');
   }
 
-  // Find user by email
-  const user = await User.findOne({ email });
+  // Find user by username (convert to lowercase)
+  const user = await User.findOne({ username: username.toLowerCase() });
 
-  // Check user exists and password matches
+  // Check if user exists and password matches
   if (user && (await user.matchPassword(password))) {
-    res.status(200).json({
+    res.json({
       _id: user._id,
       fullName: user.fullName,
       username: user.username,
       email: user.email,
       profilePicture: user.profilePicture,
-      bio: user.bio,
-      skills: user.skills,
-      experienceLevel: user.experienceLevel,
-      availability: user.availability,
       token: generateToken(user._id),
     });
   } else {
     res.status(401);
-    throw new Error('Invalid email or password');
+    throw new Error('Invalid username or password');
   }
 });
 
