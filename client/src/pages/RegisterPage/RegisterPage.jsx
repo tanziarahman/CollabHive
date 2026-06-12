@@ -37,7 +37,7 @@ export default function RegisterPage() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data));
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       setError(err.message || "Something went wrong");
     } finally {
