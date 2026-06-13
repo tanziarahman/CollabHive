@@ -447,6 +447,13 @@
   transform: translateY(-2px);
 }
 
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+  color: rgba(245, 240, 232, 0.6);
+  font-size: 0.9rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .create-project-container {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import "./CreateProject.css";
@@ -6,9 +6,20 @@ import "./CreateProject.css";
 export default function CreateProject() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [configLoading, setConfigLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentSection, setCurrentSection] = useState(1);
   const totalSections = 4;
+  
+  // State for config data from backend
+  const [config, setConfig] = useState({
+    categories: [],
+    skillsRequired: [],
+    techStack: [],
+    roles: [],
+    durations: [],
+    commitmentLevels: [],
+  });
   
   const [formData, setFormData] = useState({
     // Basic Info
@@ -19,7 +30,7 @@ export default function CreateProject() {
     // Team Requirements
     skillsRequired: [],
     techStack: [],
-    roleAllocations: [], // [{ role: "Frontend Developer", count: 2 }]
+    roleAllocations: [],
     
     // Additional Info
     duration: "",
@@ -30,40 +41,23 @@ export default function CreateProject() {
     demoLink: "",
   });
 
-  const categories = [
-    "Web Application", "Mobile Application", "AI / Machine Learning", 
-    "Game Development", "Blockchain / Web3", "DevOps / Cloud", 
-    "Desktop Application", "Other"
-  ];
-  
-  const availableSkills = [
-    "React", "Next.js", "Vue.js", "Angular", "Node.js", "Express.js",
-    "Python", "Django", "FastAPI", "Java", "Spring Boot", "Go",
-    "TypeScript", "JavaScript", "Tailwind CSS", "SASS", "Bootstrap"
-  ];
-  
-  const availableTech = [
-    "MongoDB", "PostgreSQL", "MySQL", "Firebase", "Supabase", "Redis",
-    "Docker", "Kubernetes", "AWS", "Google Cloud", "Azure", "Git",
-    "GitHub Actions", "Jenkins", "Figma", "Adobe XD"
-  ];
-  
-  const availableTech = [
-    "Frontend Developer", "Backend Developer", "Full Stack Developer",
-    "UI/UX Designer", "Product Manager", "DevOps Engineer",
-    "QA Engineer", "Data Scientist", "Mobile Developer", "Technical Writer",
-    "Project Manager", "Security Engineer"
-  ];
-  
-  const durations = [
-    "Less than 1 month", "1-3 months", "3-6 months", "6-12 months", "12+ months"
-  ];
-  
-  const commitmentLevels = [
-    "Part-time (5-10 hrs/week)",
-    "Full-time (20+ hrs/week)",
-    "Flexible (As needed)"
-  ];
+  // Fetch config from backend when page loads
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/config/project-config");
+        const data = await response.json();
+        setConfig(data);
+      } catch (err) {
+        console.error("Failed to load config:", err);
+        setError("Failed to load project configuration");
+      } finally {
+        setConfigLoading(false);
+      }
+    };
+    
+    fetchConfig();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -87,7 +81,6 @@ export default function CreateProject() {
       const newAllocations = [...prev.roleAllocations];
       
       if (count <= 0) {
-        // Remove role if count is 0
         if (existingIndex !== -1) {
           newAllocations.splice(existingIndex, 1);
         }
@@ -154,10 +147,11 @@ export default function CreateProject() {
     if (!validateSection()) return;
     
     setLoading(true);
+    setError("");
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/post-project", {
+      const response = await fetch("http://localhost:5000/api/projects", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -175,12 +169,24 @@ export default function CreateProject() {
         throw new Error(data.message || "Failed to create project");
       }
       
-      navigate(`/project/${data._id}`);
+      navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Something went wrong");
       setLoading(false);
     }
   };
+
+  // Show loading state while fetching config
+  if (configLoading) {
+    return (
+      <div className="create-project-page">
+        <Navbar />
+        <div className="create-project-container">
+          <div className="loading-state">Loading project configuration...</div>
+        </div>
+      </div>
+    );
+  }
 
   const renderSection = () => {
     switch(currentSection) {
@@ -224,7 +230,7 @@ export default function CreateProject() {
                 onChange={handleChange}
               >
                 <option value="">Select a category</option>
-                {categories.map(cat => (
+                {config.categories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
@@ -243,7 +249,7 @@ export default function CreateProject() {
             <div className="form-group">
               <label>Required Skills <span className="required">*</span></label>
               <div className="tags-container">
-                {availableSkills.map(skill => (
+                {config.skillsRequired.map(skill => (
                   <button
                     key={skill}
                     type="button"
@@ -260,7 +266,7 @@ export default function CreateProject() {
             <div className="form-group">
               <label>Tech Stack & Tools</label>
               <div className="tags-container">
-                {availableTech.map(tech => (
+                {config.techStack.map(tech => (
                   <button
                     key={tech}
                     type="button"
@@ -281,7 +287,7 @@ export default function CreateProject() {
                   <span>Number Needed</span>
                 </div>
                 <div className="role-list">
-                  {availableRoles.map(role => {
+                  {config.roles.map(role => {
                     const allocation = formData.roleAllocations.find(r => r.role === role);
                     const count = allocation ? allocation.count : 0;
                     
@@ -334,7 +340,7 @@ export default function CreateProject() {
               <div className="form-group">
                 <label>Expected Duration</label>
                 <div className="radio-group">
-                  {durations.map(dur => (
+                  {config.durations.map(dur => (
                     <label key={dur} className="radio-label">
                       <input
                         type="radio"
@@ -353,7 +359,7 @@ export default function CreateProject() {
             <div className="form-group">
               <label>Commitment Level</label>
               <div className="radio-group">
-                {commitmentLevels.map(level => (
+                {config.commitmentLevels.map(level => (
                   <label key={level} className="radio-label">
                     <input
                       type="radio"
