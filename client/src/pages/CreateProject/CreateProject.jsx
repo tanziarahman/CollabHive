@@ -48,7 +48,7 @@ export default function CreateProject() {
     "GitHub Actions", "Jenkins", "Figma", "Adobe XD"
   ];
   
-  const availableRoles = [
+  const availableTech = [
     "Frontend Developer", "Backend Developer", "Full Stack Developer",
     "UI/UX Designer", "Product Manager", "DevOps Engineer",
     "QA Engineer", "Data Scientist", "Mobile Developer", "Technical Writer",
