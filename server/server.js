@@ -4,6 +4,7 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import configRoutes from './routes/configRoutes.js';
+import projectRoutes from './routes/projectRoutes.js'; 
 import { errorHandler } from './middleware/errorMiddleware.js';
 
 dotenv.config();
@@ -17,6 +18,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/config', configRoutes);
+app.use('/api/projects', projectRoutes); 
 
 // Default route
 app.get('/', (req, res) => {
