@@ -80,12 +80,11 @@ const projectSchema = new mongoose.Schema(
   }
 );
 
-// Calculate total members before saving
-projectSchema.pre('save', function (next) {
+// Calculate total members before saving (without next)
+projectSchema.pre('save', function() {
   if (this.roleAllocations && this.roleAllocations.length > 0) {
     this.totalMembers = this.roleAllocations.reduce((total, role) => total + role.count, 0);
   }
-  next();
 });
 
 const Project = mongoose.model('Project', projectSchema);
