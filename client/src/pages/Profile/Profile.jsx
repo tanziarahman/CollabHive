@@ -71,13 +71,15 @@ export default function Profile() {
   const [achievements, setAchievements] = useState([]);
 
   const [aboutMe, setAboutMe] = useState("");
+  const [linkedinProfile, setLinkedinProfile] = useState("");
   const [interests, setInterests] = useState([]);
   const [skills, setSkills] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [showAllSidebarProjects, setShowAllSidebarProjects] = useState(false);
   const [projectDraft, setProjectDraft] = useState({
     name: "",
     githubLink: "",
-    linkedinLink: "",
+    description: "",
   });
 
   const addProject = () => {
@@ -89,10 +91,10 @@ export default function Profile() {
         id: `${Date.now()}-${p.length}`,
         name: v,
         githubLink: projectDraft.githubLink.trim(),
-        linkedinLink: projectDraft.linkedinLink.trim(),
+        description: projectDraft.description.trim(),
       },
     ]);
-    setProjectDraft({ name: "", githubLink: "", linkedinLink: "" });
+    setProjectDraft({ name: "", githubLink: "", description: "" });
   };
 
   const downloadResume = () => {
@@ -112,6 +114,7 @@ export default function Profile() {
       "",
       "ABOUT ME",
       aboutMe || "-",
+      linkedinProfile ? `LinkedIn: ${linkedinProfile}` : "",
       "",
       "INTERESTS",
       interests.length ? interests.join(", ") : "-",
@@ -122,18 +125,66 @@ export default function Profile() {
       "PROJECTS",
       ...(projects.length
         ? projects.map(
-            (p) =>
-              `- ${p.name}${p.githubLink ? ` | GitHub: ${p.githubLink}` : ""}${
-                p.linkedinLink ? ` | LinkedIn: ${p.linkedinLink}` : ""
-              }`
+            (p) => `- ${p.name}${p.description ? `: ${p.description}` : ""}${
+              p.githubLink ? ` | GitHub: ${p.githubLink}` : ""
+            }`
           )
         : ["-"]),
     ];
-    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+    const escapePdfText = (text) => text.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+    const wrappedLines = lines.flatMap((line) => {
+      const words = line.split(/\s+/).filter(Boolean);
+      if (!words.length) return [""];
+      const result = [];
+      let current = "";
+      words.forEach((word) => {
+        const candidate = current ? `${current} ${word}` : word;
+        if (candidate.length > 88 && current) {
+          result.push(current);
+          current = word;
+        } else current = candidate;
+      });
+      if (current) result.push(current);
+      return result;
+    });
+    const pages = [];
+    for (let i = 0; i < wrappedLines.length; i += 46) pages.push(wrappedLines.slice(i, i + 46));
+    const objects = ["<< /Type /Catalog /Pages 2 0 R >>", ""];
+    const pageIds = [];
+    const contentIds = [];
+    pages.forEach(() => {
+      pageIds.push(objects.length + 1);
+      objects.push("");
+      contentIds.push(objects.length + 1);
+      objects.push("");
+    });
+    objects[1] = `<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(" ")}] /Count ${pageIds.length} >>`;
+    pages.forEach((page, index) => {
+      const content = ["BT", "/F1 11 Tf", "50 792 Td", "15 TL"];
+      page.forEach((line, lineIndex) => {
+        content.push(`(${escapePdfText(line)}) Tj`);
+        if (lineIndex < page.length - 1) content.push("T*");
+      });
+      content.push("ET");
+      const stream = content.join("\n");
+      objects[contentIds[index] - 1] = `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`;
+      objects[pageIds[index] - 1] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 842] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /Contents ${contentIds[index]} 0 R >>`;
+    });
+    let pdf = "%PDF-1.4\n";
+    const offsets = [0];
+    objects.forEach((object, index) => {
+      offsets.push(pdf.length);
+      pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+    });
+    const xrefOffset = pdf.length;
+    pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+    pdf += offsets.slice(1).map((offset) => `${String(offset).padStart(10, "0")} 00000 n \n`).join("");
+    pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+    const blob = new Blob([pdf], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${(name || "resume").replace(/\s+/g, "_")}_resume.txt`;
+    a.download = `${(name || "resume").replace(/\s+/g, "_")}_resume.pdf`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -146,8 +197,6 @@ export default function Profile() {
       .slice(0, 2)
       .map((w) => w[0]?.toUpperCase())
       .join("") || "?";
-
-  const tileColors = ["#2a1f10", "#12203a", "#241a2e", "#1a2e22", "#2e1a1a", "#1a262e"];
 
   return (
     <div className="profile-page">
@@ -237,24 +286,37 @@ export default function Profile() {
             </div>
 
             <div className="side-label">
-              Projects <a onClick={() => setActiveTab("About")}>More</a>
+              Projects
+              {projects.length > 3 && (
+                <button type="button" className="sidebar-more" onClick={() => setShowAllSidebarProjects((show) => !show)}>
+                  {showAllSidebarProjects ? "Less" : "More"}
+                </button>
+              )}
             </div>
-            <div className="project-grid">
-              {(projects.length ? projects : [{ name: "" }, { name: "" }, { name: "" }]).slice(0, 6).map((p, i) => (
-                <div className="project-tile" style={{ background: tileColors[i % tileColors.length] }} key={p.id || i}>
-                  {p.name ? p.name.slice(0, 2).toUpperCase() : ""}
-                </div>
-              ))}
-            </div>
+            {projects.length > 0 && (
+              <div className="project-grid">
+                {(showAllSidebarProjects ? projects : projects.slice(0, 3)).map((p) => (
+                  <div className="project-tile" key={p.id}>
+                    <b>{p.name}</b>
+                    {p.description && <span>{p.description}</span>}
+                    {p.githubLink && <a href={p.githubLink} target="_blank" rel="noreferrer">GitHub ↗</a>}
+                  </div>
+                ))}
+              </div>
+            )}
 
-            <div className="side-label">Top skills</div>
-            <div className="tag-mini-row">
-              {(skills.length ? skills : ["Add a skill"]).slice(0, 6).map((s, i) => (
-                <span className="tag-mini" key={i}>
-                  {s}
-                </span>
-              ))}
-            </div>
+            {skills.length > 0 && (
+              <>
+                <div className="side-label">Top skills</div>
+                <div className="tag-mini-row">
+                  {skills.slice(0, 6).map((s, i) => (
+                    <span className="tag-mini" key={i}>
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
           </aside>
 
           <main className="main-col">
@@ -385,6 +447,15 @@ export default function Profile() {
                       rows={4}
                     />
                   </div>
+                  <div className="field">
+                    <label className="field-label">LinkedIn profile link</label>
+                    <input
+                      type="url"
+                      value={linkedinProfile}
+                      placeholder="https://www.linkedin.com/in/your-profile"
+                      onChange={(e) => setLinkedinProfile(e.target.value)}
+                    />
+                  </div>
                   <TagField
                     label="Interests"
                     placeholder="e.g. UI design"
@@ -416,9 +487,9 @@ export default function Profile() {
                       />
                       <input
                         type="text"
-                        value={projectDraft.linkedinLink}
-                        placeholder="LinkedIn profile link"
-                        onChange={(e) => setProjectDraft((d) => ({ ...d, linkedinLink: e.target.value }))}
+                        value={projectDraft.description}
+                        placeholder="Project description"
+                        onChange={(e) => setProjectDraft((d) => ({ ...d, description: e.target.value }))}
                       />
 
                       <div className="project-add-actions">
@@ -441,16 +512,12 @@ export default function Profile() {
                               ×
                             </button>
                           </div>
-                          {(p.githubLink || p.linkedinLink) && (
+                          {p.description && <p className="pcard-description">{p.description}</p>}
+                          {p.githubLink && (
                             <div className="pcard-links">
                               {p.githubLink && (
                                 <a href={p.githubLink} target="_blank" rel="noreferrer">
                                   GitHub ↗
-                                </a>
-                              )}
-                              {p.linkedinLink && (
-                                <a href={p.linkedinLink} target="_blank" rel="noreferrer">
-                                  LinkedIn ↗
                                 </a>
                               )}
                             </div>
