@@ -43,6 +43,7 @@ export default function CreateProject() {
 
   // Fetch config from backend when page loads
   useEffect(() => {
+    console.log("Current section changed:", currentSection);
     const fetchConfig = async () => {
       try {
         const response = await fetch("http://localhost:5000/api/config/project-config");
@@ -55,9 +56,9 @@ export default function CreateProject() {
         setConfigLoading(false);
       }
     };
-    
+    window.scrollTo({ top: 0, behavior: "smooth" });
     fetchConfig();
-  }, []);
+  }, [currentSection]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -133,7 +134,11 @@ export default function CreateProject() {
 
   const nextSection = () => {
     if (validateSection()) {
-      setCurrentSection(prev => Math.min(prev + 1, totalSections));
+      console.log("Before:", currentSection);
+      setCurrentSection(prev => {
+        console.log("Setting to:", prev + 1);
+        return Math.min(prev + 1, totalSections);
+      });
     }
   };
 
@@ -144,6 +149,7 @@ export default function CreateProject() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("handleSubmit called");
     if (!validateSection()) return;
     
     setLoading(true);
@@ -168,7 +174,7 @@ export default function CreateProject() {
       if (!response.ok) {
         throw new Error(data.message || "Failed to create project");
       }
-      
+      console.log("handleSubmit called");
       navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Something went wrong");
@@ -412,7 +418,7 @@ export default function CreateProject() {
         return null;
     }
   };
-
+  console.log("Rendering section:", currentSection);
   return (
     <div className="create-project-page">
       <Navbar />
@@ -453,11 +459,21 @@ export default function CreateProject() {
               </button>
             )}
             {currentSection < totalSections ? (
-              <button type="button" className="btn-primary" onClick={nextSection}>
+              <button
+                key="continue-btn"
+                type="button"
+                className="btn-primary"
+                onClick={nextSection}
+              >
                 Continue →
               </button>
             ) : (
-              <button type="submit" className="btn-primary" disabled={loading}>
+              <button
+                key="submit-btn"
+                type="submit"
+                className="btn-primary"
+                disabled={loading}
+              >
                 {loading ? "Creating Project..." : "Publish Project →"}
               </button>
             )}
