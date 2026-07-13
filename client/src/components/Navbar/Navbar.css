@@ -101,6 +101,33 @@
   stroke: #0D0D0D;
 }
 
+/* My Posts Button */
+.my-posts-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(245, 240, 232, 0.06);
+  color: #F5F0E8;
+  border: 0.5px solid rgba(245, 240, 232, 0.12);
+  padding: 0.5rem 1.2rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.my-posts-btn:hover {
+  background: rgba(245, 184, 76, 0.1);
+  border-color: rgba(245, 184, 76, 0.3);
+  color: #F5B84C;
+  transform: translateY(-1px);
+}
+
+.my-posts-btn svg {
+  stroke: currentColor;
+}
+
 /* Notifications */
 .notifications-container {
   position: relative;
@@ -317,6 +344,14 @@
   }
   
   .create-project-btn {
+    padding: 0.5rem;
+  }
+
+  .my-posts-btn span {
+    display: none;
+  }
+
+  .my-posts-btn {
     padding: 0.5rem;
   }
   
