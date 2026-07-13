@@ -1,0 +1,320 @@
+.my-posts-page {
+  min-height: 100vh;
+  background: #0d0d0d;
+  padding: 2rem 0 4rem;
+}
+
+.my-posts-container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  gap: 1rem;
+}
+
+.page-header h1 {
+  color: #f5f0e8;
+  font-size: 2.2rem;
+  margin-bottom: 0.4rem;
+}
+
+.page-header p {
+  color: rgba(245, 240, 232, 0.6);
+  font-size: 0.95rem;
+}
+
+.create-btn {
+  background: #f5b84c;
+  color: #0d0d0d;
+  padding: 0.85rem 1.5rem;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.25s ease;
+}
+
+.create-btn:hover {
+  transform: translateY(-2px);
+  background: #f7c86d;
+}
+
+/* Cards */
+
+.project-card {
+  background: #111;
+  border: 1px solid rgba(245, 240, 232, 0.08);
+  border-radius: 18px;
+  padding: 1.8rem;
+  margin-bottom: 2rem;
+  transition: 0.25s ease;
+}
+
+.project-card:hover {
+  border-color: rgba(245, 184, 76, 0.5);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Card Header */
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.2rem;
+}
+
+.project-header h2 {
+  color: #f5f0e8;
+  font-size: 1.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.project-header p {
+  color: rgba(245, 240, 232, 0.5);
+  font-size: 0.9rem;
+}
+
+.status {
+  background: rgba(245, 184, 76, 0.15);
+  color: #f5b84c;
+  border: 1px solid rgba(245, 184, 76, 0.3);
+  padding: 0.45rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Description */
+
+.description {
+  color: rgba(245, 240, 232, 0.85);
+  line-height: 1.7;
+  margin-bottom: 1.8rem;
+}
+
+/* Sections */
+
+.section {
+  margin-bottom: 1.6rem;
+}
+
+.section h3 {
+  color: #f5b84c;
+  font-size: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+/* Tags */
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.tags span {
+  background: rgba(245, 240, 232, 0.06);
+  color: #f5f0e8;
+  padding: 0.45rem 1rem;
+  border-radius: 50px;
+  border: 1px solid rgba(245, 240, 232, 0.1);
+  font-size: 0.85rem;
+}
+
+/* Roles */
+
+.roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.role {
+  background: rgba(245, 184, 76, 0.08);
+  border: 1px solid rgba(245, 184, 76, 0.25);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  min-width: 170px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.role span {
+  color: #f5f0e8;
+  font-size: 0.9rem;
+}
+
+.role strong {
+  color: #f5b84c;
+}
+
+/* Resources */
+
+.resources {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.8rem;
+}
+
+.resources a {
+  text-decoration: none;
+  color: #f5b84c;
+  border: 1px solid rgba(245, 184, 76, 0.3);
+  padding: 0.65rem 1.3rem;
+  border-radius: 10px;
+  transition: 0.25s ease;
+  font-weight: 500;
+}
+
+.resources a:hover {
+  background: #f5b84c;
+  color: #0d0d0d;
+}
+
+/* Footer */
+
+.project-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(245, 240, 232, 0.08);
+  padding-top: 1.4rem;
+}
+
+.project-footer span {
+  color: rgba(245, 240, 232, 0.7);
+  font-weight: 500;
+}
+
+/* Action Buttons */
+
+.actions {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.actions button {
+  background: rgba(245, 240, 232, 0.06);
+  color: #f5f0e8;
+  border: 1px solid rgba(245, 240, 232, 0.12);
+  padding: 0.7rem 1.2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.25s ease;
+  font-weight: 500;
+}
+
+.actions button:hover {
+  background: rgba(245, 184, 76, 0.12);
+  border-color: rgba(245, 184, 76, 0.4);
+  color: #f5b84c;
+}
+
+.delete-btn {
+  background: rgba(220, 53, 69, 0.12) !important;
+  color: #ff8a8a !important;
+  border-color: rgba(220, 53, 69, 0.3) !important;
+}
+
+.delete-btn:hover {
+  background: #dc3545 !important;
+  color: white !important;
+}
+
+/* Loading */
+
+.loading-state,
+.empty-state,
+.error-message {
+  background: #111;
+  border: 1px solid rgba(245, 240, 232, 0.08);
+  border-radius: 18px;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #f5f0e8;
+}
+
+.empty-state h2,
+.error-message h2 {
+  margin-bottom: 1rem;
+}
+
+.empty-state p,
+.error-message p {
+  color: rgba(245, 240, 232, 0.6);
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .project-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .project-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+  }
+
+  .actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+
+  .roles {
+    flex-direction: column;
+  }
+
+  .role {
+    width: 100%;
+  }
+
+  .resources {
+    flex-wrap: wrap;
+  }
+
+  .resources a {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .my-posts-container {
+    width: 94%;
+  }
+
+  .page-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .project-card {
+    padding: 1.4rem;
+  }
+
+  .tags span {
+    font-size: 0.8rem;
+  }
+}
