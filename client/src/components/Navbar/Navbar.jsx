@@ -59,7 +59,7 @@ export default function Navbar() {
       <div className="navbar-right">
         {/* Create Project Button */}
         <button className="create-project-btn" onClick={() => navigate("/create-project")}>
-          Create Project
+          Post Project
         </button>
 
         {/* My Posts Button */}
