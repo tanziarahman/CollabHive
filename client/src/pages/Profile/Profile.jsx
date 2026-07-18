@@ -225,7 +225,9 @@ export default function Profile() {
 
       <div className="page-body">
         <div className="topnav">
-          <div className="topnav-logo">CollabHive</div>
+          <div className="topnav-logo" aria-label="CollabHive">
+            <span>Collab</span>Hive
+          </div>
           <div className="topnav-search">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="7" />
