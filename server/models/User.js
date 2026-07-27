@@ -81,6 +81,12 @@ const userSchema = new mongoose.Schema(
       enum: ['Available', 'Busy', 'Open to Offers'],
       default: 'Available',
     },
+    // Embedding of skills + interests, used for skill-matching. Regenerated on profile update.
+    skillsEmbedding: {
+      type: [Number],
+      default: [],
+      select: false,
+    },
 
     // 🤝 CollabHive Specific
     projectsPosted: [
@@ -116,6 +122,12 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true, // adds createdAt and updatedAt automatically
+    toJSON: {
+      transform: (doc, ret) => {
+        delete ret.skillsEmbedding;
+        return ret;
+      },
+    },
   }
 );
 

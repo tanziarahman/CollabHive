@@ -1,4 +1,7 @@
 import Project from '../models/Project.js';
+import User from '../models/User.js';
+import { generateEmbedding } from '../services/embeddingService.js';
+import { cosineSimilarity } from '../utils/cosineSimilarity.js';
 
 // @desc    Create a new project
 // @route   POST /api/projects
@@ -37,6 +40,10 @@ export const createProject = async (req, res) => {
       });
     }
 
+    // Embed required skills + tech stack for skill-matching suggestions
+    const embeddingText = [...skillsRequired, ...(techStack || [])].join(', ');
+    const skillsEmbedding = await generateEmbedding(embeddingText);
+
     // Create project
     const project = await Project.create({
       title,
@@ -50,6 +57,7 @@ export const createProject = async (req, res) => {
       githubRepo: githubRepo || '',
       demoLink: demoLink || '',
       createdBy: req.user._id,  // From auth middleware
+      skillsEmbedding,
     });
 
     res.status(201).json({
@@ -132,27 +140,46 @@ export const getUserProjects = async (req, res) => {
 // @access  Private (only project creator)
 export const updateProject = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id);
-    
-    if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
+    // req.project is loaded + ownership-checked by isProjectOwner middleware
+    const project = req.project;
+
+    const {
+      title,
+      description,
+      category,
+      skillsRequired,
+      techStack,
+      roleAllocations,
+      duration,
+      commitmentLevel,
+      githubRepo,
+      demoLink,
+    } = req.body;
+
+    if (title !== undefined) project.title = title;
+    if (description !== undefined) project.description = description;
+    if (category !== undefined) project.category = category;
+    if (skillsRequired !== undefined) project.skillsRequired = skillsRequired;
+    if (techStack !== undefined) project.techStack = techStack;
+    if (roleAllocations !== undefined) project.roleAllocations = roleAllocations;
+    if (duration !== undefined) project.duration = duration;
+    if (commitmentLevel !== undefined) project.commitmentLevel = commitmentLevel;
+    if (githubRepo !== undefined) project.githubRepo = githubRepo;
+    if (demoLink !== undefined) project.demoLink = demoLink;
+
+    // Regenerate skill-match embedding if the underlying skills changed
+    if (skillsRequired !== undefined || techStack !== undefined) {
+      const embeddingText = [...project.skillsRequired, ...project.techStack].join(', ');
+      project.skillsEmbedding = await generateEmbedding(embeddingText);
     }
-    
-    // Check if user is the creator
-    if (project.createdBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to update this project' });
-    }
-    
-    const updatedProject = await Project.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    
+
+    // .save() (rather than findByIdAndUpdate) so the pre('save') hook recalculates totalMembers
+    await project.save();
+
     res.status(200).json({
       success: true,
       message: 'Project updated successfully',
-      data: updatedProject,
+      data: project,
     });
   } catch (error) {
     console.error('Update project error:', error);
@@ -165,25 +192,61 @@ export const updateProject = async (req, res) => {
 // @access  Private (only project creator)
 export const deleteProject = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id);
-    
-    if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
-    }
-    
-    // Check if user is the creator
-    if (project.createdBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to delete this project' });
-    }
-    
-    await project.deleteOne();
-    
+    // req.project is loaded + ownership-checked by isProjectOwner middleware
+    await req.project.deleteOne();
+
     res.status(200).json({
       success: true,
       message: 'Project deleted successfully',
     });
   } catch (error) {
     console.error('Delete project error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get suggested collaborators for a project, ranked by skill match
+// @route   GET /api/projects/:id/suggestions
+// @access  Private (only project creator)
+export const getSuggestedCollaborators = async (req, res) => {
+  try {
+    // req.project is loaded + ownership-checked by isProjectOwner middleware
+    const project = await Project.findById(req.project._id).select('+skillsEmbedding');
+
+    if (!project.skillsEmbedding || project.skillsEmbedding.length === 0) {
+      return res.status(200).json({ success: true, count: 0, data: [] });
+    }
+
+    const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
+
+    const candidates = await User.find({ _id: { $ne: req.user._id } })
+      .select('fullName username profilePicture bio skills interests experienceLevel +skillsEmbedding');
+
+    const suggestions = candidates
+      .map((candidate) => ({
+        user: {
+          _id: candidate._id,
+          fullName: candidate.fullName,
+          username: candidate.username,
+          profilePicture: candidate.profilePicture,
+          bio: candidate.bio,
+          skills: candidate.skills,
+          interests: candidate.interests,
+          experienceLevel: candidate.experienceLevel,
+        },
+        matchScore: cosineSimilarity(project.skillsEmbedding, candidate.skillsEmbedding),
+      }))
+      .filter((suggestion) => suggestion.matchScore > 0)
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, limit);
+
+    res.status(200).json({
+      success: true,
+      count: suggestions.length,
+      data: suggestions,
+    });
+  } catch (error) {
+    console.error('Get suggested collaborators error:', error);
     res.status(500).json({ message: error.message });
   }
 };
