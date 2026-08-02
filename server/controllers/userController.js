@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import { generateEmbedding } from '../services/embeddingService.js';
+import { createNotification } from '../services/notificationService.js';
 
 // @desc    Update logged-in user's profile
 // @route   PUT /api/users/profile
@@ -90,6 +91,13 @@ export const followUser = asyncHandler(async (req, res) => {
 
   await User.findByIdAndUpdate(req.user._id, { $addToSet: { following: targetId } });
   await User.findByIdAndUpdate(targetId, { $addToSet: { followers: req.user._id } });
+
+  await createNotification({
+    recipient: targetId,
+    sender: req.user._id,
+    type: 'new_follower',
+    message: `${req.user.fullName} started following you`,
+  });
 
   res.status(200).json({ success: true, message: 'User followed successfully' });
 });

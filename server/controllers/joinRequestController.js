@@ -1,6 +1,7 @@
 import Project from '../models/Project.js';
 import User from '../models/User.js';
 import JoinRequest from '../models/JoinRequest.js';
+import { createNotification } from '../services/notificationService.js';
 
 const roleExists = (project, role) =>
   project.roleAllocations.some((allocation) => allocation.role === role);
@@ -70,6 +71,15 @@ export const createJoinRequest = async (req, res) => {
 
     await User.findByIdAndUpdate(req.user._id, { $push: { joinRequestsSent: joinRequest._id } });
 
+    await createNotification({
+      recipient: project.createdBy,
+      sender: req.user._id,
+      type: 'join_request',
+      project: project._id,
+      relatedJoinRequest: joinRequest._id,
+      message: `${req.user.fullName} requested to join your project "${project.title}"`,
+    });
+
     res.status(201).json({ success: true, data: joinRequest });
   } catch (error) {
     console.error('Create join request error:', error);
@@ -120,6 +130,15 @@ export const inviteUser = async (req, res) => {
       type: 'invite',
       role,
       message: message || '',
+    });
+
+    await createNotification({
+      recipient: userId,
+      sender: req.user._id,
+      type: 'invite',
+      project: project._id,
+      relatedJoinRequest: joinRequest._id,
+      message: `${req.user.fullName} invited you to join "${project.title}" as ${role}`,
     });
 
     res.status(201).json({ success: true, data: joinRequest });
@@ -197,6 +216,26 @@ export const acceptJoinRequest = async (req, res) => {
     joinRequest.status = 'accepted';
     await joinRequest.save();
 
+    if (joinRequest.type === 'request') {
+      await createNotification({
+        recipient: joinRequest.applicant,
+        sender: req.user._id,
+        type: 'request_accepted',
+        project: project._id,
+        relatedJoinRequest: joinRequest._id,
+        message: `Your request to join "${project.title}" was accepted`,
+      });
+    } else {
+      await createNotification({
+        recipient: joinRequest.initiatedBy,
+        sender: req.user._id,
+        type: 'invite_accepted',
+        project: project._id,
+        relatedJoinRequest: joinRequest._id,
+        message: `${req.user.fullName} accepted your invite to join "${project.title}"`,
+      });
+    }
+
     res.status(200).json({ success: true, data: joinRequest });
   } catch (error) {
     console.error('Accept join request error:', error);
@@ -227,6 +266,26 @@ export const rejectJoinRequest = async (req, res) => {
 
     joinRequest.status = 'rejected';
     await joinRequest.save();
+
+    if (joinRequest.type === 'request') {
+      await createNotification({
+        recipient: joinRequest.applicant,
+        sender: req.user._id,
+        type: 'request_rejected',
+        project: project._id,
+        relatedJoinRequest: joinRequest._id,
+        message: `Your request to join "${project.title}" was declined`,
+      });
+    } else {
+      await createNotification({
+        recipient: joinRequest.initiatedBy,
+        sender: req.user._id,
+        type: 'invite_rejected',
+        project: project._id,
+        relatedJoinRequest: joinRequest._id,
+        message: `${req.user.fullName} declined your invite to join "${project.title}"`,
+      });
+    }
 
     res.status(200).json({ success: true, data: joinRequest });
   } catch (error) {
