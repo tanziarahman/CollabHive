@@ -81,6 +81,23 @@ const projectSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+
+    // Users actually accepted onto the team (as opposed to roleAllocations, which is the target headcount)
+    members: [{
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+      },
+      role: {
+        type: String,
+        required: true,
+      },
+      joinedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    }],
   },
   {
     timestamps: true,

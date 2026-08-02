@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes.js';
 import configRoutes from './routes/configRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import joinRequestRoutes from './routes/joinRequestRoutes.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
 dotenv.config();
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/join-requests', joinRequestRoutes);
 
 // Default route
 app.get('/', (req, res) => {
