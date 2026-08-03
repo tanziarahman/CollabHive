@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Baloo+2:wght@700;800&display=swap");
 
 .profile-page {
-  --bg: #ffffff;
+  --bg: #000000;
   --surface: #f7f7f5;
   --surface-2: #f0efeb;
   --surface-3: #e8e6e0;
@@ -49,7 +49,9 @@
   display: flex;
   align-items: center;
   gap: 18px;
-  padding: 14px 24px;
+  min-height: 70px;
+  box-sizing: border-box;
+  padding: 14px 30px;
   background: #101010;
   border-bottom: 1px solid #1f1f1f;
 }
@@ -57,30 +59,29 @@
 .topnav-logo {
   font-family: "Baloo 2", sans-serif;
   font-weight: 800;
-  font-size: 20px;
+  font-size: 24px;
+  line-height: 1;
   letter-spacing: -0.01em;
   flex-shrink: 0;
-}
-
-.logo-collab {
   color: #f5f5f5;
 }
 
-.logo-hive {
-  color: #f6b94a;
+.topnav-logo span {
+  color: #e8923f;
 }
 
 .topnav-search {
-  flex: 1;
-  max-width: 420px;
+  flex: 0 1 500px;
+  width: 500px;
+  max-width: 500px;
   display: flex;
   align-items: center;
   gap: 8px;
   background: #1d1d1d;
-  border: 1px solid #2a2a2a;
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
-  color: #5c5c5c;
+  border: 1px solid #353535;
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: #777;
 }
 
 .topnav-search input {
@@ -94,7 +95,7 @@
 }
 
 .topnav-search input::placeholder {
-  color: #5c5c5c;
+  color: #777;
 }
 
 .topnav-create {
@@ -102,8 +103,9 @@
   background: #f6b94a;
   color: #1a1206;
   border: none;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  height: 38px;
+  padding: 0 20px;
+  border-radius: 10px;
   font-weight: 600;
   font-size: 12.5px;
   cursor: pointer;
@@ -116,9 +118,9 @@
 }
 
 .topnav-bell {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   background: #1d1d1d;
   border: 1px solid #2a2a2a;
   display: flex;
@@ -129,15 +131,15 @@
 }
 
 .topnav-avatar {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: rgba(37, 99, 235, 0.15);
-  border: 1px solid rgba(37, 99, 235, 0.4);
+  background: rgba(232, 146, 63, 0.12);
+  border: 1px solid rgba(232, 146, 63, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #2563eb;
+  color: #e8923f;
   font-weight: 600;
   font-size: 13px;
   flex-shrink: 0;
