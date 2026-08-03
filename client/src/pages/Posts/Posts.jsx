@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import "./Posts.css";
 
@@ -8,10 +8,21 @@ export default function Posts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeProject, setActiveProject] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     fetchMyProjects();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.activeProjectId && projects.length > 0) {
+      const restored = projects.find(
+        (p) => p._id === location.state.activeProjectId
+      );
+      if (restored) setActiveProject(restored);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projects, location.state]);
 
   const fetchMyProjects = async () => {
     try {
@@ -51,9 +62,24 @@ export default function Posts() {
           demoLink: "https://collabhive-demo.vercel.app",
           applicants: 6,
           applicantsList: [
-            { _id: "a1", name: "Sarah Ahmed", role: "Frontend Developer" },
-            { _id: "a2", name: "Rafiq Islam", role: "Backend Developer" },
-            { _id: "a3", name: "Meherin Chowdhury", role: "Frontend Developer" },
+            {
+              _id: "a1",
+              name: "Sarah Ahmed",
+              role: "Frontend Developer",
+              status: "pending",
+            },
+            {
+              _id: "a2",
+              name: "Rafiq Islam",
+              role: "Backend Developer",
+              status: "pending",
+            },
+            {
+              _id: "a3",
+              name: "Meherin Chowdhury",
+              role: "Frontend Developer",
+              status: "pending",
+            },
           ],
         },
         {
@@ -72,14 +98,50 @@ export default function Posts() {
           demoLink: "https://resume-ai-demo.vercel.app",
           applicants: 3,
           applicantsList: [
-            { _id: "a4", name: "Tanvir Hossain", role: "ML Engineer" },
-            { _id: "a5", name: "Nusrat Jahan", role: "Frontend Developer" },
+            {
+              _id: "a4",
+              name: "Tanvir Hossain",
+              role: "ML Engineer",
+              status: "pending",
+            },
+            {
+              _id: "a5",
+              name: "Nusrat Jahan",
+              role: "Frontend Developer",
+              status: "pending",
+            },
           ],
         },
       ]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleApplicantDecision = (projectId, applicantId, decision) => {
+    setProjects((prev) =>
+      prev.map((p) =>
+        p._id !== projectId
+          ? p
+          : {
+              ...p,
+              applicantsList: p.applicantsList.map((a) =>
+                a._id === applicantId ? { ...a, status: decision } : a
+              ),
+            }
+      )
+    );
+
+    setActiveProject((prev) =>
+      prev && prev._id === projectId
+        ? {
+            ...prev,
+            applicantsList: prev.applicantsList.map((a) =>
+              a._id === applicantId ? { ...a, status: decision } : a
+            ),
+          }
+        : prev
+    );
   };
 
   if (loading) {
@@ -220,9 +282,76 @@ export default function Posts() {
                       <Link
                         to={`/profile/${applicant._id}`}
                         className="view-link"
+                        state={{ activeProjectId: activeProject._id }}
                       >
                         View Profile
                       </Link>
+
+                      {applicant.status === "pending" && (
+                        <>
+                          <button
+                            className="accept-btn"
+                            onClick={() =>
+                              handleApplicantDecision(
+                                activeProject._id,
+                                applicant._id,
+                                "accepted"
+                              )
+                            }
+                          >
+                            Accept
+                          </button>
+
+                          <button
+                            className="reject-btn"
+                            onClick={() =>
+                              handleApplicantDecision(
+                                activeProject._id,
+                                applicant._id,
+                                "rejected"
+                              )
+                            }
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+
+                      {applicant.status === "accepted" && (
+                        <span className="decision-badge accepted">
+                          Accepted
+                          <button
+                            className="undo-btn"
+                            onClick={() =>
+                              handleApplicantDecision(
+                                activeProject._id,
+                                applicant._id,
+                                "pending"
+                              )
+                            }
+                          >
+                            Undo
+                          </button>
+                        </span>
+                      )}
+
+                      {applicant.status === "rejected" && (
+                        <span className="decision-badge rejected">
+                          Rejected
+                          <button
+                            className="undo-btn"
+                            onClick={() =>
+                              handleApplicantDecision(
+                                activeProject._id,
+                                applicant._id,
+                                "pending"
+                              )
+                            }
+                          >
+                            Undo
+                          </button>
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))
