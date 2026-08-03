@@ -280,10 +280,6 @@ export default function Posts() {
                   <div className="actions">
 
                     <button>
-                      Edit
-                    </button>
-
-                    <button>
                       View Applicants
                     </button>
 
