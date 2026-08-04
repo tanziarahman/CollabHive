@@ -1,0 +1,19 @@
+.follow-requests-page { min-height: calc(100vh - 68px); background: #0d0d0d; color: #f5f0e8; }
+.requests-content { max-width: 920px; margin: 0 auto; padding: 3.25rem 2.5rem; }
+.eyebrow { margin: 0 0 .35rem; color: #f5b84c; font-size: .76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+.requests-content h1 { margin: 0; font-size: 2.15rem; letter-spacing: -.04em; }
+.requests-subtitle { margin: .4rem 0 1.7rem; color: rgba(245,240,232,.58); font-size: .88rem; }
+.request-list { display: grid; gap: .75rem; }
+.request-card { display: flex; align-items: center; gap: 1rem; min-height: 104px; padding: 1.1rem 1.25rem; background: #151515; border: 1px solid rgba(245,240,232,.08); border-radius: 14px; }
+.person-avatar { width: 52px; height: 52px; padding: 0; overflow: hidden; border: 1px solid rgba(245,184,76,.45); border-radius: 50%; background: #292929; color: #f5b84c; font-weight: 700; cursor: pointer; }
+.person-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.request-person { flex: 1; min-width: 0; }
+.person-name { padding: 0; border: 0; background: none; color: #f5f0e8; font-weight: 700; cursor: pointer; font-size: .96rem; }
+.request-person p, .request-person span { margin: .18rem 0 0; display: block; font-size: .75rem; color: rgba(245,240,232,.5); }
+.request-person span { color: #f5b84c; }
+.request-actions { display: flex; gap: .5rem; }
+.request-actions button { min-width: 82px; padding: .52rem .85rem; border-radius: 7px; font-size: .76rem; font-weight: 700; cursor: pointer; }
+.request-decline { border: 1px solid rgba(245,184,76,.35); color: #f5f0e8; background: transparent; }
+.request-confirm { border: 1px solid #f5b84c; background: #f5b84c; color: #0d0d0d; }
+.requests-empty { padding: 2rem; border: 1px dashed rgba(245,240,232,.16); border-radius: 14px; color: rgba(245,240,232,.55); text-align: center; }
+@media (max-width: 600px) { .requests-content { padding: 2rem 1rem; } .request-card { align-items: flex-start; flex-wrap: wrap; } .request-actions { width: 100%; margin-left: 68px; } .request-actions button { flex: 1; } }

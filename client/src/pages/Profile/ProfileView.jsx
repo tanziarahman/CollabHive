@@ -24,7 +24,15 @@ export default function ProfileView() {
       );
       if (!response.ok) throw new Error();
       const data = await response.json();
-      setProfile(data);
+      setProfile({
+        ...data,
+        name: data.fullName || data.name,
+        jobTitle: data.jobTitle || data.experienceLevel,
+        status: data.availability,
+        aboutMe: data.bio,
+        linkedinProfile: data.linkedinURL,
+        photoUrl: data.profilePicture,
+      });
     } catch {
       // Demo fallback
       setProfile({
