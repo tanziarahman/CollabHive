@@ -107,6 +107,18 @@ const userSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    followRequestsReceived: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    followRequestsSent: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     joinRequestsSent: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Profile.css";
 
 const JOB_STATUSES = ["Employed", "Unemployed", "Student"];
@@ -49,6 +50,8 @@ function TagField({ label, placeholder, values, onAdd, onRemove }) {
 }
 
 export default function Profile() {
+  const navigate = useNavigate();
+  const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const [activeTab, setActiveTab] = useState("Info");
   const tabIndex = TABS.indexOf(activeTab);
   const goNext = () => setActiveTab(TABS[(tabIndex + 1) % TABS.length]);
@@ -81,6 +84,51 @@ export default function Profile() {
     githubLink: "",
     description: "",
   });
+  const [connectionList, setConnectionList] = useState([]);
+  const [connectionType, setConnectionType] = useState("");
+  const [connectionsLoading, setConnectionsLoading] = useState(false);
+  const [connectionCounts, setConnectionCounts] = useState({ followers: 0, following: 0 });
+
+  useEffect(() => {
+    const loadCounts = async () => {
+      try {
+        const headers = { Authorization: `Bearer ${localStorage.getItem("token")}` };
+        const [followers, following] = await Promise.all([
+          fetch("http://localhost:5000/api/users/connections/followers", { headers }),
+          fetch("http://localhost:5000/api/users/connections/following", { headers }),
+        ]);
+        if (!followers.ok || !following.ok) throw new Error();
+        const [followerList, followingList] = await Promise.all([followers.json(), following.json()]);
+        setConnectionCounts({ followers: followerList.length, following: followingList.length });
+      } catch {
+        setConnectionCounts({ followers: 0, following: 0 });
+      }
+    };
+    const timer = window.setTimeout(loadCounts, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!connectionType) return undefined;
+    const loadConnections = async () => {
+      setConnectionsLoading(true);
+      try {
+        const response = await fetch(`http://localhost:5000/api/users/connections/${connectionType}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        if (!response.ok) throw new Error();
+        const people = await response.json();
+        setConnectionList(people);
+        setConnectionCounts((counts) => ({ ...counts, [connectionType]: people.length }));
+      } catch {
+        setConnectionList([]);
+      } finally {
+        setConnectionsLoading(false);
+      }
+    };
+    const timer = window.setTimeout(loadConnections, 0);
+    return () => window.clearTimeout(timer);
+  }, [connectionType]);
 
   const addProject = () => {
     const v = projectDraft.name.trim();
@@ -236,7 +284,7 @@ export default function Profile() {
             <input type="text" placeholder="Search users or projects by skill or name..." />
           </div>
           <button type="button" className="topnav-create">
-            + Create Project
+            + Post Project
           </button>
           <div className="topnav-bell">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -251,6 +299,7 @@ export default function Profile() {
 
         <div className="columns">
           <aside className="profile-col">
+            <div className="profile-summary-card">
             <div className="avatar-frame hex">
               {photoUrl ? <img src={photoUrl} alt="Profile" /> : <span>{initials}</span>}
             </div>
@@ -266,11 +315,30 @@ export default function Profile() {
             </button>
 
             <div className="name-block">
-              <h1>{name || "Your name"}</h1>
+              <h1>{name || savedUser.fullName || "Your name"}</h1>
               <div className="role">
                 {jobTitle || "Add a job title"} · {status}
               </div>
             </div>
+
+            <div className="connection-row" aria-label="Your connections">
+              <button type="button" onClick={() => setConnectionType("followers")}>
+                <b>{connectionCounts.followers}</b>
+                <span>Followers</span>
+              </button>
+              <button type="button" onClick={() => setConnectionType("following")}>
+                <b>{connectionCounts.following}</b>
+                <span>Following</span>
+              </button>
+            </div>
+
+            <button type="button" className="edit-profile-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+              Edit Profile
+            </button>
 
             <div className="stat-row">
               <div className="stat">
@@ -286,9 +354,11 @@ export default function Profile() {
                 <span>Certs</span>
               </div>
             </div>
+            </div>
 
+            <div className="recent-projects-card">
             <div className="side-label">
-              Projects
+              Recent projects
               {projects.length > 3 && (
                 <button type="button" className="sidebar-more" onClick={() => setShowAllSidebarProjects((show) => !show)}>
                   {showAllSidebarProjects ? "Less" : "More"}
@@ -319,6 +389,10 @@ export default function Profile() {
                 </div>
               </>
             )}
+            <button type="button" className="all-projects-link" onClick={() => setShowAllSidebarProjects((show) => !show)}>
+              {showAllSidebarProjects ? "Show less" : "View all projects..."}
+            </button>
+            </div>
           </aside>
 
           <main className="main-col">
@@ -391,6 +465,23 @@ export default function Profile() {
                       />
                     </div>
                   </div>
+                </div>
+
+                <div className="info-block">
+                  <h3>
+                    <span className="hex-dot" /> Core Competencies
+                  </h3>
+                  {skills.length > 0 ? (
+                    <div className="pill-row">
+                      {skills.map((s, i) => (
+                        <span className="pill-tag" key={i}>
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="pill-empty">Add your skillset in the About tab to see it here.</p>
+                  )}
                 </div>
 
                 <div className="tab-nav">
@@ -574,6 +665,26 @@ export default function Profile() {
           </main>
         </div>
       </div>
+
+      {connectionType && (
+        <div className="connections-modal-backdrop" onClick={() => setConnectionType("")}>
+          <section className="connections-modal" role="dialog" aria-modal="true" aria-labelledby="connections-title" onClick={(event) => event.stopPropagation()}>
+            <div className="connections-modal-header">
+              <h2 id="connections-title">{connectionType === "followers" ? "Followers" : "Following"}</h2>
+              <button type="button" onClick={() => setConnectionType("")} aria-label="Close">×</button>
+            </div>
+            <div className="connections-list">
+              {connectionsLoading ? <p className="connections-empty">Loading...</p> : connectionList.length === 0 ? <p className="connections-empty">No {connectionType} yet.</p> : connectionList.map((person) => (
+                <button type="button" className="connection-person" key={person._id} onClick={() => navigate(`/profile/${person._id}`)}>
+                  <span className="connection-avatar">{person.profilePicture ? <img src={person.profilePicture} alt="" /> : person.fullName?.charAt(0)}</span>
+                  <span><b>{person.fullName}</b><small>@{person.username}</small></span>
+                  <em>View profile</em>
+                </button>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import "./Dashboard.css";
 
 export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [user, setUser] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [followingId, setFollowingId] = useState(null);
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -13,16 +17,12 @@ export default function Dashboard() {
   const [selectedRole, setSelectedRole] = useState({});
   const [applyingProject, setApplyingProject] = useState(null);
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
-
-  const fetchDashboard = async () => {
+  async function fetchDashboard() {
     try {
       const token = localStorage.getItem("token");
 
       const userResponse = await fetch(
-        "http://localhost:5000/api/users/profile",
+        "http://localhost:5000/api/auth/me",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -53,8 +53,13 @@ export default function Dashboard() {
       const projectData = await projectResponse.json();
 
       setProjects(projectData);
+      const suggestionsResponse = await fetch(
+        "http://localhost:5000/api/users/suggestions",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (suggestionsResponse.ok) setSuggestions(await suggestionsResponse.json());
       setError("");
-    } catch (err) {
+    } catch {
       console.log("Backend unavailable. Loading demo projects...");
 
       setError("");
@@ -114,8 +119,36 @@ export default function Dashboard() {
           ],
         },
       ]);
+      setSuggestions([
+        { _id: "sarah-demo", fullName: "Sarah Jenkins", username: "sarahjenkins", skills: ["React", "TypeScript", "Tailwind"], experienceLevel: "Intermediate" },
+        { _id: "david-demo", fullName: "David Chen", username: "davidchen", skills: ["Node.js", "PostgreSQL", "AWS"], experienceLevel: "Advanced" },
+        { _id: "elena-demo", fullName: "Elena Rodriguez", username: "elenar", skills: ["Figma", "Design Systems", "Prototyping"], experienceLevel: "Intermediate" },
+        { _id: "michael-demo", fullName: "Michael Brooks", username: "michaelb", skills: ["Python", "Django", "Docker"], experienceLevel: "Advanced" },
+        { _id: "aisha-demo", fullName: "Aisha Rahman", username: "aishar", skills: ["UI/UX", "Figma", "Research"], experienceLevel: "Intermediate" },
+      ]);
     } finally {
       setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    const loadDashboard = window.setTimeout(fetchDashboard, 0);
+    return () => window.clearTimeout(loadDashboard);
+  }, []); // fetchDashboard is intentionally run once when the page opens.
+
+  const handleFollow = async (person) => {
+    setFollowingId(person._id);
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/${person._id}/follow-request`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (!response.ok) throw new Error();
+    } catch {
+      // Demo suggestions remain interactive without an active API.
+    } finally {
+      setSuggestions((items) => items.filter((item) => item._id !== person._id));
+      setFollowingId(null);
     }
   };
 
@@ -212,7 +245,7 @@ export default function Dashboard() {
 
           <section className="dashboard-hero">
             <div className="hero-left">
-              <h1>Welcome back{user?.name ? `, ${user.name}` : ""} 👋</h1>
+              <h1>Welcome back{user?.fullName || user?.name ? `, ${user.fullName || user.name}` : ""} 👋</h1>
 
               <p>
                 Discover projects that match your skills and start
@@ -220,6 +253,37 @@ export default function Dashboard() {
               </p>
             </div>
           </section>
+
+          {suggestions.length > 0 && (
+            <section className="suggestions-section" aria-labelledby="suggestions-heading">
+              <div className="suggestions-heading">
+                <div>
+                  <p className="suggestions-eyebrow">Suggested connections</p>
+                  <h2 id="suggestions-heading">People you might want to collaborate with</h2>
+                </div>
+                <button className="see-requests-link" onClick={() => navigate("/follow-requests")}>Follow requests</button>
+              </div>
+              <div className="suggestion-grid">
+                {suggestions.map((person) => (
+                  <article className="suggestion-card" key={person._id}>
+                    <button className="suggestion-avatar" onClick={() => navigate(`/profile/${person._id}`)} aria-label={`View ${person.fullName}'s profile`}>
+                      {person.profilePicture ? <img src={person.profilePicture} alt="" /> : person.fullName?.charAt(0)}
+                    </button>
+                    <p className="suggestion-role">{person.experienceLevel || "Community member"}</p>
+                    <h3>{person.fullName}</h3>
+                    <p className="suggestion-handle">@{person.username || "collabhive"}</p>
+                    <div className="skill-panel"><span>Top skills</span><p>{(person.skills || []).slice(0, 3).join(" · ") || "Open to collaborate"}</p></div>
+                    <div className="suggestion-actions">
+                      <button className="view-profile-btn" onClick={() => navigate(`/profile/${person._id}`)}>View profile</button>
+                      <button className="follow-btn" disabled={followingId === person._id} onClick={() => handleFollow(person)}>
+                        {followingId === person._id ? "Sending..." : "Follow"}
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Empty State */}
 
