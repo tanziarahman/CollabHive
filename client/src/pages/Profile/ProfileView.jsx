@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { getPublicProfile } from "../../api/users";
 import "./Profile.css";
 
 const TABS = ["Info", "Education", "About", "Résumé"];
@@ -9,6 +10,7 @@ export default function ProfileView() {
   const [activeTab, setActiveTab] = useState("Info");
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchProfile();
@@ -16,49 +18,21 @@ export default function ProfileView() {
   }, [userId]);
 
   const fetchProfile = async () => {
+    setLoading(true);
+    setError("");
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `http://localhost:5000/api/users/${userId}/profile`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!response.ok) throw new Error();
-      const data = await response.json();
+      const data = await getPublicProfile(userId);
       setProfile({
         ...data,
-        name: data.fullName || data.name,
-        jobTitle: data.jobTitle || data.experienceLevel,
+        name: data.fullName,
+        jobTitle: data.experienceLevel,
         status: data.availability,
         aboutMe: data.bio,
         linkedinProfile: data.linkedinURL,
         photoUrl: data.profilePicture,
       });
-    } catch {
-      // Demo fallback
-      setProfile({
-        name: "Sarah Ahmed",
-        phone: "+1 555 012 3456",
-        email: "sarah.ahmed@example.com",
-        status: "Student",
-        jobTitle: "Frontend Developer",
-        school: "North South University",
-        degree: "B.Sc. Computer Science",
-        achievements: ["Dean's List 2023", "React Certified"],
-        aboutMe:
-          "Frontend developer who loves building clean, accessible interfaces.",
-        linkedinProfile: "https://www.linkedin.com/in/sarah-ahmed",
-        interests: ["UI design", "Open source"],
-        skills: ["React", "JavaScript", "CSS", "Figma"],
-        projects: [
-          {
-            id: "p1",
-            name: "CollabHive",
-            githubLink: "https://github.com/example/collabhive",
-            description: "Developer collaboration platform.",
-          },
-        ],
-        photoUrl: null,
-      });
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not load this profile.");
     } finally {
       setLoading(false);
     }
@@ -193,6 +167,16 @@ export default function ProfileView() {
       <div className="profile-page">
         <div className="page-body">
           <div className="loading-state">Loading profile...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="profile-page">
+        <div className="page-body">
+          <div className="loading-state">{error}</div>
         </div>
       </div>
     );

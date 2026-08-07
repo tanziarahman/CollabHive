@@ -6,8 +6,9 @@ import Dashboard from "./pages/Dashboard/Dashbiard";
 import CreateProject from "./pages/CreateProject/CreateProject";
 import Profile from "./pages/Profile/Profile";
 import Posts from "./pages/Posts/Posts";
-import ProfileView from "./pages/Profile/ProfileView"; 
+import ProfileView from "./pages/Profile/ProfileView";
 import FollowRequests from "./pages/FollowRequests/FollowRequests";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -15,12 +16,12 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/create-project" element={<CreateProject />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/my-posts" element={<Posts />} />
-      <Route path="/profile/:userId" element={<ProfileView />} />
-      <Route path="/follow-requests" element={<FollowRequests />} />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/create-project" element={<ProtectedRoute><CreateProject /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/my-posts" element={<ProtectedRoute><Posts /></ProtectedRoute>} />
+      <Route path="/profile/:userId" element={<ProtectedRoute><ProfileView /></ProtectedRoute>} />
+      <Route path="/follow-requests" element={<ProtectedRoute><FollowRequests /></ProtectedRoute>} />
     </Routes>
   );
 }

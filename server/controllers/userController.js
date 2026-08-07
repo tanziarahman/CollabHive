@@ -25,6 +25,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
     skills,
     interests,
     experienceLevel,
+    availability,
   } = req.body;
 
   if (bio !== undefined) user.bio = bio;
@@ -33,6 +34,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
   if (githubURL !== undefined) user.githubURL = githubURL;
   if (linkedinURL !== undefined) user.linkedinURL = linkedinURL;
   if (experienceLevel !== undefined) user.experienceLevel = experienceLevel;
+  if (availability !== undefined) user.availability = availability;
 
   let skillsChanged = false;
 

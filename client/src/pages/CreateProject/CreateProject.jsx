@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
+import { getProjectConfig } from "../../api/config";
+import { createProject } from "../../api/projects";
 import "./CreateProject.css";
 
 export default function CreateProject() {
@@ -41,23 +43,24 @@ export default function CreateProject() {
     demoLink: "",
   });
 
-  // Fetch config from backend when page loads
+  // Fetch config from backend once when the page loads
   useEffect(() => {
-    console.log("Current section changed:", currentSection);
     const fetchConfig = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/config/project-config");
-        const data = await response.json();
+        const data = await getProjectConfig();
         setConfig(data);
-      } catch (err) {
-        console.error("Failed to load config:", err);
+      } catch {
         setError("Failed to load project configuration");
       } finally {
         setConfigLoading(false);
       }
     };
-    window.scrollTo({ top: 0, behavior: "smooth" });
     fetchConfig();
+  }, []);
+
+  // Scroll to top whenever the wizard moves to a new section
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentSection]);
 
   const handleChange = (e) => {
@@ -134,9 +137,7 @@ export default function CreateProject() {
 
   const nextSection = () => {
     if (validateSection()) {
-      console.log("Before:", currentSection);
       setCurrentSection(prev => {
-        console.log("Setting to:", prev + 1);
         return Math.min(prev + 1, totalSections);
       });
     }
@@ -149,35 +150,19 @@ export default function CreateProject() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("handleSubmit called");
     if (!validateSection()) return;
-    
+
     setLoading(true);
     setError("");
-    
+
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          totalMembers: getTotalMembers()
-        })
+      await createProject({
+        ...formData,
+        totalMembers: getTotalMembers()
       });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to create project");
-      }
-      console.log("handleSubmit called");
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message || "Something went wrong");
+      setError(err.response?.data?.message || "Something went wrong");
       setLoading(false);
     }
   };
@@ -418,7 +403,7 @@ export default function CreateProject() {
         return null;
     }
   };
-  console.log("Rendering section:", currentSection);
+
   return (
     <div className="create-project-page">
       <Navbar />

@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getNotifications, markAsRead, markAllAsRead } from "../../api/notifications";
+import { clearSession } from "../../utils/session";
 import "./Navbar.css";
 
 export default function Navbar() {
@@ -7,13 +9,46 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [notifications] = useState([
-    { id: 1, text: "John wants to join your project", time: "2 min ago", unread: true },
-    { id: 2, text: "Your project 'E-commerce App' has a new applicant", time: "1 hour ago", unread: true },
-    { id: 3, text: "Sarah invited you to collaborate", time: "3 hours ago", unread: false },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        const res = await getNotifications();
+        setNotifications(res.data || []);
+      } catch {
+        // Leave the bell empty if notifications can't be loaded.
+      }
+    };
+    loadNotifications();
+  }, []);
+
+  const handleOpenNotifications = () => {
+    setShowNotifications((show) => !show);
+  };
+
+  const handleNotificationClick = async (notification) => {
+    if (notification.isRead) return;
+    setNotifications((items) =>
+      items.map((n) => (n._id === notification._id ? { ...n, isRead: true } : n))
+    );
+    try {
+      await markAsRead(notification._id);
+    } catch {
+      // Non-critical; the badge will just be slightly stale until next reload.
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    setNotifications((items) => items.map((n) => ({ ...n, isRead: true })));
+    try {
+      await markAllAsRead();
+    } catch {
+      // Non-critical; the badge will just be slightly stale until next reload.
+    }
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -24,8 +59,7 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearSession();
     navigate("/");
   };
 
@@ -82,29 +116,33 @@ export default function Navbar() {
 
         {/* Notifications Bell */}
         <div className="notifications-container">
-          <button 
-            className="notification-btn" 
-            onClick={() => setShowNotifications(!showNotifications)}
+          <button
+            className="notification-btn"
+            onClick={handleOpenNotifications}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            {notifications.some(n => n.unread) && <span className="notification-badge"></span>}
+            {notifications.some(n => !n.isRead) && <span className="notification-badge"></span>}
           </button>
 
           {showNotifications && (
             <div className="notifications-dropdown">
               <div className="notifications-header">
                 <h3>Notifications</h3>
-                <button className="mark-all-read">Mark all read</button>
+                <button className="mark-all-read" onClick={handleMarkAllRead}>Mark all read</button>
               </div>
               <div className="notifications-list">
                 {notifications.length > 0 ? (
                   notifications.map(notif => (
-                    <div key={notif.id} className={`notification-item ${notif.unread ? 'unread' : ''}`}>
-                      <div className="notification-text">{notif.text}</div>
-                      <div className="notification-time">{notif.time}</div>
+                    <div
+                      key={notif._id}
+                      className={`notification-item ${!notif.isRead ? 'unread' : ''}`}
+                      onClick={() => handleNotificationClick(notif)}
+                    >
+                      <div className="notification-text">{notif.message}</div>
+                      <div className="notification-time">{new Date(notif.createdAt).toLocaleString()}</div>
                     </div>
                   ))
                 ) : (

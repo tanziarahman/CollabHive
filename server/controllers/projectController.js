@@ -2,6 +2,7 @@ import Project from '../models/Project.js';
 import User from '../models/User.js';
 import { generateEmbedding } from '../services/embeddingService.js';
 import { cosineSimilarity } from '../utils/cosineSimilarity.js';
+import { createNotification } from '../services/notificationService.js';
 
 // @desc    Create a new project
 // @route   POST /api/projects
@@ -60,6 +61,19 @@ export const createProject = async (req, res) => {
       skillsEmbedding,
     });
 
+    // Notify followers so a new project shows up in their notifications/feed
+    await Promise.all(
+      (req.user.followers || []).map((followerId) =>
+        createNotification({
+          recipient: followerId,
+          sender: req.user._id,
+          type: 'new_project',
+          project: project._id,
+          message: `${req.user.fullName} posted a new project: "${project.title}"`,
+        })
+      )
+    );
+
     res.status(201).json({
       success: true,
       message: 'Project created successfully',
@@ -112,6 +126,28 @@ export const getProjectById = async (req, res) => {
     });
   } catch (error) {
     console.error('Get project by ID error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get projects posted by users the logged-in user follows
+// @route   GET /api/projects/feed
+// @access  Private
+export const getProjectFeed = async (req, res) => {
+  try {
+    const me = await User.findById(req.user._id).select('following');
+
+    const projects = await Project.find({ createdBy: { $in: me.following } })
+      .populate('createdBy', 'fullName username profilePicture')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: projects.length,
+      data: projects,
+    });
+  } catch (error) {
+    console.error('Get project feed error:', error);
     res.status(500).json({ message: error.message });
   }
 };

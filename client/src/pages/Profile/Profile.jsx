@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getMe } from "../../api/auth";
+import { updateProfile, getConnections } from "../../api/users";
 import "./Profile.css";
 
-const JOB_STATUSES = ["Employed", "Unemployed", "Student"];
+const AVAILABILITY_OPTIONS = ["Available", "Busy", "Open to Offers"];
 const TABS = ["Info", "Education", "About", "Résumé"];
 
 function TagField({ label, placeholder, values, onAdd, onRemove }) {
@@ -66,7 +68,7 @@ export default function Profile() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("Employed");
+  const [status, setStatus] = useState("Available");
   const [jobTitle, setJobTitle] = useState("");
 
   const [school, setSchool] = useState("");
@@ -78,6 +80,9 @@ export default function Profile() {
   const [interests, setInterests] = useState([]);
   const [skills, setSkills] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
   const [showAllSidebarProjects, setShowAllSidebarProjects] = useState(false);
   const [projectDraft, setProjectDraft] = useState({
     name: "",
@@ -90,22 +95,39 @@ export default function Profile() {
   const [connectionCounts, setConnectionCounts] = useState({ followers: 0, following: 0 });
 
   useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const me = await getMe();
+        setName(me.fullName || "");
+        setEmail(me.email || "");
+        setStatus(me.availability || "Available");
+        setAboutMe(me.bio || "");
+        setLinkedinProfile(me.linkedinURL || "");
+        setInterests(me.interests || []);
+        setSkills(me.skills || []);
+        if (me.profilePicture) setPhotoUrl(me.profilePicture);
+      } catch {
+        // Fall back to whatever was cached at login; fields stay editable either way.
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    loadProfile();
+  }, []);
+
+  useEffect(() => {
     const loadCounts = async () => {
       try {
-        const headers = { Authorization: `Bearer ${localStorage.getItem("token")}` };
         const [followers, following] = await Promise.all([
-          fetch("http://localhost:5000/api/users/connections/followers", { headers }),
-          fetch("http://localhost:5000/api/users/connections/following", { headers }),
+          getConnections("followers"),
+          getConnections("following"),
         ]);
-        if (!followers.ok || !following.ok) throw new Error();
-        const [followerList, followingList] = await Promise.all([followers.json(), following.json()]);
-        setConnectionCounts({ followers: followerList.length, following: followingList.length });
+        setConnectionCounts({ followers: followers.length, following: following.length });
       } catch {
         setConnectionCounts({ followers: 0, following: 0 });
       }
     };
-    const timer = window.setTimeout(loadCounts, 0);
-    return () => window.clearTimeout(timer);
+    loadCounts();
   }, []);
 
   useEffect(() => {
@@ -113,11 +135,7 @@ export default function Profile() {
     const loadConnections = async () => {
       setConnectionsLoading(true);
       try {
-        const response = await fetch(`http://localhost:5000/api/users/connections/${connectionType}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
-        if (!response.ok) throw new Error();
-        const people = await response.json();
+        const people = await getConnections(connectionType);
         setConnectionList(people);
         setConnectionCounts((counts) => ({ ...counts, [connectionType]: people.length }));
       } catch {
@@ -126,9 +144,28 @@ export default function Profile() {
         setConnectionsLoading(false);
       }
     };
-    const timer = window.setTimeout(loadConnections, 0);
-    return () => window.clearTimeout(timer);
+    loadConnections();
   }, [connectionType]);
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    setSaveMessage("");
+    try {
+      await updateProfile({
+        bio: aboutMe,
+        linkedinURL: linkedinProfile,
+        interests,
+        skills,
+        availability: status,
+      });
+      setSaveMessage("Saved!");
+    } catch (err) {
+      setSaveMessage(err.response?.data?.message || "Could not save profile.");
+    } finally {
+      setSaving(false);
+      window.setTimeout(() => setSaveMessage(""), 2500);
+    }
+  };
 
   const addProject = () => {
     const v = projectDraft.name.trim();
@@ -332,12 +369,12 @@ export default function Profile() {
               </button>
             </div>
 
-            <button type="button" className="edit-profile-btn">
+            <button type="button" className="edit-profile-btn" disabled={saving} onClick={handleSaveProfile}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 20h9" />
                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
               </svg>
-              Edit Profile
+              {saving ? "Saving..." : saveMessage || "Save Profile"}
             </button>
 
             <div className="stat-row">
@@ -426,7 +463,7 @@ export default function Profile() {
                   <div className="field-grid">
                     <div className="field">
                       <label className="field-label">Name</label>
-                      <input type="text" value={name} placeholder="Full name" onChange={(e) => setName(e.target.value)} />
+                      <input type="text" value={name} placeholder="Full name" readOnly title="Name can't be changed here" />
                     </div>
                     <div className="field">
                       <label className="field-label">Phone number</label>
@@ -434,7 +471,7 @@ export default function Profile() {
                     </div>
                     <div className="field">
                       <label className="field-label">Email</label>
-                      <input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} />
+                      <input type="email" value={email} placeholder="you@example.com" readOnly title="Email can't be changed here" />
                     </div>
                   </div>
                 </div>
@@ -445,9 +482,9 @@ export default function Profile() {
                   </h3>
                   <div className="field-grid">
                     <div className="field">
-                      <label className="field-label">Status</label>
+                      <label className="field-label">Availability</label>
                       <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                        {JOB_STATUSES.map((s) => (
+                        {AVAILABILITY_OPTIONS.map((s) => (
                           <option key={s} value={s}>
                             {s}
                           </option>
@@ -460,7 +497,6 @@ export default function Profile() {
                         type="text"
                         value={jobTitle}
                         placeholder="e.g. Senior Architect"
-                        disabled={status === "Unemployed"}
                         onChange={(e) => setJobTitle(e.target.value)}
                       />
                     </div>

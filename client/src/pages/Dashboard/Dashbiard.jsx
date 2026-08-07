@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
+import { getMe } from "../../api/auth";
+import { getProjectFeed, createJoinRequest } from "../../api/projects";
+import { getSuggestions, sendFollowRequest } from "../../api/users";
 import "./Dashboard.css";
 
 export default function Dashboard() {
@@ -18,136 +21,44 @@ export default function Dashboard() {
   const [applyingProject, setApplyingProject] = useState(null);
 
   async function fetchDashboard() {
-    try {
-      const token = localStorage.getItem("token");
+    setLoading(true);
 
-      const userResponse = await fetch(
-        "http://localhost:5000/api/auth/me",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    // Each piece loads independently so one failing doesn't wipe out the others.
+    const [userResult, feedResult, suggestionsResult] = await Promise.allSettled([
+      getMe(),
+      getProjectFeed(),
+      getSuggestions(),
+    ]);
 
-      if (!userResponse.ok) {
-        throw new Error();
-      }
-
-      const userData = await userResponse.json();
-      setUser(userData);
-
-      const projectResponse = await fetch(
-        "http://localhost:5000/api/projects/recommended",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!projectResponse.ok) {
-        throw new Error();
-      }
-
-      const projectData = await projectResponse.json();
-
-      setProjects(projectData);
-      const suggestionsResponse = await fetch(
-        "http://localhost:5000/api/users/suggestions",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (suggestionsResponse.ok) setSuggestions(await suggestionsResponse.json());
-      setError("");
-    } catch {
-      console.log("Backend unavailable. Loading demo projects...");
-
-      setError("");
-
-      setUser({
-        name: "Tanzia Rahman",
-        skills: ["React", "Node.js", "MongoDB", "Express"],
-        techStack: ["JWT", "Git", "Docker"],
-      });
-
-      setProjects([
-        {
-          _id: "1",
-          title: "CollabHive",
-          creator: {
-            name: "Ayesha Khan",
-          },
-          description:
-            "CollabHive is a collaborative platform where students and developers can find teammates based on their skills, manage projects, and build their portfolios together. The platform includes intelligent project recommendations, role-based applications, and project tracking.",
-
-          skillsRequired: ["React", "Node.js", "Express", "MongoDB"],
-
-          techStack: ["React", "Express", "MongoDB", "JWT"],
-
-          githubRepo: "https://github.com/example/collabhive",
-
-          demoLink: "https://collabhive-demo.vercel.app",
-
-          roleAllocations: [
-            { role: "Frontend Developer", count: 2 },
-            { role: "Backend Developer", count: 1 },
-            { role: "UI/UX Designer", count: 1 },
-          ],
-        },
-
-        {
-          _id: "2",
-          title: "AI Resume Analyzer",
-
-          creator: {
-            name: "Nafis Ahmed",
-          },
-
-          description:
-            "An AI-powered resume analyzer that evaluates resumes against job descriptions, provides ATS scores, highlights missing skills, and generates suggestions for improvement using Large Language Models.",
-
-          skillsRequired: ["Python", "React", "Machine Learning"],
-
-          techStack: ["React", "FastAPI", "Python", "OpenAI API", "PostgreSQL"],
-
-          demoLink: "https://resume-ai-demo.vercel.app",
-
-          roleAllocations: [
-            { role: "Machine Learning Engineer", count: 1 },
-            { role: "Frontend Developer", count: 1 },
-            { role: "Backend Developer", count: 2 },
-          ],
-        },
-      ]);
-      setSuggestions([
-        { _id: "sarah-demo", fullName: "Sarah Jenkins", username: "sarahjenkins", skills: ["React", "TypeScript", "Tailwind"], experienceLevel: "Intermediate" },
-        { _id: "david-demo", fullName: "David Chen", username: "davidchen", skills: ["Node.js", "PostgreSQL", "AWS"], experienceLevel: "Advanced" },
-        { _id: "elena-demo", fullName: "Elena Rodriguez", username: "elenar", skills: ["Figma", "Design Systems", "Prototyping"], experienceLevel: "Intermediate" },
-        { _id: "michael-demo", fullName: "Michael Brooks", username: "michaelb", skills: ["Python", "Django", "Docker"], experienceLevel: "Advanced" },
-        { _id: "aisha-demo", fullName: "Aisha Rahman", username: "aishar", skills: ["UI/UX", "Figma", "Research"], experienceLevel: "Intermediate" },
-      ]);
-    } finally {
-      setLoading(false);
+    if (userResult.status === "fulfilled") {
+      setUser(userResult.value);
+    } else {
+      setError("Could not load your account. Please try logging in again.");
     }
+
+    if (feedResult.status === "fulfilled") {
+      setProjects(feedResult.value.data || []);
+    }
+
+    if (suggestionsResult.status === "fulfilled") {
+      setSuggestions(suggestionsResult.value || []);
+    }
+
+    setLoading(false);
   }
 
   useEffect(() => {
-    const loadDashboard = window.setTimeout(fetchDashboard, 0);
-    return () => window.clearTimeout(loadDashboard);
-  }, []); // fetchDashboard is intentionally run once when the page opens.
+    fetchDashboard();
+  }, []);
 
   const handleFollow = async (person) => {
     setFollowingId(person._id);
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${person._id}/follow-request`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      if (!response.ok) throw new Error();
-    } catch {
-      // Demo suggestions remain interactive without an active API.
-    } finally {
+      await sendFollowRequest(person._id);
       setSuggestions((items) => items.filter((item) => item._id !== person._id));
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not send follow request.");
+    } finally {
       setFollowingId(null);
     }
   };
@@ -177,35 +88,11 @@ export default function Dashboard() {
 
     try {
       setApplyingProject(projectId);
-
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        "http://localhost:5000/api/applications",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            projectId,
-            role,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message);
-      }
-
+      await createJoinRequest(projectId, { role });
       alert("Application submitted successfully.");
-
       setExpandedProject(null);
     } catch (err) {
-      alert(err.message || "Application failed.");
+      alert(err.response?.data?.message || "Application failed.");
     } finally {
       setApplyingProject(null);
     }
@@ -245,10 +132,10 @@ export default function Dashboard() {
 
           <section className="dashboard-hero">
             <div className="hero-left">
-              <h1>Welcome back{user?.fullName || user?.name ? `, ${user.fullName || user.name}` : ""} 👋</h1>
+              <h1>Welcome back{user?.fullName ? `, ${user.fullName}` : ""} 👋</h1>
 
               <p>
-                Discover projects that match your skills and start
+                See what the people you follow are building, and start
                 collaborating with other developers.
               </p>
             </div>
@@ -289,9 +176,9 @@ export default function Dashboard() {
 
           {projects.length === 0 ? (
             <div className="empty-state">
-              <h2>No Matching Projects</h2>
+              <h2>No Projects Yet</h2>
 
-              <p>Update your profile with more skills to discover projects.</p>
+              <p>Follow other collaborators to see the projects they post here.</p>
             </div>
           ) : (
             <div className="projects-grid">
@@ -304,7 +191,7 @@ export default function Dashboard() {
                       <h2>{project.title}</h2>
 
                       <p className="creator">
-                        Created by {project.creator?.name}
+                        Created by {project.createdBy?.fullName}
                       </p>
                     </div>
 
