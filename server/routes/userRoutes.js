@@ -1,6 +1,7 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
 import {
+  updateProfile,
   getSuggestions,
   sendFollowRequest,
   getFollowRequests,
@@ -10,6 +11,8 @@ import {
 } from '../controllers/userController.js';
 
 const router = express.Router();
+
+router.put('/profile', protect, updateProfile);
 
 router.get('/suggestions', protect, getSuggestions);
 router.get('/follow-requests', protect, getFollowRequests);
