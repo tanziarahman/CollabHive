@@ -124,7 +124,7 @@ export default function Navbar() {
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            {notifications.some(n => !n.isRead) && <span className="notification-badge"></span>}
+            {notifications.some((n) => !n.isRead) && <span className="notification-badge"></span>}
           </button>
 
           {showNotifications && (
@@ -135,10 +135,10 @@ export default function Navbar() {
               </div>
               <div className="notifications-list">
                 {notifications.length > 0 ? (
-                  notifications.map(notif => (
+                  notifications.map((notif) => (
                     <div
                       key={notif._id}
-                      className={`notification-item ${!notif.isRead ? 'unread' : ''}`}
+                      className={`notification-item ${!notif.isRead ? "unread" : ""}`}
                       onClick={() => handleNotificationClick(notif)}
                     >
                       <div className="notification-text">{notif.message}</div>
@@ -146,7 +146,7 @@ export default function Navbar() {
                     </div>
                   ))
                 ) : (
-                  <div className="no-notifications">No notifications</div>
+                  <div className="no-notifications">No notifications yet</div>
                 )}
               </div>
             </div>
@@ -155,8 +155,8 @@ export default function Navbar() {
 
         {/* Profile Avatar & Dropdown */}
         <div className="profile-container">
-          <button 
-            className="profile-avatar" 
+          <button
+            className="profile-avatar"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
             {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase() || "U"}
