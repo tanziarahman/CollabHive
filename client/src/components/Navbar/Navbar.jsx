@@ -2,15 +2,80 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Navbar.css";
 
+const NOTIF_CONFIG = {
+  follow: {
+    label: (n) => (
+      <>
+        <strong>{n.actorName}</strong> started following you
+      </>
+    ),
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <line x1="19" y1="8" x2="19" y2="14" />
+        <line x1="16" y1="11" x2="22" y2="11" />
+      </svg>
+    ),
+    className: "notif-follow",
+  },
+  hire: {
+    label: (n) => (
+      <>
+        <strong>{n.actorName}</strong> hired you for <strong>{n.projectName}</strong>
+      </>
+    ),
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="2" y="7" width="20" height="14" rx="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </svg>
+    ),
+    className: "notif-hire",
+  },
+  applied: {
+    label: (n) => (
+      <>
+        <strong>{n.actorName}</strong> applied to <strong>{n.projectName}</strong>
+      </>
+    ),
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <path d="M9 15l2 2 4-4" />
+      </svg>
+    ),
+    className: "notif-applied",
+  },
+  invite: {
+    label: (n) => (
+      <>
+        <strong>{n.actorName}</strong> invited you to collaborate on <strong>{n.projectName}</strong>
+      </>
+    ),
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    ),
+    className: "notif-invite",
+  },
+};
+
 export default function Navbar() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [notifications] = useState([
-    { id: 1, text: "John wants to join your project", time: "2 min ago", unread: true },
-    { id: 2, text: "Your project 'E-commerce App' has a new applicant", time: "1 hour ago", unread: true },
-    { id: 3, text: "Sarah invited you to collaborate", time: "3 hours ago", unread: false },
+  const [notifications, setNotifications] = useState([
+    { id: 1, type: "applied", actorName: "John", projectName: "E-commerce App", time: "2 min ago", unread: true },
+    { id: 2, type: "hire", actorName: "Maria Chen", projectName: "Brand Identity Design", time: "1 hour ago", unread: true },
+    { id: 3, type: "invite", actorName: "Sarah", projectName: "Mobile Banking App", time: "3 hours ago", unread: false },
+    { id: 4, type: "follow", actorName: "Alex Rivera", time: "1 day ago", unread: false },
   ]);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -27,6 +92,10 @@ export default function Navbar() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/");
+  };
+
+  const handleMarkAllRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
   };
 
   return (
@@ -82,33 +151,47 @@ export default function Navbar() {
 
         {/* Notifications Bell */}
         <div className="notifications-container">
-          <button 
-            className="notification-btn" 
+          <button
+            className="notification-btn"
             onClick={() => setShowNotifications(!showNotifications)}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            {notifications.some(n => n.unread) && <span className="notification-badge"></span>}
+            {notifications.some((n) => n.unread) && <span className="notification-badge"></span>}
           </button>
 
           {showNotifications && (
             <div className="notifications-dropdown">
               <div className="notifications-header">
                 <h3>Notifications</h3>
-                <button className="mark-all-read">Mark all read</button>
+                <button className="mark-all-read" onClick={handleMarkAllRead}>
+                  Mark all read
+                </button>
               </div>
               <div className="notifications-list">
                 {notifications.length > 0 ? (
-                  notifications.map(notif => (
-                    <div key={notif.id} className={`notification-item ${notif.unread ? 'unread' : ''}`}>
-                      <div className="notification-text">{notif.text}</div>
-                      <div className="notification-time">{notif.time}</div>
-                    </div>
-                  ))
+                  notifications.map((notif) => {
+                    const config = NOTIF_CONFIG[notif.type];
+                    return (
+                      <div
+                        key={notif.id}
+                        className={`notification-item ${notif.unread ? "unread" : ""}`}
+                      >
+                        <div className={`notification-icon ${config.className}`}>
+                          {config.icon}
+                        </div>
+                        <div className="notification-body">
+                          <div className="notification-text">{config.label(notif)}</div>
+                          <div className="notification-time">{notif.time}</div>
+                        </div>
+                        {notif.unread && <span className="notification-dot"></span>}
+                      </div>
+                    );
+                  })
                 ) : (
-                  <div className="no-notifications">No notifications</div>
+                  <div className="no-notifications">No notifications yet</div>
                 )}
               </div>
             </div>
@@ -117,8 +200,8 @@ export default function Navbar() {
 
         {/* Profile Avatar & Dropdown */}
         <div className="profile-container">
-          <button 
-            className="profile-avatar" 
+          <button
+            className="profile-avatar"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
             {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase() || "U"}
