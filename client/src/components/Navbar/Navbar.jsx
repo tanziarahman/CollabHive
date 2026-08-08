@@ -4,6 +4,111 @@ import { getNotifications, markAsRead, markAllAsRead } from "../../api/notificat
 import { clearSession } from "../../utils/session";
 import "./Navbar.css";
 
+// Maps the backend's real notification types to an icon + color category.
+// Falls back to a generic bell icon for any type not listed here.
+const NOTIF_STYLES = {
+  follow_request: {
+    className: "notif-follow",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <line x1="19" y1="8" x2="19" y2="14" />
+        <line x1="16" y1="11" x2="22" y2="11" />
+      </svg>
+    ),
+  },
+  follow_accepted: {
+    className: "notif-follow",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <polyline points="17 8 19 10 23 6" />
+      </svg>
+    ),
+  },
+  join_request: {
+    className: "notif-applied",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <path d="M9 15l2 2 4-4" />
+      </svg>
+    ),
+  },
+  new_project: {
+    className: "notif-applied",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <path d="M9 15l2 2 4-4" />
+      </svg>
+    ),
+  },
+  invite: {
+    className: "notif-invite",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    ),
+  },
+  request_accepted: {
+    className: "notif-hire",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="2" y="7" width="20" height="14" rx="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </svg>
+    ),
+  },
+  invite_accepted: {
+    className: "notif-hire",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="2" y="7" width="20" height="14" rx="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </svg>
+    ),
+  },
+  request_rejected: {
+    className: "notif-rejected",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="15" y1="9" x2="9" y2="15" />
+        <line x1="9" y1="9" x2="15" y2="15" />
+      </svg>
+    ),
+  },
+  invite_rejected: {
+    className: "notif-rejected",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="15" y1="9" x2="9" y2="15" />
+        <line x1="9" y1="9" x2="15" y2="15" />
+      </svg>
+    ),
+  },
+};
+
+const DEFAULT_NOTIF_STYLE = {
+  className: "notif-follow",
+  icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  ),
+};
+
 export default function Navbar() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -135,16 +240,23 @@ export default function Navbar() {
               </div>
               <div className="notifications-list">
                 {notifications.length > 0 ? (
-                  notifications.map((notif) => (
-                    <div
-                      key={notif._id}
-                      className={`notification-item ${!notif.isRead ? "unread" : ""}`}
-                      onClick={() => handleNotificationClick(notif)}
-                    >
-                      <div className="notification-text">{notif.message}</div>
-                      <div className="notification-time">{new Date(notif.createdAt).toLocaleString()}</div>
-                    </div>
-                  ))
+                  notifications.map((notif) => {
+                    const style = NOTIF_STYLES[notif.type] || DEFAULT_NOTIF_STYLE;
+                    return (
+                      <div
+                        key={notif._id}
+                        className={`notification-item ${!notif.isRead ? "unread" : ""}`}
+                        onClick={() => handleNotificationClick(notif)}
+                      >
+                        <div className={`notification-icon ${style.className}`}>{style.icon}</div>
+                        <div className="notification-body">
+                          <div className="notification-text">{notif.message}</div>
+                          <div className="notification-time">{new Date(notif.createdAt).toLocaleString()}</div>
+                        </div>
+                        {!notif.isRead && <span className="notification-dot"></span>}
+                      </div>
+                    );
+                  })
                 ) : (
                   <div className="no-notifications">No notifications yet</div>
                 )}

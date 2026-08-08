@@ -278,6 +278,11 @@
   color: #B79CF0;
 }
 
+.notif-rejected {
+  background: rgba(220, 53, 69, 0.15);
+  color: #ff8a8a;
+}
+
 .notification-body {
   flex: 1;
   min-width: 0;
