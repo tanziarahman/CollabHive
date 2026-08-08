@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Navbar from "../../components/Navbar/Navbar";
 import { getMe } from "../../api/auth";
 import { updateProfile, getConnections } from "../../api/users";
 import "./Profile.css";
@@ -284,54 +285,11 @@ export default function Profile() {
       .join("") || "?";
 
   return (
-    <div className="profile-page">
-      <div className="rail">
-        <div className="rail-logo">CH</div>
-        <div className="rail-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="7" />
-            <path d="M21 21l-4.3-4.3" />
-          </svg>
-        </div>
-        <div className="rail-icon active">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
-          </svg>
-        </div>
-        <div className="rail-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-        </div>
-        <div className="rail-spacer" />
-        <div className="rail-avatar">{initials !== "?" ? initials[0] : "U"}</div>
-      </div>
+    <>
+      <Navbar />
 
+      <div className="profile-page">
       <div className="page-body">
-        <div className="topnav">
-          <div className="topnav-logo" aria-label="CollabHive">
-            <span>Collab</span>Hive
-          </div>
-          <div className="topnav-search">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="7" />
-              <path d="M21 21l-4.3-4.3" />
-            </svg>
-            <input type="text" placeholder="Search users or projects by skill or name..." />
-          </div>
-          <button type="button" className="topnav-create">
-            + Post Project
-          </button>
-          <div className="topnav-bell">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-          </div>
-          <div className="topnav-avatar">{initials !== "?" ? initials[0] : "U"}</div>
-        </div>
-
         <div className="banner" />
 
         <div className="columns">
@@ -721,6 +679,7 @@ export default function Profile() {
           </section>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

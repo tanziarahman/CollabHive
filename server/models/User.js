@@ -131,6 +131,20 @@ const userSchema = new mongoose.Schema(
         ref: 'JoinRequest',
       },
     ],
+
+    // ⚙️ Settings
+    settings: {
+      notifyFollowRequests: { type: Boolean, default: true },
+      notifyFollowAccepted: { type: Boolean, default: true },
+      notifyJoinRequests: { type: Boolean, default: true },
+      notifyJoinRequestUpdates: { type: Boolean, default: true },
+      discoverable: { type: Boolean, default: true },
+      autoAcceptFollowRequests: { type: Boolean, default: false },
+    },
+    isDeactivated: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true, // adds createdAt and updatedAt automatically
