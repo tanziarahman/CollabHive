@@ -25,6 +25,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
     skills,
     interests,
     experienceLevel,
+    availability,
   } = req.body;
 
   if (bio !== undefined) user.bio = bio;
@@ -33,6 +34,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
   if (githubURL !== undefined) user.githubURL = githubURL;
   if (linkedinURL !== undefined) user.linkedinURL = linkedinURL;
   if (experienceLevel !== undefined) user.experienceLevel = experienceLevel;
+  if (availability !== undefined) user.availability = availability;
 
   let skillsChanged = false;
 
@@ -74,7 +76,10 @@ export const getSuggestions = asyncHandler(async (req, res) => {
     ...me.followRequestsSent,
   ];
 
-  const suggestions = await User.find({ _id: { $nin: excluded } })
+  const suggestions = await User.find({
+    _id: { $nin: excluded },
+    'settings.discoverable': { $ne: false },
+  })
     .select(publicFields)
     .limit(6);
   res.json(suggestions);
@@ -93,19 +98,41 @@ export const sendFollowRequest = asyncHandler(async (req, res) => {
 
   const alreadyConnected = target.followers.some((id) => id.equals(req.user._id));
   const requestExists = target.followRequestsReceived.some((id) => id.equals(req.user._id));
-  if (!alreadyConnected && !requestExists) {
-    target.followRequestsReceived.push(req.user._id);
+
+  if (alreadyConnected || requestExists) {
+    res.json({ message: alreadyConnected ? 'Already following this user' : 'Follow request sent' });
+    return;
+  }
+
+  // Skip the pending-request step entirely if the target has opted into auto-accepting.
+  if (target.settings?.autoAcceptFollowRequests) {
+    target.followers.addToSet(req.user._id);
     await target.save();
-    await User.findByIdAndUpdate(req.user._id, { $addToSet: { followRequestsSent: target._id } });
+    await User.findByIdAndUpdate(req.user._id, { $addToSet: { following: target._id } });
 
     await createNotification({
       recipient: target._id,
       sender: req.user._id,
-      type: 'follow_request',
-      message: `${req.user.fullName} wants to follow you`,
+      type: 'follow_accepted',
+      message: `${req.user.fullName} started following you`,
     });
+
+    res.json({ message: 'You are now following this user' });
+    return;
   }
-  res.json({ message: alreadyConnected ? 'Already following this user' : 'Follow request sent' });
+
+  target.followRequestsReceived.push(req.user._id);
+  await target.save();
+  await User.findByIdAndUpdate(req.user._id, { $addToSet: { followRequestsSent: target._id } });
+
+  await createNotification({
+    recipient: target._id,
+    sender: req.user._id,
+    type: 'follow_request',
+    message: `${req.user.fullName} wants to follow you`,
+  });
+
+  res.json({ message: 'Follow request sent' });
 });
 
 export const getFollowRequests = asyncHandler(async (req, res) => {

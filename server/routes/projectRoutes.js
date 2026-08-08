@@ -3,6 +3,7 @@ import {
   createProject,
   getProjects,
   getProjectById,
+  getProjectFeed,
   getUserProjects,
   updateProject,
   deleteProject,
@@ -22,11 +23,14 @@ const router = express.Router();
 
 // Public routes
 router.get('/', getProjects);
-router.get('/:id', getProjectById);
 
 // Private routes (require authentication)
 router.post('/', protect, createProject);
+router.get('/feed', protect, getProjectFeed);
 router.get('/user/my-projects', protect, getUserProjects);
+
+// Public route with a param — must come after '/feed' and other literal paths
+router.get('/:id', getProjectById);
 router.put('/:id', protect, isProjectOwner, updateProject);
 router.delete('/:id', protect, isProjectOwner, deleteProject);
 router.get('/:id/suggestions', protect, isProjectOwner, getSuggestedCollaborators);

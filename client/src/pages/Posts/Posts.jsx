@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
+import { getMyProjects, deleteProject, getProjectJoinRequests } from "../../api/projects";
+import { acceptJoinRequest, rejectJoinRequest } from "../../api/joinRequests";
 import "./Posts.css";
 
 export default function Posts() {
@@ -8,6 +10,9 @@ export default function Posts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeProject, setActiveProject] = useState(null);
+  const [activeProjectRequests, setActiveProjectRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -19,129 +24,62 @@ export default function Posts() {
       const restored = projects.find(
         (p) => p._id === location.state.activeProjectId
       );
-      if (restored) setActiveProject(restored);
+      if (restored) openApplicants(restored);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projects, location.state]);
 
   const fetchMyProjects = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        "http://localhost:5000/api/projects/my-projects",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) throw new Error();
-
-      const data = await response.json();
-
-      setProjects(data);
-    } catch {
-      // Demo Data
-      setProjects([
-        {
-          _id: "1",
-          title: "CollabHive",
-          description:
-            "Developer collaboration platform helping students build projects together.",
-          createdAt: "2 days ago",
-          status: "Open",
-          category: "Web",
-          skillsRequired: ["React", "Node.js", "MongoDB", "Express"],
-          roleAllocations: [
-            { role: "Frontend Developer", count: 2 },
-            { role: "Backend Developer", count: 1 },
-          ],
-          githubRepo: "https://github.com/example/collabhive",
-          demoLink: "https://collabhive-demo.vercel.app",
-          applicants: 6,
-          applicantsList: [
-            {
-              _id: "a1",
-              name: "Sarah Ahmed",
-              role: "Frontend Developer",
-              status: "pending",
-            },
-            {
-              _id: "a2",
-              name: "Rafiq Islam",
-              role: "Backend Developer",
-              status: "pending",
-            },
-            {
-              _id: "a3",
-              name: "Meherin Chowdhury",
-              role: "Frontend Developer",
-              status: "pending",
-            },
-          ],
-        },
-        {
-          _id: "2",
-          title: "AI Resume Analyzer",
-          description: "AI powered resume analysis platform.",
-          createdAt: "5 days ago",
-          status: "Recruiting",
-          category: "AI",
-          skillsRequired: ["Python", "FastAPI", "React"],
-          roleAllocations: [
-            { role: "ML Engineer", count: 1 },
-            { role: "Frontend Developer", count: 1 },
-          ],
-          githubRepo: "https://github.com/example/resume-ai",
-          demoLink: "https://resume-ai-demo.vercel.app",
-          applicants: 3,
-          applicantsList: [
-            {
-              _id: "a4",
-              name: "Tanvir Hossain",
-              role: "ML Engineer",
-              status: "pending",
-            },
-            {
-              _id: "a5",
-              name: "Nusrat Jahan",
-              role: "Frontend Developer",
-              status: "pending",
-            },
-          ],
-        },
-      ]);
+      const data = await getMyProjects();
+      setProjects(data.data || []);
+      setError("");
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not load your projects.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApplicantDecision = (projectId, applicantId, decision) => {
-    setProjects((prev) =>
-      prev.map((p) =>
-        p._id !== projectId
-          ? p
-          : {
-              ...p,
-              applicantsList: p.applicantsList.map((a) =>
-                a._id === applicantId ? { ...a, status: decision } : a
-              ),
-            }
-      )
-    );
+  const openApplicants = async (project) => {
+    setActiveProject(project);
+    setLoadingRequests(true);
+    try {
+      const res = await getProjectJoinRequests(project._id);
+      setActiveProjectRequests((res.data || []).filter((r) => r.type === "request"));
+    } catch {
+      setActiveProjectRequests([]);
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
 
-    setActiveProject((prev) =>
-      prev && prev._id === projectId
-        ? {
-            ...prev,
-            applicantsList: prev.applicantsList.map((a) =>
-              a._id === applicantId ? { ...a, status: decision } : a
-            ),
-          }
-        : prev
-    );
+  const handleApplicantDecision = async (requestId, decision) => {
+    setActionLoadingId(requestId);
+    try {
+      if (decision === "accepted") {
+        await acceptJoinRequest(requestId);
+      } else {
+        await rejectJoinRequest(requestId);
+      }
+      setActiveProjectRequests((prev) =>
+        prev.map((r) => (r._id === requestId ? { ...r, status: decision } : r))
+      );
+    } catch (err) {
+      alert(err.response?.data?.message || "Action failed.");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleDelete = async (projectId) => {
+    if (!window.confirm("Delete this project? This cannot be undone.")) return;
+    try {
+      await deleteProject(projectId);
+      setProjects((prev) => prev.filter((p) => p._id !== projectId));
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not delete project.");
+    }
   };
 
   if (loading) {
@@ -185,10 +123,8 @@ export default function Posts() {
                 <div className="project-header">
                   <div>
                     <h2>{project.title}</h2>
-                    <p>Created {project.createdAt}</p>
+                    <p>Created {new Date(project.createdAt).toLocaleDateString()}</p>
                   </div>
-
-                  <span className="status">{project.status}</span>
                 </div>
 
                 <p className="description">{project.description}</p>
@@ -196,7 +132,7 @@ export default function Posts() {
                 <div className="section">
                   <h3>Required Skills</h3>
                   <div className="tags">
-                    {project.skillsRequired.map((skill) => (
+                    {(project.skillsRequired || []).map((skill) => (
                       <span key={skill}>{skill}</span>
                     ))}
                   </div>
@@ -205,7 +141,7 @@ export default function Posts() {
                 <div className="section">
                   <h3>Open Roles</h3>
                   <div className="roles">
-                    {project.roleAllocations.map((role) => (
+                    {(project.roleAllocations || []).map((role) => (
                       <div key={role.role} className="role">
                         <span>{role.role}</span>
                         <strong>{role.count}</strong>
@@ -229,14 +165,16 @@ export default function Posts() {
                 </div>
 
                 <div className="project-footer">
-                  <span>{project.applicants} Applicants</span>
+                  <span>{project.members?.length || 0} Members</span>
 
                   <div className="actions">
-                    <button onClick={() => setActiveProject(project)}>
+                    <button onClick={() => openApplicants(project)}>
                       View Applicants
                     </button>
 
-                    <button className="delete-btn">Delete</button>
+                    <button className="delete-btn" onClick={() => handleDelete(project._id)}>
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>
@@ -257,7 +195,7 @@ export default function Posts() {
             <div className="applicants-modal-header">
               <div>
                 <h2>{activeProject.title}</h2>
-                <p>{activeProject.applicantsList?.length || 0} Applicants</p>
+                <p>{activeProjectRequests.length} Applicants</p>
               </div>
 
               <button
@@ -269,88 +207,51 @@ export default function Posts() {
             </div>
 
             <div className="applicants-list">
-              {activeProject.applicantsList &&
-              activeProject.applicantsList.length > 0 ? (
-                activeProject.applicantsList.map((applicant) => (
-                  <div className="applicant-row" key={applicant._id}>
+              {loadingRequests ? (
+                <div className="no-applicants">Loading applicants...</div>
+              ) : activeProjectRequests.length > 0 ? (
+                activeProjectRequests.map((request) => (
+                  <div className="applicant-row" key={request._id}>
                     <div className="applicant-info">
-                      <span className="applicant-name">{applicant.name}</span>
-                      <span className="applicant-role">{applicant.role}</span>
+                      <span className="applicant-name">{request.applicant?.fullName}</span>
+                      <span className="applicant-role">{request.role}</span>
                     </div>
 
                     <div className="applicant-actions">
                       <Link
-                        to={`/profile/${applicant._id}`}
+                        to={`/profile/${request.applicant?._id}`}
                         className="view-link"
                         state={{ activeProjectId: activeProject._id }}
                       >
                         View Profile
                       </Link>
 
-                      {applicant.status === "pending" && (
+                      {request.status === "pending" && (
                         <>
                           <button
                             className="accept-btn"
-                            onClick={() =>
-                              handleApplicantDecision(
-                                activeProject._id,
-                                applicant._id,
-                                "accepted"
-                              )
-                            }
+                            disabled={actionLoadingId === request._id}
+                            onClick={() => handleApplicantDecision(request._id, "accepted")}
                           >
                             Accept
                           </button>
 
                           <button
                             className="reject-btn"
-                            onClick={() =>
-                              handleApplicantDecision(
-                                activeProject._id,
-                                applicant._id,
-                                "rejected"
-                              )
-                            }
+                            disabled={actionLoadingId === request._id}
+                            onClick={() => handleApplicantDecision(request._id, "rejected")}
                           >
                             Reject
                           </button>
                         </>
                       )}
 
-                      {applicant.status === "accepted" && (
-                        <span className="decision-badge accepted">
-                          Accepted
-                          <button
-                            className="undo-btn"
-                            onClick={() =>
-                              handleApplicantDecision(
-                                activeProject._id,
-                                applicant._id,
-                                "pending"
-                              )
-                            }
-                          >
-                            Undo
-                          </button>
-                        </span>
+                      {request.status === "accepted" && (
+                        <span className="decision-badge accepted">Accepted</span>
                       )}
 
-                      {applicant.status === "rejected" && (
-                        <span className="decision-badge rejected">
-                          Rejected
-                          <button
-                            className="undo-btn"
-                            onClick={() =>
-                              handleApplicantDecision(
-                                activeProject._id,
-                                applicant._id,
-                                "pending"
-                              )
-                            }
-                          >
-                            Undo
-                          </button>
-                        </span>
+                      {request.status === "rejected" && (
+                        <span className="decision-badge rejected">Rejected</span>
                       )}
                     </div>
                   </div>

@@ -23,6 +23,7 @@ const notificationSchema = new mongoose.Schema(
         'invite_rejected',
         'follow_request',
         'follow_accepted',
+        'new_project',
       ],
       required: true,
     },

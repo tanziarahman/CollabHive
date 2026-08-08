@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { login } from "../../api/auth";
+import { setSession } from "../../utils/session";
 import "./LoginPage.css";
 
 export default function LoginPage() {
@@ -23,23 +25,11 @@ export default function LoginPage() {
     setLoading(true);
     
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Invalid email or password");
-      }
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data));
+      const data = await login(formData);
+      setSession(data);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message || "Something went wrong");
+      setError(err.response?.data?.message || "Invalid username or password");
     } finally {
       setLoading(false);
     }

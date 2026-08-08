@@ -459,28 +459,28 @@
   .create-project-container {
     padding: 1.5rem;
   }
-  
+
   .form-section {
     padding: 1.5rem;
   }
-  
+
   .form-row {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .progress-steps {
     display: none;
   }
-  
+
   .step-label {
     display: none;
   }
-  
+
   .radio-group {
     flex-direction: column;
   }
-  
+
   .radio-label {
     width: 100%;
   }

@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getNotifications, markAsRead, markAllAsRead } from "../../api/notifications";
+import { clearSession } from "../../utils/session";
 import "./Navbar.css";
 
-const NOTIF_CONFIG = {
-  follow: {
-    label: (n) => (
-      <>
-        <strong>{n.actorName}</strong> started following you
-      </>
-    ),
+// Maps the backend's real notification types to an icon + color category.
+// Falls back to a generic bell icon for any type not listed here.
+const NOTIF_STYLES = {
+  follow_request: {
+    className: "notif-follow",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -17,28 +17,19 @@ const NOTIF_CONFIG = {
         <line x1="16" y1="11" x2="22" y2="11" />
       </svg>
     ),
-    className: "notif-follow",
   },
-  hire: {
-    label: (n) => (
-      <>
-        <strong>{n.actorName}</strong> hired you for <strong>{n.projectName}</strong>
-      </>
-    ),
+  follow_accepted: {
+    className: "notif-follow",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="2" y="7" width="20" height="14" rx="2" />
-        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <polyline points="17 8 19 10 23 6" />
       </svg>
     ),
-    className: "notif-hire",
   },
-  applied: {
-    label: (n) => (
-      <>
-        <strong>{n.actorName}</strong> applied to <strong>{n.projectName}</strong>
-      </>
-    ),
+  join_request: {
+    className: "notif-applied",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -46,14 +37,19 @@ const NOTIF_CONFIG = {
         <path d="M9 15l2 2 4-4" />
       </svg>
     ),
+  },
+  new_project: {
     className: "notif-applied",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <path d="M9 15l2 2 4-4" />
+      </svg>
+    ),
   },
   invite: {
-    label: (n) => (
-      <>
-        <strong>{n.actorName}</strong> invited you to collaborate on <strong>{n.projectName}</strong>
-      </>
-    ),
+    className: "notif-invite",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -62,8 +58,55 @@ const NOTIF_CONFIG = {
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
-    className: "notif-invite",
   },
+  request_accepted: {
+    className: "notif-hire",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="2" y="7" width="20" height="14" rx="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </svg>
+    ),
+  },
+  invite_accepted: {
+    className: "notif-hire",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="2" y="7" width="20" height="14" rx="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </svg>
+    ),
+  },
+  request_rejected: {
+    className: "notif-rejected",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="15" y1="9" x2="9" y2="15" />
+        <line x1="9" y1="9" x2="15" y2="15" />
+      </svg>
+    ),
+  },
+  invite_rejected: {
+    className: "notif-rejected",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="15" y1="9" x2="9" y2="15" />
+        <line x1="9" y1="9" x2="15" y2="15" />
+      </svg>
+    ),
+  },
+};
+
+const DEFAULT_NOTIF_STYLE = {
+  className: "notif-follow",
+  icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  ),
 };
 
 export default function Navbar() {
@@ -71,14 +114,46 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: "applied", actorName: "John", projectName: "E-commerce App", time: "2 min ago", unread: true },
-    { id: 2, type: "hire", actorName: "Maria Chen", projectName: "Brand Identity Design", time: "1 hour ago", unread: true },
-    { id: 3, type: "invite", actorName: "Sarah", projectName: "Mobile Banking App", time: "3 hours ago", unread: false },
-    { id: 4, type: "follow", actorName: "Alex Rivera", time: "1 day ago", unread: false },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        const res = await getNotifications();
+        setNotifications(res.data || []);
+      } catch {
+        // Leave the bell empty if notifications can't be loaded.
+      }
+    };
+    loadNotifications();
+  }, []);
+
+  const handleOpenNotifications = () => {
+    setShowNotifications((show) => !show);
+  };
+
+  const handleNotificationClick = async (notification) => {
+    if (notification.isRead) return;
+    setNotifications((items) =>
+      items.map((n) => (n._id === notification._id ? { ...n, isRead: true } : n))
+    );
+    try {
+      await markAsRead(notification._id);
+    } catch {
+      // Non-critical; the badge will just be slightly stale until next reload.
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    setNotifications((items) => items.map((n) => ({ ...n, isRead: true })));
+    try {
+      await markAllAsRead();
+    } catch {
+      // Non-critical; the badge will just be slightly stale until next reload.
+    }
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -89,13 +164,8 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearSession();
     navigate("/");
-  };
-
-  const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
   };
 
   return (
@@ -153,40 +223,37 @@ export default function Navbar() {
         <div className="notifications-container">
           <button
             className="notification-btn"
-            onClick={() => setShowNotifications(!showNotifications)}
+            onClick={handleOpenNotifications}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            {notifications.some((n) => n.unread) && <span className="notification-badge"></span>}
+            {notifications.some((n) => !n.isRead) && <span className="notification-badge"></span>}
           </button>
 
           {showNotifications && (
             <div className="notifications-dropdown">
               <div className="notifications-header">
                 <h3>Notifications</h3>
-                <button className="mark-all-read" onClick={handleMarkAllRead}>
-                  Mark all read
-                </button>
+                <button className="mark-all-read" onClick={handleMarkAllRead}>Mark all read</button>
               </div>
               <div className="notifications-list">
                 {notifications.length > 0 ? (
                   notifications.map((notif) => {
-                    const config = NOTIF_CONFIG[notif.type];
+                    const style = NOTIF_STYLES[notif.type] || DEFAULT_NOTIF_STYLE;
                     return (
                       <div
-                        key={notif.id}
-                        className={`notification-item ${notif.unread ? "unread" : ""}`}
+                        key={notif._id}
+                        className={`notification-item ${!notif.isRead ? "unread" : ""}`}
+                        onClick={() => handleNotificationClick(notif)}
                       >
-                        <div className={`notification-icon ${config.className}`}>
-                          {config.icon}
-                        </div>
+                        <div className={`notification-icon ${style.className}`}>{style.icon}</div>
                         <div className="notification-body">
-                          <div className="notification-text">{config.label(notif)}</div>
-                          <div className="notification-time">{notif.time}</div>
+                          <div className="notification-text">{notif.message}</div>
+                          <div className="notification-time">{new Date(notif.createdAt).toLocaleString()}</div>
                         </div>
-                        {notif.unread && <span className="notification-dot"></span>}
+                        {!notif.isRead && <span className="notification-dot"></span>}
                       </div>
                     );
                   })
