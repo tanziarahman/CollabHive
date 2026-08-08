@@ -310,6 +310,47 @@
   font-size: 13px;
 }
 
+.connection-row {
+  display: flex;
+  margin-bottom: 14px;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.connection-row button {
+  flex: 1;
+  padding: 12px 5px;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.connection-row button + button {
+  border-left: 1px solid var(--border-soft);
+}
+
+.connection-row b, .connection-row span { display: block; }
+.connection-row b { color: var(--accent); font-family: "Space Grotesk", sans-serif; font-size: 16px; }
+.connection-row span { margin-top: 3px; color: var(--text-muted); font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase; }
+.connection-row button:hover b, .connection-row button:hover span { color: var(--accent); }
+
+.connections-modal-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: rgba(0,0,0,.72); backdrop-filter: blur(4px); }
+.connections-modal { width: min(440px, 100%); max-height: min(560px, calc(100vh - 40px)); overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 24px 70px rgba(0,0,0,.45); }
+.connections-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--border-soft); }
+.connections-modal-header h2 { margin: 0; font-family: "Space Grotesk", sans-serif; font-size: 18px; color: var(--text); }
+.connections-modal-header button { width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--surface-3); color: var(--text); font-size: 23px; line-height: 1; cursor: pointer; }
+.connections-list { max-height: 470px; overflow-y: auto; padding: 8px; }
+.connections-empty { padding: 28px 16px; margin: 0; color: var(--text-muted); text-align: center; }
+.connection-person { display: flex; align-items: center; gap: 11px; width: 100%; padding: 10px; background: transparent; border: 0; border-radius: 9px; color: var(--text); text-align: left; cursor: pointer; }
+.connection-person:hover { background: var(--surface-3); }
+.connection-avatar { width: 38px; height: 38px; display: grid; place-items: center; overflow: hidden; flex: 0 0 auto; border: 1px solid var(--accent); border-radius: 50%; background: var(--surface-3); color: var(--accent); font-weight: 700; }
+.connection-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.connection-person b, .connection-person small { display: block; }
+.connection-person b { font-size: 13px; }
+.connection-person small { margin-top: 2px; color: var(--text-muted); font-size: 11px; }
+.connection-person em { margin-left: auto; color: var(--accent); font-family: "JetBrains Mono", monospace; font-size: 10px; font-style: normal; }
+
 .stat-row {
   display: flex;
   margin-bottom: 20px;
@@ -810,6 +851,144 @@
    another stylesheet's generic .field-label / h3 / .hex-dot rule */
 .profile-page .info-block h3 {
   color: #e8923f !important;
+}
+
+/* Compact dark workspace layout matching the CollabHive profile design. */
+.profile-page {
+  --bg: #090909;
+  --surface: #181818;
+  --surface-2: #242424;
+  --surface-3: #2b2b2b;
+  --border: #292929;
+  --border-soft: #222;
+  --text: #f5f0e8;
+  --text-muted: #a7a19a;
+  --text-dim: #77716b;
+  --amber: #ffbd0a;
+  --accent: #ffbd0a;
+  --amber-soft: rgba(255,189,10,.14);
+  background: #090909;
+}
+
+.rail { width: 44px; padding: 11px 0; gap: 7px; background: #101010; border-color: #292929; }
+.rail-logo { width: 29px; height: 29px; margin-bottom: 13px; border-radius: 8px; background: #ffbd0a; color: #18130a; font-size: 10px; }
+.rail-icon { width: 31px; height: 31px; border-radius: 7px; }
+.rail-icon.active { background: #383838; color: #ffbd0a; }
+.rail-avatar { width: 29px; height: 29px; background: transparent; border-color: #6b5520; color: #ffbd0a; font-size: 10px; }
+
+.topnav { height: 40px; min-height: 40px; padding: 5px 14px; gap: 15px; background: #101010; border-color: #292929; }
+.topnav-logo { font-size: 12px; color: #f5f0e8; }
+.topnav-logo span { color: #ffbd0a; }
+.topnav-search { flex-basis: 235px; width: 235px; max-width: 235px; padding: 5px 9px; background: #fafafa; border: 0; border-radius: 3px; color: #b9aaa0; }
+.topnav-search input { color: #27231f; font-size: 9px; }
+.topnav-search input::placeholder { color: #999; }
+.topnav-create { height: 26px; padding: 0 15px; border-radius: 4px; background: #ffbd0a; font-family: "JetBrains Mono", monospace; font-size: 10px; }
+.topnav-bell { width: 27px; height: 27px; background: transparent; border: 0; border-radius: 0; }
+.topnav-avatar { display: none; }
+
+.banner {
+  height: 143px;
+  border-color: #242424;
+  background-color: #0c0c0c;
+  background-image:
+    radial-gradient(ellipse at 22% 15%, rgba(255,255,255,.10), transparent 40%),
+    radial-gradient(ellipse at 78% 75%, rgba(255,189,10,.08), transparent 42%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='146' viewBox='0 0 84 146'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.07)' stroke-width='1'%3E%3Cpath d='M42 0 84 24.3v48.6L42 97.2 0 72.9V24.3z'/%3E%3Cpath d='M42 97.2 84 121.5v24.5M42 97.2 0 121.5v24.5M42 0v-24.3'/%3E%3C/g%3E%3Cg fill='rgba(255,255,255,0.025)'%3E%3Cpath d='M42 0 84 24.3v48.6L42 97.2 0 72.9V24.3z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: auto, auto, 84px 146px;
+}
+.columns { display: grid; grid-template-columns: 226px 452px; column-gap: 20px; width: 698px; max-width: none; margin: 0 auto; }
+.profile-col { box-sizing: border-box; width: 226px; padding: 0; margin-top: -46px; }
+.profile-summary-card, .recent-projects-card { width: 100%; box-sizing: border-box; padding: 16px; background: #1a1a1a; border: 1px solid #282828; border-radius: 8px; }
+.profile-summary-card { margin-bottom: 13px; }
+.recent-projects-card { min-height: 112px; }
+.avatar-frame { width: 73px; height: 73px; margin: -54px auto 17px; border: 1px solid #ffbd0a; outline: 0; clip-path: none; border-radius: 50%; background: #202020; font-size: 20px; }
+.upload-link { margin-bottom: 10px; color: #ffbd0a; font-family: "JetBrains Mono", monospace; font-size: 9px; text-decoration: none; }
+.name-block { margin-bottom: 10px; }
+.name-block h1 { font-size: 11px; color: #f5f0e8; }
+.name-block .role { font-size: 9px; color: #ffbd0a; }
+.connection-row { margin-bottom: 10px; border-color: #282828; }
+.connection-row button { padding: 9px 3px; }
+.connection-row b { font-size: 12px; color: #f5f0e8; }
+.connection-row span { color: #8a8580; font-size: 9px; text-transform: none; font-family: "Inter", sans-serif; }
+.edit-profile-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px 0;
+  background: #262626;
+  border: 1px solid #333;
+  border-radius: 5px;
+  color: #f5f0e8;
+  font-family: "Inter", sans-serif;
+  font-size: 9.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.edit-profile-btn:hover { border-color: #ffbd0a; color: #ffbd0a; }
+.stat-row { margin: 0; padding: 10px 0 0; border-top: 1px solid #282828; border-bottom: 0; }
+.stat b { font-size: 12px; color: #f5f0e8; }
+.stat span { color: #8a8580; font-size: 7px; }
+.side-label { color: #f5f0e8; font-size: 10px; margin-bottom: 9px; }
+.project-grid { gap: 7px; margin-bottom: 8px; }
+.project-tile { position: relative; min-height: 0; padding: 9px; background: #292929; border: 0; border-radius: 2px; }
+.project-tile b { font-size: 9px; color: #f5f0e8; }
+.project-tile b::after { content: "›"; position: absolute; right: 9px; color: #ffbd0a; }
+.project-tile span, .project-tile a { display: none; }
+.all-projects-link { padding: 0; border: 0; background: transparent; color: #ffbd0a; font-family: "Inter", sans-serif; font-size: 9px; cursor: pointer; }
+
+.main-col { box-sizing: border-box; width: 452px; min-width: 0; margin: -51px 0 0; padding: 0 0 48px; }
+.main-header { display: none; }
+.tabs { height: 44px; margin-bottom: 0; padding-left: 0; border: 0; align-items: end; gap: 0; }
+.tab { padding: 10px 10px 8px; color: #f5f0e8; font-family: "Inter", sans-serif; font-size: 10px; }
+.tab.active { color: #ffbd0a; border-bottom-color: #ffbd0a; }
+.info-block { margin: 0 0 14px; padding: 18px 20px; border: 1px solid #292929; border-radius: 8px; background: #1a1a1a; }
+.info-block h3 { margin-bottom: 15px; font-size: 11px; color: #ffbd0a !important; }
+.hex-dot { width: 5px; height: 5px; margin-right: 6px; background: #ffbd0a; }
+.field-grid { grid-template-columns: 1fr 1fr; gap: 13px; margin-bottom: 12px; }
+.field { gap: 5px; margin-bottom: 12px; }
+.field-label { color: #ffbd0a; font-size: 7px; }
+.field input, .field select, .field textarea { padding: 8px 9px; border: 0; border-radius: 2px; background: #fafafa; color: #242424; font-size: 10px; }
+.field input::placeholder, .field textarea::placeholder { color: #c6c6c6; }
+.tab-nav { margin-top: 28px; }
+.pill-row { display: flex; flex-wrap: wrap; gap: 9px; }
+.pill-tag {
+  padding: 7px 14px;
+  background: #242424;
+  border: 1px solid #333;
+  border-radius: 999px;
+  color: #f5f0e8;
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+}
+.pill-empty { margin: 0; color: #77716b; font-family: "Inter", sans-serif; font-size: 10px; }
+.btn-next { padding: 8px 15px; border: 0; border-radius: 2px; background: #2b2b2b; color: #f5f0e8; font-family: "JetBrains Mono", monospace; font-size: 9px; }
+
+/* Keep the reference desktop composition at tablet widths too. The earlier
+   generic breakpoint was stacking the editor under the sidebar, which made
+   the cards appear too far left and disproportionately wide. */
+.rail { display: flex; }
+.topnav-search { display: flex; }
+.columns { justify-content: start; margin-left: 14px; margin-right: 0; }
+.profile-col { grid-column: 1; justify-self: start; }
+.main-col { grid-column: 2; justify-self: start; }
+
+@media (min-width: 900px) {
+  .columns { margin-left: auto; margin-right: auto; }
+}
+
+@media (max-width: 760px) {
+  .columns { grid-template-columns: 270px 452px; width: 742px; margin-left: 14px; margin-right: 0; }
+  .profile-col { width: 270px; transform: translateX(-240px); }
+}
+
+@media (max-width: 620px) {
+  .columns { display: grid; grid-template-columns: 226px 452px; width: 698px; margin-left: 14px; }
+  .profile-col { width: 226px; margin-top: -46px; }
+  .main-col { width: 452px; margin: -51px 0 0; padding-bottom: 36px; }
 }
 
 .profile-page .field-label {

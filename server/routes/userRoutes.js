@@ -1,20 +1,24 @@
 import express from 'express';
+import { protect } from '../middleware/authMiddleware.js';
 import {
   updateProfile,
-  followUser,
-  unfollowUser,
-  getFollowers,
-  getFollowing,
+  getSuggestions,
+  sendFollowRequest,
+  getFollowRequests,
+  getMyConnections,
+  respondToFollowRequest,
+  getPublicProfile,
 } from '../controllers/userController.js';
-import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.put('/profile', protect, updateProfile);
 
-router.post('/:id/follow', protect, followUser);
-router.delete('/:id/follow', protect, unfollowUser);
-router.get('/:id/followers', getFollowers);
-router.get('/:id/following', getFollowing);
+router.get('/suggestions', protect, getSuggestions);
+router.get('/follow-requests', protect, getFollowRequests);
+router.get('/connections/:type', protect, getMyConnections);
+router.post('/:userId/follow-request', protect, sendFollowRequest);
+router.patch('/follow-requests/:userId', protect, respondToFollowRequest);
+router.get('/:userId/profile', protect, getPublicProfile);
 
 export default router;

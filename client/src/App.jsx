@@ -6,6 +6,8 @@ import Dashboard from "./pages/Dashboard/Dashbiard";
 import CreateProject from "./pages/CreateProject/CreateProject";
 import Profile from "./pages/Profile/Profile";
 import Posts from "./pages/Posts/Posts";
+import ProfileView from "./pages/Profile/ProfileView"; 
+import FollowRequests from "./pages/FollowRequests/FollowRequests";
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
       <Route path="/create-project" element={<CreateProject />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/my-posts" element={<Posts />} />
+      <Route path="/profile/:userId" element={<ProfileView />} />
+      <Route path="/follow-requests" element={<FollowRequests />} />
     </Routes>
   );
 }

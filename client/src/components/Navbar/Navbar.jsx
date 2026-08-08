@@ -67,6 +67,19 @@ export default function Navbar() {
           Posts
         </button>
 
+        <button
+          className="follow-requests-nav-btn"
+          onClick={() => navigate("/follow-requests")}
+          aria-label="View follow requests"
+          title="Follow requests"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M19 8v6M16 11h6" />
+          </svg>
+        </button>
+
         {/* Notifications Bell */}
         <div className="notifications-container">
           <button 
