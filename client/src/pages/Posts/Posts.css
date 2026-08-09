@@ -493,6 +493,25 @@
   opacity: 1;
 }
 
+.invite-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(245, 184, 76, 0.12);
+  color: #f5b84c;
+  border: 1px solid rgba(245, 184, 76, 0.3);
+  transition: 0.2s;
+  margin-left: 0.35rem;
+}
+
+.invite-btn:hover {
+  background: #f5b84c;
+  color: #111;
+}
+
 /* MOBILE */
 
 @media (max-width: 900px) {
