@@ -11,16 +11,26 @@
 }
 
 
-/* HEADER */
+/* =========================
+   HEADER
+========================= */
 
-.page-header {
+.invitations-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2.5rem;
 }
 
-.page-header h1 {
+.header-label {
+  color: #f5b84c;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.55rem;
+}
+
+.invitations-header h1 {
   color: #f5f0e8;
   font-size: 2.2rem;
   font-weight: 700;
@@ -28,320 +38,494 @@
   margin-bottom: 0.5rem;
 }
 
-.page-header p {
-  color: rgba(245,240,232,.6);
+.invitations-header p {
+  color: rgba(245, 240, 232, 0.6);
   font-size: 0.95rem;
 }
 
 
-/* INVITATION COUNT */
+/* =========================
+   COUNTER
+========================= */
 
-.invitation-count {
-  background: rgba(245,184,76,.1);
+.invitation-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 72px;
+  height: 72px;
+
+  background: rgba(245, 184, 76, 0.08);
+  border: 1px solid rgba(245, 184, 76, 0.22);
+  border-radius: 14px;
+}
+
+.invitation-counter span {
   color: #f5b84c;
-  padding: .3rem .75rem;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  border: 1px solid rgba(245,184,76,.25);
-  white-space: nowrap;
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.invitation-counter small {
+  margin-top: 0.3rem;
+  color: rgba(245, 240, 232, 0.45);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 
-/* CARD */
+/* =========================
+   LIST
+========================= */
 
-.project-card {
+.invitation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+
+/* =========================
+   CARD
+========================= */
+
+.invitation-card {
   background: #141414;
-  border: 1px solid rgba(245,240,232,.06);
+  border: 1px solid rgba(245, 240, 232, 0.06);
   border-radius: 16px;
   padding: 1.75rem;
-  margin-bottom: 1.5rem;
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
+
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease,
+    border-color 0.25s ease;
 }
 
-.project-card:hover {
-  box-shadow: 0 12px 32px rgba(0,0,0,.28);
+.invitation-card:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
   transform: translateY(-2px);
+  border-color: rgba(245, 184, 76, 0.12);
 }
 
 
-/* PROJECT HEADER */
+/* =========================
+   TOP
+========================= */
 
-.project-header {
+.invitation-top {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 2rem;
+
+  margin-bottom: 1.5rem;
+}
+
+.project-heading {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.5rem;
+  flex-direction: column;
 }
 
-.project-header h2 {
-  color: #f5f0e8;
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: -0.2px;
-  margin-bottom: 0.3rem;
-}
-
-.project-header p {
-  color: rgba(245,240,232,.4);
-  font-size: 0.8rem;
-}
-
-
-/* STATUS */
-
-.status {
-  background: rgba(245,184,76,.1);
+.project-label {
   color: #f5b84c;
-  padding: .3rem .75rem;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  border: 1px solid rgba(245,184,76,.25);
-  white-space: nowrap;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.7rem;
 }
 
 
-/* DESCRIPTION */
+/* =========================
+   PROJECT TITLE
+========================= */
 
-.description {
-  color: rgba(245,240,232,.7);
-  line-height: 1.65;
-  font-size: 0.9rem;
-  margin-bottom: 1.25rem;
+.invitation-title h2 {
+  color: #f5f0e8;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.25px;
+  margin-bottom: 0.35rem;
+}
+
+.invitation-title p {
+  color: rgba(245, 240, 232, 0.45);
+  font-size: 0.82rem;
 }
 
 
-/* INFO ROWS */
+/* =========================
+   OWNER
+========================= */
 
-.section {
+.owner-section {
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  background: rgba(245,240,232,.03);
-  padding: 0.7rem 1rem;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.owner-section .detail-label {
+  margin-bottom: 0.65rem;
+}
+
+.owner-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+
+  cursor: pointer;
+  width: fit-content;
+}
+
+.owner-avatar {
+  width: 48px;
+  height: 48px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #1b1b1b;
+  border: 1px solid rgba(245, 184, 76, 0.55);
+
+  color: #f5b84c;
+
+  font-size: 1rem;
+  font-weight: 600;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.owner-profile:hover .owner-avatar {
+  background: rgba(245, 184, 76, 0.08);
+  border-color: #f5b84c;
+}
+
+.owner-name {
+  color: #f5f0e8;
+  font-size: 1rem;
+  font-weight: 600;
+
+  transition: color 0.2s ease;
+}
+
+.owner-profile:hover .owner-name {
+  color: #f5b84c;
+}
+
+
+/* =========================
+   LABELS
+========================= */
+
+.detail-label {
+  display: block;
+
+  color: rgba(245, 240, 232, 0.4);
+
+  font-size: 0.68rem;
+  font-weight: 600;
+
+  letter-spacing: 0.07em;
+
+  margin-bottom: 0.55rem;
+}
+
+
+/* =========================
+   DETAILS
+========================= */
+
+.invitation-details {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1.4fr;
+  gap: 0.75rem;
+
+  margin-bottom: 0.75rem;
+}
+
+
+/* =========================
+   ROLE
+========================= */
+
+.role-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  background: rgba(245, 240, 232, 0.025);
+  border: 1px solid rgba(245, 240, 232, 0.05);
+
   border-radius: 10px;
-  margin-bottom: 0.6rem;
+
+  padding: 1rem;
 }
 
-.section h3 {
-  min-width: 105px;
-  color: rgba(245,240,232,.45);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
+.role-box strong {
+  color: #f5b84c;
+  font-size: 0.88rem;
 }
 
 
-/* OWNER */
+/* =========================
+   PROJECT INFO
+========================= */
 
-.owner-info {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  flex: 1;
+.project-info {
+  background: rgba(245, 240, 232, 0.025);
+  border: 1px solid rgba(245, 240, 232, 0.05);
+
+  border-radius: 10px;
+
+  padding: 1rem;
 }
 
-.owner-info span {
-  color: #f5f0e8;
+.project-info p {
+  color: rgba(245, 240, 232, 0.65);
+
   font-size: 0.85rem;
-}
-
-.owner-info strong {
-  color: rgba(245,240,232,.45);
-  font-weight: 400;
-  font-size: 0.8rem;
+  line-height: 1.6;
 }
 
 
-/* ROLE */
+/* =========================
+   SKILLS
+========================= */
 
-.role {
-  display: flex;
-  align-items: center;
-  gap: .35rem;
-  color: #f5f0e8;
-  font-size: 0.85rem;
-  flex: 1;
+.skills-area {
+  background: rgba(245, 240, 232, 0.025);
+  border: 1px solid rgba(245, 240, 232, 0.05);
+
+  border-radius: 10px;
+
+  padding: 1rem;
 }
 
-.role span {
-  color: #f5f0e8;
-}
-
-
-/* TAGS */
-
-.tags {
+.skill-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem 0.6rem;
-  flex: 1;
+  gap: 0.35rem;
 }
 
-.tags span {
-  color: #f5f0e8;
-  font-size: 0.85rem;
-}
+.skill-list span {
+  color: rgba(245, 240, 232, 0.65);
 
-.tags span::after {
-  content: ",";
-  margin-right: 6px;
-}
+  background: rgba(245, 240, 232, 0.04);
 
-.tags span:last-child::after {
-  content: "";
-}
+  border: 1px solid rgba(245, 240, 232, 0.07);
 
+  border-radius: 6px;
 
-/* TEAM */
+  padding: 0.3rem 0.55rem;
 
-.team-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  flex: 1;
-}
-
-.team-details span {
-  color: #f5f0e8;
-  font-size: 0.85rem;
+  font-size: 0.72rem;
 }
 
 
-/* FOOTER */
+/* =========================
+   BOTTOM
+========================= */
 
-.project-footer {
-  margin-top: 1.4rem;
+.invitation-bottom {
+  margin-top: 1.25rem;
+  padding-top: 1.2rem;
+
+  border-top: 1px solid rgba(245, 240, 232, 0.07);
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
+
   gap: 1rem;
-}
-
-
-/* INVITATION NOTE */
-
-.invitation-note {
-  color: rgba(245,240,232,.45);
-  font-size: 0.78rem;
-}
-
-
-/* ACTIONS */
-
-.actions {
-  display: flex;
-  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
-.actions button {
-  border: none;
-  border-radius: 10px;
-  padding: .6rem 1.4rem;
-  font-size: 0.85rem;
+
+/* =========================
+   TEAM SUMMARY
+========================= */
+
+.team-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+
+  color: rgba(245, 240, 232, 0.4);
+
+  font-size: 0.75rem;
+}
+
+.summary-divider {
+  color: rgba(245, 240, 232, 0.2);
+}
+
+
+/* =========================
+   ACTIONS
+========================= */
+
+.invitation-actions {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.invitation-actions button {
+  border-radius: 8px;
+
+  padding: 0.55rem 1.15rem;
+
+  font-size: 0.78rem;
   font-weight: 600;
+
   cursor: pointer;
-  transition: .2s;
+
+  transition: 0.2s;
 }
 
 
-/* ACCEPT */
+/* =========================
+   REJECT
+========================= */
 
-.actions .accept-btn {
-  background: #1f8f5f;
-  color: #f5f0e8;
-}
-
-.actions .accept-btn:hover {
-  background: #27a66e;
-}
-
-
-/* REJECT */
-
-.actions .reject-btn {
+.invitation-actions .reject-btn {
   background: transparent;
-  border: 1px solid rgba(220,53,69,.4);
+
+  border: 1px solid rgba(220, 53, 69, 0.4);
+
   color: #ff8a8a;
 }
 
-.actions .reject-btn:hover {
-  background: rgba(220,53,69,.15);
+.invitation-actions .reject-btn:hover {
+  background: rgba(220, 53, 69, 0.15);
 }
 
 
-/* EMPTY STATE */
+/* =========================
+   ACCEPT
+========================= */
+
+.invitation-actions .accept-btn {
+  background: #f5b84c;
+
+  border: 1px solid #f5b84c;
+
+  color: #111;
+}
+
+.invitation-actions .accept-btn:hover {
+  background: #f8ca6c;
+  border-color: #f8ca6c;
+}
+
+
+/* =========================
+   EMPTY STATE
+========================= */
 
 .empty-state {
   background: #111;
-  border: 1px solid rgba(245,240,232,.08);
+
+  border: 1px solid rgba(245, 240, 232, 0.08);
+
   border-radius: 16px;
+
   padding: 3rem;
-  color: rgba(245,240,232,.6);
+
+  color: rgba(245, 240, 232, 0.6);
+
   text-align: center;
+}
+
+.empty-icon {
+  width: 44px;
+  height: 44px;
+
+  margin: 0 auto 1rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: rgba(31, 143, 95, 0.12);
+
+  border: 1px solid rgba(31, 143, 95, 0.25);
+
+  color: #4fd196;
+
+  font-weight: 700;
 }
 
 .empty-state h2 {
   color: #f5f0e8;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.6rem;
 }
 
 .empty-state p {
-  color: rgba(245,240,232,.55);
+  color: rgba(245, 240, 232, 0.55);
 }
 
 
-/* MOBILE */
+/* =========================
+   MOBILE
+========================= */
 
 @media (max-width: 900px) {
   .invitations-container {
     padding: 0 1.5rem;
   }
 
-  .project-card {
+  .invitation-card {
     padding: 1.5rem;
+  }
+
+  .invitation-details {
+    grid-template-columns: 1fr;
   }
 }
 
+
 @media (max-width: 650px) {
-  .page-header {
+  .invitations-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 1.25rem;
   }
 
-  .project-header {
-    flex-direction: column;
-    gap: 0.5rem;
+  .invitation-counter {
+    width: 60px;
+    height: 60px;
   }
 
-  .section {
-    flex-direction: column;
+  .invitation-top {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .owner-section {
     align-items: flex-start;
-    gap: 0.5rem;
   }
 
-  .section h3 {
-    min-width: auto;
-  }
-
-  .project-footer {
-    flex-direction: column;
+  .invitation-bottom {
     align-items: stretch;
-    gap: 1rem;
+    flex-direction: column;
   }
 
-  .actions {
+  .invitation-actions {
     width: 100%;
   }
 
-  .actions button {
+  .invitation-actions button {
     flex: 1;
   }
 }

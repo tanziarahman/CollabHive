@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import "./Invitations.css";
 
@@ -8,8 +9,8 @@ const dummyInvitations = [
     title: "AI Study Assistant",
     description:
       "An AI-powered study assistant that helps students create personalized study plans, generate quizzes, and track their learning progress.",
+    ownerId: "REPLACE_WITH_REAL_USER_ID_1",
     owner: "Rafiq Islam",
-    ownerUsername: "rafiq.islam",
     role: "Frontend Developer",
     skills: ["React", "JavaScript", "CSS", "Figma"],
     members: 2,
@@ -20,8 +21,8 @@ const dummyInvitations = [
     title: "Campus Connect",
     description:
       "A collaboration platform for university students to find teammates, share ideas, and work together on academic and personal projects.",
+    ownerId: "REPLACE_WITH_REAL_USER_ID_2",
     owner: "Sarah Ahmed",
-    ownerUsername: "sarah.ahmed",
     role: "Backend Developer",
     skills: ["Node.js", "Express", "MongoDB", "REST API"],
     members: 3,
@@ -32,8 +33,8 @@ const dummyInvitations = [
     title: "JobMatch AI",
     description:
       "An intelligent job recommendation platform that matches candidates with relevant job opportunities based on their skills, experience, and interests.",
+    ownerId: "REPLACE_WITH_REAL_USER_ID_3",
     owner: "Tanvir Hossain",
-    ownerUsername: "tanvir.hossain",
     role: "Machine Learning Engineer",
     skills: ["Python", "Machine Learning", "Pandas", "Scikit-learn"],
     members: 2,
@@ -44,8 +45,8 @@ const dummyInvitations = [
     title: "BudgetBuddy",
     description:
       "A personal finance management application that allows users to track expenses, create budgets, and visualize their spending habits.",
+    ownerId: "REPLACE_WITH_REAL_USER_ID_4",
     owner: "Meherin Chowdhury",
-    ownerUsername: "meherin.chowdhury",
     role: "React Developer",
     skills: ["React", "JavaScript", "Chart.js", "CSS"],
     members: 3,
@@ -54,164 +55,243 @@ const dummyInvitations = [
 ];
 
 export default function Invitations() {
-  const [invitations, setInvitations] = useState(dummyInvitations);
+  const navigate = useNavigate();
+
+  const [invitations, setInvitations] =
+    useState(dummyInvitations);
 
   const handleAccept = (id) => {
+    // Replace with backend API later.
     setInvitations((prev) =>
       prev.filter((invitation) => invitation.id !== id)
     );
   };
 
   const handleReject = (id) => {
+    // Replace with backend API later.
     setInvitations((prev) =>
       prev.filter((invitation) => invitation.id !== id)
     );
+  };
+
+  const handleOwnerClick = (ownerId) => {
+    navigate(`/profile/${ownerId}`);
   };
 
   return (
     <>
       <Navbar />
 
-      <div className="invitations-page">
+      <main className="invitations-page">
         <div className="invitations-container">
 
           {/* HEADER */}
-          <div className="page-header">
+          <div className="invitations-header">
             <div>
+              <div className="header-label">
+                COLLABORATION
+              </div>
+
               <h1>Project Invitations</h1>
-              <p>Projects you have been invited to join.</p>
+
+              <p>
+                You've been invited to collaborate on these
+                projects.
+              </p>
             </div>
 
-            <span className="invitation-count">
-              {invitations.length}{" "}
-              {invitations.length === 1
-                ? "Invitation"
-                : "Invitations"}
-            </span>
+            <div className="invitation-counter">
+              <span>{invitations.length}</span>
+              <small>Pending</small>
+            </div>
           </div>
 
           {/* INVITATIONS */}
           {invitations.length > 0 ? (
-            invitations.map((invitation) => (
-              <div
-                className="project-card"
-                key={invitation.id}
-              >
-                {/* PROJECT HEADER */}
-                <div className="project-header">
-                  <div>
-                    <h2>{invitation.title}</h2>
-                    <p>Project invitation</p>
+            <div className="invitation-list">
+
+              {invitations.map((invitation) => (
+                <article
+                  className="invitation-card"
+                  key={invitation.id}
+                >
+
+                  {/* TOP SECTION */}
+                  <div className="invitation-top">
+
+                    {/* PROJECT */}
+                    <div className="project-heading">
+
+                      <div className="invitation-title">
+                        <h2>{invitation.title}</h2>
+
+                        <p>
+                          You've been invited to join this
+                          collaboration.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* OWNER */}
+                    <div className="owner-section">
+
+                      <div
+                        className="owner-profile"
+                        onClick={() =>
+                          handleOwnerClick(
+                            invitation.ownerId
+                          )
+                        }
+                      >
+
+                        <div className="owner-avatar">
+                          {invitation.owner
+                            .charAt(0)
+                            .toUpperCase()}
+                        </div>
+
+                        <strong className="owner-name">
+                          {invitation.owner}
+                        </strong>
+
+                      </div>
+                    </div>
+
                   </div>
 
-                  <span className="status">
-                    Invitation
-                  </span>
-                </div>
+                  {/* PROJECT DETAILS */}
+                  <div className="invitation-details">
 
-                {/* DESCRIPTION */}
-                <p className="description">
-                  {invitation.description}
-                </p>
+                    {/* ROLE */}
+                    <div className="role-box">
 
-                {/* OWNER */}
-                <div className="section">
-                  <h3>Owner</h3>
+                      <span className="detail-label">
+                        INVITED ROLE
+                      </span>
 
-                  <div className="owner-info">
-                    <span>{invitation.owner}</span>
-                    <strong>
-                      @{invitation.ownerUsername}
-                    </strong>
-                  </div>
-                </div>
+                      <strong>
+                        {invitation.role}
+                      </strong>
 
-                {/* INVITED ROLE */}
-                <div className="section">
-                  <h3>Invited Role</h3>
+                    </div>
 
-                  <div className="role">
-                    <span>{invitation.role}</span>
-                  </div>
-                </div>
+                    {/* DESCRIPTION */}
+                    <div className="project-info">
 
-                {/* SKILLS */}
-                <div className="section">
-                  <h3>Skills</h3>
+                      <span className="detail-label">
+                        ABOUT THE PROJECT
+                      </span>
 
-                  <div className="tags">
-                    {invitation.skills.map((skill) => (
-                      <span key={skill}>{skill}</span>
-                    ))}
-                  </div>
-                </div>
+                      <p>
+                        {invitation.description}
+                      </p>
 
-                {/* TEAM */}
-                <div className="section">
-                  <h3>Team</h3>
+                    </div>
 
-                  <div className="team-details">
-                    <span>
-                      {invitation.members}/
-                      {invitation.maxMembers} members
-                    </span>
+                    {/* SKILLS */}
+                    <div className="skills-area">
 
-                    <span>
-                      {invitation.maxMembers -
-                        invitation.members}{" "}
-                      position
-                      {invitation.maxMembers -
-                        invitation.members !==
-                      1
-                        ? "s"
-                        : ""}{" "}
-                      available
-                    </span>
-                  </div>
-                </div>
+                      <span className="detail-label">
+                        SKILLS
+                      </span>
 
-                {/* ACTIONS */}
-                <div className="project-footer">
-                  <div className="invitation-note">
-                    <span>
-                      You have been invited to join this
-                      project.
-                    </span>
+                      <div className="skill-list">
+
+                        {invitation.skills.map(
+                          (skill) => (
+                            <span key={skill}>
+                              {skill}
+                            </span>
+                          )
+                        )}
+
+                      </div>
+
+                    </div>
+
                   </div>
 
-                  <div className="actions">
-                    <button
-                      className="reject-btn"
-                      onClick={() =>
-                        handleReject(invitation.id)
-                      }
-                    >
-                      Reject
-                    </button>
+                  {/* BOTTOM */}
+                  <div className="invitation-bottom">
 
-                    <button
-                      className="accept-btn"
-                      onClick={() =>
-                        handleAccept(invitation.id)
-                      }
-                    >
-                      Accept
-                    </button>
+                    <div className="team-summary">
+
+                      <span>
+                        {invitation.members}/
+                        {invitation.maxMembers} members
+                      </span>
+
+                      <span className="summary-divider">
+                        •
+                      </span>
+
+                      <span>
+                        {invitation.maxMembers -
+                          invitation.members}{" "}
+                        spot
+                        {invitation.maxMembers -
+                          invitation.members !==
+                        1
+                          ? "s"
+                          : ""}{" "}
+                        available
+                      </span>
+
+                    </div>
+
+                    <div className="invitation-actions">
+
+                      <button
+                        className="reject-btn"
+                        onClick={() =>
+                          handleReject(
+                            invitation.id
+                          )
+                        }
+                      >
+                        Reject
+                      </button>
+
+                      <button
+                        className="accept-btn"
+                        onClick={() =>
+                          handleAccept(
+                            invitation.id
+                          )
+                        }
+                      >
+                        Accept Invitation
+                      </button>
+
+                    </div>
+
                   </div>
-                </div>
-              </div>
-            ))
+
+                </article>
+              ))}
+
+            </div>
           ) : (
+
+            /* EMPTY STATE */
             <div className="empty-state">
-              <h2>No Invitations</h2>
+
+              <div className="empty-icon">
+                ✓
+              </div>
+
+              <h2>You're all caught up</h2>
+
               <p>
-                You currently have no pending project
-                invitations.
+                You don't have any pending project
+                invitations right now.
               </p>
+
             </div>
           )}
+
         </div>
-      </div>
+      </main>
     </>
   );
 }
