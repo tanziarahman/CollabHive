@@ -11,6 +11,7 @@ import FollowRequests from "./pages/FollowRequests/FollowRequests";
 import Settings from "./pages/Settings/Settings";
 import ProjectChat from "./pages/ProjectChat/ProjectChat";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Invitations from "./pages/Invitations/Invitations";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
       <Route path="/follow-requests" element={<ProtectedRoute><FollowRequests /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/projects/:projectId/chat" element={<ProtectedRoute><ProjectChat /></ProtectedRoute>} />
+      <Route path="/invitations" element={<ProtectedRoute><Invitations /></ProtectedRoute>} />
     </Routes>
   );
 }
