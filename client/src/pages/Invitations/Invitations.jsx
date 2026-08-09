@@ -13,6 +13,7 @@ const dummyInvitations = [
     owner: "Rafiq Islam",
     role: "Frontend Developer",
     skills: ["React", "JavaScript", "CSS", "Figma"],
+    techStack: ["React", "Node.js", "MongoDB", "Express"],
     members: 2,
     maxMembers: 4,
   },
@@ -25,6 +26,7 @@ const dummyInvitations = [
     owner: "Sarah Ahmed",
     role: "Backend Developer",
     skills: ["Node.js", "Express", "MongoDB", "REST API"],
+    techStack: ["Node.js", "Express", "MongoDB", "React"],
     members: 3,
     maxMembers: 5,
   },
@@ -37,6 +39,7 @@ const dummyInvitations = [
     owner: "Tanvir Hossain",
     role: "Machine Learning Engineer",
     skills: ["Python", "Machine Learning", "Pandas", "Scikit-learn"],
+    techStack: ["Python", "FastAPI", "Scikit-learn", "PostgreSQL"],
     members: 2,
     maxMembers: 4,
   },
@@ -49,6 +52,7 @@ const dummyInvitations = [
     owner: "Meherin Chowdhury",
     role: "React Developer",
     skills: ["React", "JavaScript", "Chart.js", "CSS"],
+    techStack: ["React", "Node.js", "Express", "MongoDB"],
     members: 3,
     maxMembers: 4,
   },
@@ -121,7 +125,6 @@ export default function Invitations() {
 
                     {/* PROJECT */}
                     <div className="project-heading">
-
                       <div className="invitation-title">
                         <h2>{invitation.title}</h2>
 
@@ -134,7 +137,6 @@ export default function Invitations() {
 
                     {/* OWNER */}
                     <div className="owner-section">
-
                       <div
                         className="owner-profile"
                         onClick={() =>
@@ -143,7 +145,6 @@ export default function Invitations() {
                           )
                         }
                       >
-
                         <div className="owner-avatar">
                           {invitation.owner
                             .charAt(0)
@@ -153,7 +154,6 @@ export default function Invitations() {
                         <strong className="owner-name">
                           {invitation.owner}
                         </strong>
-
                       </div>
                     </div>
 
@@ -164,7 +164,6 @@ export default function Invitations() {
 
                     {/* ROLE */}
                     <div className="role-box">
-
                       <span className="detail-label">
                         INVITED ROLE
                       </span>
@@ -172,12 +171,10 @@ export default function Invitations() {
                       <strong>
                         {invitation.role}
                       </strong>
-
                     </div>
 
                     {/* DESCRIPTION */}
                     <div className="project-info">
-
                       <span className="detail-label">
                         ABOUT THE PROJECT
                       </span>
@@ -185,10 +182,9 @@ export default function Invitations() {
                       <p>
                         {invitation.description}
                       </p>
-
                     </div>
 
-                    {/* SKILLS */}
+                    {/* SKILLS + TECH STACK IN SAME BLOCK */}
                     <div className="skills-area">
 
                       <span className="detail-label">
@@ -196,7 +192,6 @@ export default function Invitations() {
                       </span>
 
                       <div className="skill-list">
-
                         {invitation.skills.map(
                           (skill) => (
                             <span key={skill}>
@@ -204,7 +199,23 @@ export default function Invitations() {
                             </span>
                           )
                         )}
+                      </div>
 
+                      <span
+                        className="detail-label"
+                        style={{ marginTop: "0.8rem" }}
+                      >
+                        TECH STACK
+                      </span>
+
+                      <div className="skill-list">
+                        {invitation.techStack.map(
+                          (tech) => (
+                            <span key={tech}>
+                              {tech}
+                            </span>
+                          )
+                        )}
                       </div>
 
                     </div>
@@ -215,7 +226,6 @@ export default function Invitations() {
                   <div className="invitation-bottom">
 
                     <div className="team-summary">
-
                       <span>
                         {invitation.members}/
                         {invitation.maxMembers} members
@@ -236,7 +246,6 @@ export default function Invitations() {
                           : ""}{" "}
                         available
                       </span>
-
                     </div>
 
                     <div className="invitation-actions">
