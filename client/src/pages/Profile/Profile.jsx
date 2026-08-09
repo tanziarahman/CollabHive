@@ -6,7 +6,48 @@ import { updateProfile, getConnections } from "../../api/users";
 import "./Profile.css";
 
 const AVAILABILITY_OPTIONS = ["Available", "Busy", "Open to Offers"];
-const TABS = ["Info", "Education", "About", "Résumé"];
+const TABS = ["Info", "Education", "About", "Résumé", "Projects"];
+
+// Demo data only — the real "projects I've created/joined" backend isn't wired up yet,
+// this is here so the Projects tab UI can be previewed on its own.
+const DEMO_PROJECTS = [
+  {
+    _id: "demo-1",
+    title: "EcoTrack — Carbon Footprint App",
+    category: "Mobile App",
+    description:
+      "A mobile app that helps users track and reduce their daily carbon footprint through gamified challenges and community leaderboards.",
+    collaborators: [
+      { _id: "demo-u1", fullName: "Maria Chen", profilePicture: "" },
+      { _id: "demo-u2", fullName: "Alex Rivera", profilePicture: "" },
+      { _id: "demo-u3", fullName: "Sarah Kim", profilePicture: "" },
+    ],
+  },
+  {
+    _id: "demo-2",
+    title: "DevConnect — Developer Networking Platform",
+    category: "Web App",
+    description:
+      "A platform connecting developers based on tech stack and interests, with built-in project collaboration tools.",
+    collaborators: [
+      { _id: "demo-u4", fullName: "James Okafor", profilePicture: "" },
+      { _id: "demo-u1", fullName: "Maria Chen", profilePicture: "" },
+    ],
+  },
+  {
+    _id: "demo-3",
+    title: "StudyBuddy AI",
+    category: "AI / ML",
+    description:
+      "An AI-powered study companion that generates personalized quizzes and flashcards from lecture notes.",
+    collaborators: [
+      { _id: "demo-u5", fullName: "Priya Patel", profilePicture: "" },
+      { _id: "demo-u2", fullName: "Alex Rivera", profilePicture: "" },
+      { _id: "demo-u6", fullName: "Tom Wilson", profilePicture: "" },
+      { _id: "demo-u3", fullName: "Sarah Kim", profilePicture: "" },
+    ],
+  },
+];
 
 function TagField({ label, placeholder, values, onAdd, onRemove }) {
   const [draft, setDraft] = useState("");
@@ -653,6 +694,66 @@ export default function Profile() {
                   <button type="button" className="btn-save" onClick={downloadResume}>
                     Download résumé
                   </button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "Projects" && (
+              <div className="panel">
+                <div className="info-block">
+                  <h3>
+                    <span className="hex-dot" /> My projects
+                  </h3>
+
+                  {DEMO_PROJECTS.length === 0 ? (
+                    <p className="pill-empty">
+                      You haven't created or joined any projects yet.
+                    </p>
+                  ) : (
+                    <div className="my-projects-list">
+                      {DEMO_PROJECTS.map((project) => (
+                        <div className="my-project-card" key={project._id}>
+                          <div className="my-project-card-header">
+                            <div>
+                              <h4>{project.title}</h4>
+                              {project.category && (
+                                <span className="my-project-category">{project.category}</span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              className="my-project-chat-btn"
+                              onClick={() => navigate(`/projects/${project._id}/chat`)}
+                              aria-label={`Open group chat for ${project.title}`}
+                              title="Group chat"
+                            >
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                              </svg>
+                            </button>
+                          </div>
+
+                          <p className="my-project-description">{project.description}</p>
+
+                          <div className="my-project-collaborators-label">Working on this</div>
+                          <div className="my-project-collaborators">
+                            {project.collaborators.map((person) => (
+                              <span className="my-project-collaborator" key={person._id}>
+                                <span className="my-project-collaborator-avatar">
+                                  {person.profilePicture ? (
+                                    <img src={person.profilePicture} alt="" />
+                                  ) : (
+                                    person.fullName?.charAt(0)
+                                  )}
+                                </span>
+                                {person.fullName}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
