@@ -10,7 +10,6 @@
   padding: 0 2.5rem;
 }
 
-
 /* =========================
    HEADER
 ========================= */
@@ -42,7 +41,6 @@
   color: rgba(245, 240, 232, 0.6);
   font-size: 0.95rem;
 }
-
 
 /* =========================
    COUNTER
@@ -77,7 +75,6 @@
   letter-spacing: 0.06em;
 }
 
-
 /* =========================
    LIST
 ========================= */
@@ -87,7 +84,6 @@
   flex-direction: column;
   gap: 1.25rem;
 }
-
 
 /* =========================
    CARD
@@ -111,7 +107,6 @@
   border-color: rgba(245, 184, 76, 0.12);
 }
 
-
 /* =========================
    TOP
 ========================= */
@@ -129,15 +124,6 @@
   flex-direction: column;
 }
 
-.project-label {
-  color: #f5b84c;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  margin-bottom: 0.7rem;
-}
-
-
 /* =========================
    PROJECT TITLE
 ========================= */
@@ -154,7 +140,6 @@
   color: rgba(245, 240, 232, 0.45);
   font-size: 0.82rem;
 }
-
 
 /* =========================
    OWNER
@@ -221,7 +206,6 @@
   color: #f5b84c;
 }
 
-
 /* =========================
    LABELS
 ========================= */
@@ -239,7 +223,6 @@
   margin-bottom: 0.55rem;
 }
 
-
 /* =========================
    DETAILS
 ========================= */
@@ -251,7 +234,6 @@
 
   margin-bottom: 0.75rem;
 }
-
 
 /* =========================
    ROLE
@@ -275,30 +257,37 @@
   font-size: 0.88rem;
 }
 
-
 /* =========================
    PROJECT INFO
 ========================= */
 
 .project-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+
   background: rgba(245, 240, 232, 0.025);
   border: 1px solid rgba(245, 240, 232, 0.05);
 
   border-radius: 10px;
-
   padding: 1rem;
+}
+
+.project-info .detail-label {
+  margin-bottom: 0.65rem;
 }
 
 .project-info p {
   color: rgba(245, 240, 232, 0.65);
-
   font-size: 0.85rem;
   line-height: 1.6;
+  margin: 0;
+  max-width: 90%;
 }
-
-
 /* =========================
-   SKILLS
+   SKILLS + TECH STACK
 ========================= */
 
 .skills-area {
@@ -308,6 +297,10 @@
   border-radius: 10px;
 
   padding: 1rem;
+}
+
+.skills-area .detail-label {
+  margin-bottom: 0.55rem;
 }
 
 .skill-list {
@@ -330,6 +323,11 @@
   font-size: 0.72rem;
 }
 
+/* Tech Stack label when placed below Skills */
+
+.tech-stack-label {
+  margin-top: 0.9rem;
+}
 
 /* =========================
    BOTTOM
@@ -349,7 +347,6 @@
   flex-wrap: wrap;
 }
 
-
 /* =========================
    TEAM SUMMARY
 ========================= */
@@ -367,7 +364,6 @@
 .summary-divider {
   color: rgba(245, 240, 232, 0.2);
 }
-
 
 /* =========================
    ACTIONS
@@ -391,7 +387,6 @@
   transition: 0.2s;
 }
 
-
 /* =========================
    REJECT
 ========================= */
@@ -407,7 +402,6 @@
 .invitation-actions .reject-btn:hover {
   background: rgba(220, 53, 69, 0.15);
 }
-
 
 /* =========================
    ACCEPT
@@ -425,7 +419,6 @@
   background: #f8ca6c;
   border-color: #f8ca6c;
 }
-
 
 /* =========================
    EMPTY STATE
@@ -458,7 +451,6 @@
   border-radius: 50%;
 
   background: rgba(31, 143, 95, 0.12);
-
   border: 1px solid rgba(31, 143, 95, 0.25);
 
   color: #4fd196;
@@ -474,7 +466,6 @@
 .empty-state p {
   color: rgba(245, 240, 232, 0.55);
 }
-
 
 /* =========================
    MOBILE
@@ -493,7 +484,6 @@
     grid-template-columns: 1fr;
   }
 }
-
 
 @media (max-width: 650px) {
   .invitations-header {
