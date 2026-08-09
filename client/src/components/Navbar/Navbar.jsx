@@ -1,16 +1,26 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getNotifications, markAsRead, markAllAsRead } from "../../api/notifications";
+import {
+  getNotifications,
+  markAsRead,
+  markAllAsRead,
+} from "../../api/notifications";
 import { clearSession } from "../../utils/session";
 import "./Navbar.css";
 
 // Maps the backend's real notification types to an icon + color category.
-// Falls back to a generic bell icon for any type not listed here.
 const NOTIF_STYLES = {
   follow_request: {
     className: "notif-follow",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <line x1="19" y1="8" x2="19" y2="14" />
@@ -18,40 +28,72 @@ const NOTIF_STYLES = {
       </svg>
     ),
   },
+
   follow_accepted: {
     className: "notif-follow",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <polyline points="17 8 19 10 23 6" />
       </svg>
     ),
   },
+
   join_request: {
     className: "notif-applied",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <polyline points="14 2 14 8 20 8" />
         <path d="M9 15l2 2 4-4" />
       </svg>
     ),
   },
+
   new_project: {
     className: "notif-applied",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <polyline points="14 2 14 8 20 8" />
         <path d="M9 15l2 2 4-4" />
       </svg>
     ),
   },
+
   invite: {
     className: "notif-invite",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -59,38 +101,70 @@ const NOTIF_STYLES = {
       </svg>
     ),
   },
+
   request_accepted: {
     className: "notif-hire",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <rect x="2" y="7" width="20" height="14" rx="2" />
         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
       </svg>
     ),
   },
+
   invite_accepted: {
     className: "notif-hire",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <rect x="2" y="7" width="20" height="14" rx="2" />
         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
       </svg>
     ),
   },
+
   request_rejected: {
     className: "notif-rejected",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <circle cx="12" cy="12" r="10" />
         <line x1="15" y1="9" x2="9" y2="15" />
         <line x1="9" y1="9" x2="15" y2="15" />
       </svg>
     ),
   },
+
   invite_rejected: {
     className: "notif-rejected",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <circle cx="12" cy="12" r="10" />
         <line x1="15" y1="9" x2="9" y2="15" />
         <line x1="9" y1="9" x2="15" y2="15" />
@@ -102,7 +176,14 @@ const NOTIF_STYLES = {
 const DEFAULT_NOTIF_STYLE = {
   className: "notif-follow",
   icon: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
       <path d="M13.73 21a2 2 0 0 1-3.46 0" />
     </svg>
@@ -111,6 +192,7 @@ const DEFAULT_NOTIF_STYLE = {
 
 export default function Navbar() {
   const navigate = useNavigate();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -127,6 +209,7 @@ export default function Navbar() {
         // Leave the bell empty if notifications can't be loaded.
       }
     };
+
     loadNotifications();
   }, []);
 
@@ -136,9 +219,13 @@ export default function Navbar() {
 
   const handleNotificationClick = async (notification) => {
     if (notification.isRead) return;
+
     setNotifications((items) =>
-      items.map((n) => (n._id === notification._id ? { ...n, isRead: true } : n))
+      items.map((n) =>
+        n._id === notification._id ? { ...n, isRead: true } : n
+      )
     );
+
     try {
       await markAsRead(notification._id);
     } catch {
@@ -147,7 +234,10 @@ export default function Navbar() {
   };
 
   const handleMarkAllRead = async () => {
-    setNotifications((items) => items.map((n) => ({ ...n, isRead: true })));
+    setNotifications((items) =>
+      items.map((n) => ({ ...n, isRead: true }))
+    );
+
     try {
       await markAllAsRead();
     } catch {
@@ -157,6 +247,7 @@ export default function Navbar() {
 
   const handleSearch = (e) => {
     e.preventDefault();
+
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
       setSearchQuery("");
@@ -172,7 +263,10 @@ export default function Navbar() {
     <nav className="navbar">
       {/* Left side - Logo */}
       <div className="navbar-left">
-        <div className="navbar-logo" onClick={() => navigate("/dashboard")}>
+        <div
+          className="navbar-logo"
+          onClick={() => navigate("/dashboard")}
+        >
           Collab<span>Hive</span>
         </div>
       </div>
@@ -180,10 +274,19 @@ export default function Navbar() {
       {/* Center - Search Bar */}
       <div className="navbar-center">
         <form onSubmit={handleSearch} className="search-form">
-          <svg className="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            className="search-icon"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <circle cx="10" cy="10" r="7" />
             <line x1="15" y1="15" x2="21" y2="21" />
           </svg>
+
           <input
             type="text"
             className="search-input"
@@ -196,23 +299,46 @@ export default function Navbar() {
 
       {/* Right side - Actions */}
       <div className="navbar-right">
+
         {/* Create Project Button */}
-        <button className="create-project-btn" onClick={() => navigate("/create-project")}>
+        <button
+          className="create-project-btn"
+          onClick={() => navigate("/create-project")}
+        >
           Post Project
         </button>
 
         {/* My Posts Button */}
-        <button className="my-posts-btn" onClick={() => navigate("/my-posts")}>
+        <button
+          className="my-posts-btn"
+          onClick={() => navigate("/my-posts")}
+        >
           Posts
         </button>
 
+        {/* Invitations Button */}
+        <button
+          className="my-posts-btn"
+          onClick={() => navigate("/invitations")}
+        >
+          Invitations
+        </button>
+
+        {/* Follow Requests */}
         <button
           className="follow-requests-nav-btn"
           onClick={() => navigate("/follow-requests")}
           aria-label="View follow requests"
           title="Follow requests"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
             <path d="M19 8v6M16 11h6" />
@@ -225,40 +351,80 @@ export default function Navbar() {
             className="notification-btn"
             onClick={handleOpenNotifications}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            {notifications.some((n) => !n.isRead) && <span className="notification-badge"></span>}
+
+            {notifications.some((n) => !n.isRead) && (
+              <span className="notification-badge"></span>
+            )}
           </button>
 
           {showNotifications && (
             <div className="notifications-dropdown">
               <div className="notifications-header">
                 <h3>Notifications</h3>
-                <button className="mark-all-read" onClick={handleMarkAllRead}>Mark all read</button>
+
+                <button
+                  className="mark-all-read"
+                  onClick={handleMarkAllRead}
+                >
+                  Mark all read
+                </button>
               </div>
+
               <div className="notifications-list">
                 {notifications.length > 0 ? (
                   notifications.map((notif) => {
-                    const style = NOTIF_STYLES[notif.type] || DEFAULT_NOTIF_STYLE;
+                    const style =
+                      NOTIF_STYLES[notif.type] || DEFAULT_NOTIF_STYLE;
+
                     return (
                       <div
                         key={notif._id}
-                        className={`notification-item ${!notif.isRead ? "unread" : ""}`}
-                        onClick={() => handleNotificationClick(notif)}
+                        className={`notification-item ${
+                          !notif.isRead ? "unread" : ""
+                        }`}
+                        onClick={() =>
+                          handleNotificationClick(notif)
+                        }
                       >
-                        <div className={`notification-icon ${style.className}`}>{style.icon}</div>
-                        <div className="notification-body">
-                          <div className="notification-text">{notif.message}</div>
-                          <div className="notification-time">{new Date(notif.createdAt).toLocaleString()}</div>
+                        <div
+                          className={`notification-icon ${style.className}`}
+                        >
+                          {style.icon}
                         </div>
-                        {!notif.isRead && <span className="notification-dot"></span>}
+
+                        <div className="notification-body">
+                          <div className="notification-text">
+                            {notif.message}
+                          </div>
+
+                          <div className="notification-time">
+                            {new Date(
+                              notif.createdAt
+                            ).toLocaleString()}
+                          </div>
+                        </div>
+
+                        {!notif.isRead && (
+                          <span className="notification-dot"></span>
+                        )}
                       </div>
                     );
                   })
                 ) : (
-                  <div className="no-notifications">No notifications yet</div>
+                  <div className="no-notifications">
+                    No notifications yet
+                  </div>
                 )}
               </div>
             </div>
@@ -269,35 +435,79 @@ export default function Navbar() {
         <div className="profile-container">
           <button
             className="profile-avatar"
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            onClick={() =>
+              setShowProfileMenu(!showProfileMenu)
+            }
           >
-            {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase() || "U"}
+            {user.fullName
+              ? user.fullName.charAt(0).toUpperCase()
+              : user.email?.charAt(0).toUpperCase() || "U"}
           </button>
 
           {showProfileMenu && (
             <div className="profile-dropdown">
               <div className="profile-info">
-                <div className="profile-name">{user.fullName || user.username || "User"}</div>
-                <div className="profile-email">{user.email}</div>
+                <div className="profile-name">
+                  {user.fullName || user.username || "User"}
+                </div>
+
+                <div className="profile-email">
+                  {user.email}
+                </div>
               </div>
+
               <div className="dropdown-divider"></div>
-              <button className="dropdown-item" onClick={() => navigate("/profile")}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+
+              <button
+                className="dropdown-item"
+                onClick={() => navigate("/profile")}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                   <circle cx="12" cy="7" r="4" />
                 </svg>
                 My Profile
               </button>
-              <button className="dropdown-item" onClick={() => navigate("/settings")}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+
+              <button
+                className="dropdown-item"
+                onClick={() => navigate("/settings")}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <circle cx="12" cy="12" r="3" />
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 1 3 12a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82A1.65 1.65 0 0 0 19.4 10H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
                 </svg>
                 Settings
               </button>
+
               <div className="dropdown-divider"></div>
-              <button className="dropdown-item logout" onClick={handleLogout}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+
+              <button
+                className="dropdown-item logout"
+                onClick={handleLogout}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                   <polyline points="16 17 21 12 16 7" />
                   <line x1="21" y1="12" x2="9" y2="12" />
@@ -311,3 +521,4 @@ export default function Navbar() {
     </nav>
   );
 }
+
