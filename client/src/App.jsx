@@ -10,6 +10,7 @@ import ProfileView from "./pages/Profile/ProfileView";
 import FollowRequests from "./pages/FollowRequests/FollowRequests";
 import Settings from "./pages/Settings/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Invitations from "./pages/Invitations/Invitations";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       <Route path="/profile/:userId" element={<ProtectedRoute><ProfileView /></ProtectedRoute>} />
       <Route path="/follow-requests" element={<ProtectedRoute><FollowRequests /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/invitations" element={<ProtectedRoute><Invitations /></ProtectedRoute>} />
     </Routes>
   );
 }

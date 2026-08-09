@@ -1,0 +1,347 @@
+.invitations-page {
+  min-height: 100vh;
+  background: #0d0d0d;
+  padding: 1.5rem 0 3rem;
+}
+
+.invitations-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
+}
+
+
+/* HEADER */
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.page-header h1 {
+  color: #f5f0e8;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.page-header p {
+  color: rgba(245,240,232,.6);
+  font-size: 0.95rem;
+}
+
+
+/* INVITATION COUNT */
+
+.invitation-count {
+  background: rgba(245,184,76,.1);
+  color: #f5b84c;
+  padding: .3rem .75rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid rgba(245,184,76,.25);
+  white-space: nowrap;
+}
+
+
+/* CARD */
+
+.project-card {
+  background: #141414;
+  border: 1px solid rgba(245,240,232,.06);
+  border-radius: 16px;
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.project-card:hover {
+  box-shadow: 0 12px 32px rgba(0,0,0,.28);
+  transform: translateY(-2px);
+}
+
+
+/* PROJECT HEADER */
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.project-header h2 {
+  color: #f5f0e8;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  margin-bottom: 0.3rem;
+}
+
+.project-header p {
+  color: rgba(245,240,232,.4);
+  font-size: 0.8rem;
+}
+
+
+/* STATUS */
+
+.status {
+  background: rgba(245,184,76,.1);
+  color: #f5b84c;
+  padding: .3rem .75rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid rgba(245,184,76,.25);
+  white-space: nowrap;
+}
+
+
+/* DESCRIPTION */
+
+.description {
+  color: rgba(245,240,232,.7);
+  line-height: 1.65;
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+
+/* INFO ROWS */
+
+.section {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  background: rgba(245,240,232,.03);
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 0.6rem;
+}
+
+.section h3 {
+  min-width: 105px;
+  color: rgba(245,240,232,.45);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+
+/* OWNER */
+
+.owner-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.owner-info span {
+  color: #f5f0e8;
+  font-size: 0.85rem;
+}
+
+.owner-info strong {
+  color: rgba(245,240,232,.45);
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
+
+/* ROLE */
+
+.role {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  color: #f5f0e8;
+  font-size: 0.85rem;
+  flex: 1;
+}
+
+.role span {
+  color: #f5f0e8;
+}
+
+
+/* TAGS */
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.6rem;
+  flex: 1;
+}
+
+.tags span {
+  color: #f5f0e8;
+  font-size: 0.85rem;
+}
+
+.tags span::after {
+  content: ",";
+  margin-right: 6px;
+}
+
+.tags span:last-child::after {
+  content: "";
+}
+
+
+/* TEAM */
+
+.team-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+.team-details span {
+  color: #f5f0e8;
+  font-size: 0.85rem;
+}
+
+
+/* FOOTER */
+
+.project-footer {
+  margin-top: 1.4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+
+/* INVITATION NOTE */
+
+.invitation-note {
+  color: rgba(245,240,232,.45);
+  font-size: 0.78rem;
+}
+
+
+/* ACTIONS */
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.actions button {
+  border: none;
+  border-radius: 10px;
+  padding: .6rem 1.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .2s;
+}
+
+
+/* ACCEPT */
+
+.actions .accept-btn {
+  background: #1f8f5f;
+  color: #f5f0e8;
+}
+
+.actions .accept-btn:hover {
+  background: #27a66e;
+}
+
+
+/* REJECT */
+
+.actions .reject-btn {
+  background: transparent;
+  border: 1px solid rgba(220,53,69,.4);
+  color: #ff8a8a;
+}
+
+.actions .reject-btn:hover {
+  background: rgba(220,53,69,.15);
+}
+
+
+/* EMPTY STATE */
+
+.empty-state {
+  background: #111;
+  border: 1px solid rgba(245,240,232,.08);
+  border-radius: 16px;
+  padding: 3rem;
+  color: rgba(245,240,232,.6);
+  text-align: center;
+}
+
+.empty-state h2 {
+  color: #f5f0e8;
+  margin-bottom: 0.8rem;
+}
+
+.empty-state p {
+  color: rgba(245,240,232,.55);
+}
+
+
+/* MOBILE */
+
+@media (max-width: 900px) {
+  .invitations-container {
+    padding: 0 1.5rem;
+  }
+
+  .project-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 650px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .project-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .section h3 {
+    min-width: auto;
+  }
+
+  .project-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actions button {
+    flex: 1;
+  }
+}
