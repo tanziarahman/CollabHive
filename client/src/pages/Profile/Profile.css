@@ -1000,3 +1000,124 @@
 .profile-page .hex-dot {
   background: #e8923f !important;
 }
+
+/* My Projects tab */
+
+.my-projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.my-project-card {
+  background: #202020;
+  border: 1px solid #292929;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.my-project-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.my-project-card-header h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f5f0e8;
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.my-project-category {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #ffbd0a;
+  background: rgba(255, 189, 10, 0.12);
+  border-radius: 999px;
+  padding: 3px 9px;
+  display: inline-block;
+}
+
+.my-project-chat-btn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid #333;
+  background: #262626;
+  color: #ffbd0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.my-project-chat-btn:hover {
+  background: #ffbd0a;
+  border-color: #ffbd0a;
+  color: #18130a;
+}
+
+.my-project-description {
+  margin: 0 0 12px;
+  color: #a7a19a;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.my-project-collaborators-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #77716b;
+  margin-bottom: 6px;
+}
+
+.my-project-collaborators {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.my-project-collaborator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 999px;
+  background: #262626;
+  border: 1px solid #333;
+  color: #f5f0e8;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.my-project-collaborator-avatar {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  outline: 1px solid #ffbd0a;
+  background: #292929;
+  color: #ffbd0a;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.my-project-collaborator-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
