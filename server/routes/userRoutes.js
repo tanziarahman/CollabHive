@@ -2,6 +2,7 @@ import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
 import {
   updateProfile,
+  searchUsers,
   getSuggestions,
   sendFollowRequest,
   getFollowRequests,
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.put('/profile', protect, updateProfile);
 
+router.get('/search', protect, searchUsers);
 router.get('/suggestions', protect, getSuggestions);
 router.get('/follow-requests', protect, getFollowRequests);
 router.get('/connections/:type', protect, getMyConnections);

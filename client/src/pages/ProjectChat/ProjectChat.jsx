@@ -1,61 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
+import { getProjectById, getProjectMessages } from "../../api/projects";
+import { getSocket, disconnectSocket } from "../../utils/socket";
+import { getStoredUser } from "../../utils/session";
 import "./ProjectChat.css";
-
-// Demo data only — the real project/message backend isn't wired up yet, this
-// page exists so the chat UI can be previewed on its own. "you" is always the
-// current user in this mockup; everyone else is a canned collaborator.
-const DEMO_PROJECT_TITLE = "EcoTrack — Carbon Footprint App";
-
-const DEMO_COLLABORATORS = [
-  { _id: "demo-u1", fullName: "Maria Chen", roleLabel: "Owner", profilePicture: "" },
-  { _id: "demo-u2", fullName: "Alex Rivera", roleLabel: "Frontend Developer", profilePicture: "" },
-  { _id: "demo-u3", fullName: "Sarah Kim", roleLabel: "UI/UX Designer", profilePicture: "" },
-  { _id: "you", fullName: "You", roleLabel: "Backend Developer", profilePicture: "" },
-];
-
-const DEMO_REPLIES = [
-  "Sounds good to me!",
-  "Nice, I'll take a look at that today.",
-  "Can we hop on a quick call about this?",
-  "Agreed — let's go with that approach.",
-  "Just pushed an update, can someone review?",
-];
-
-const now = Date.now();
-const INITIAL_MESSAGES = [
-  {
-    _id: "m1",
-    text: "Hey everyone! Excited to get started on this 🎉",
-    sender: DEMO_COLLABORATORS[0],
-    createdAt: new Date(now - 1000 * 60 * 22).toISOString(),
-  },
-  {
-    _id: "m2",
-    text: "Same here! I'll start on the onboarding flow mockups today.",
-    sender: DEMO_COLLABORATORS[2],
-    createdAt: new Date(now - 1000 * 60 * 18).toISOString(),
-  },
-  {
-    _id: "m3",
-    text: "I'll set up the API routes for tracking entries.",
-    sender: DEMO_COLLABORATORS[3],
-    createdAt: new Date(now - 1000 * 60 * 15).toISOString(),
-  },
-  {
-    _id: "m4",
-    text: "Nice, let me know when the endpoints are ready so I can wire up the app.",
-    sender: DEMO_COLLABORATORS[1],
-    createdAt: new Date(now - 1000 * 60 * 10).toISOString(),
-  },
-];
 
 export default function ProjectChat() {
   const navigate = useNavigate();
+  const { projectId } = useParams();
+  const myId = getStoredUser()?._id;
 
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
+  const [projectTitle, setProjectTitle] = useState("");
+  const [collaborators, setCollaborators] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const messagesEndRef = useRef(null);
 
   const [showCallModal, setShowCallModal] = useState(false);
@@ -66,37 +27,79 @@ export default function ProjectChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {
+    let active = true;
+
+    const load = async () => {
+      try {
+        const [projectRes, messagesRes] = await Promise.all([
+          getProjectById(projectId),
+          getProjectMessages(projectId),
+        ]);
+        if (!active) return;
+
+        const project = projectRes.data;
+        setProjectTitle(project.title);
+
+        const owner = project.createdBy
+          ? [{ ...project.createdBy, roleLabel: "Owner" }]
+          : [];
+        const members = (project.members || [])
+          .filter((m) => m.user)
+          .map((m) => ({ ...m.user, roleLabel: m.role }));
+        setCollaborators([...owner, ...members]);
+        setMessages(messagesRes.data || []);
+      } catch (err) {
+        if (active) {
+          setError(err.response?.data?.message || "Could not load this chat.");
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    load();
+
+    const socket = getSocket();
+    socket.connect();
+    socket.emit("join_project_room", { projectId });
+
+    const handleNewMessage = (message) => {
+      setMessages((prev) => [...prev, message]);
+    };
+    const handleErrorMessage = (err) => {
+      setError(err.message || "Something went wrong.");
+    };
+
+    socket.on("new_message", handleNewMessage);
+    socket.on("error_message", handleErrorMessage);
+
+    return () => {
+      active = false;
+      socket.off("new_message", handleNewMessage);
+      socket.off("error_message", handleErrorMessage);
+      disconnectSocket();
+    };
+  }, [projectId]);
+
   const handleSend = (e) => {
     e.preventDefault();
     const text = messageText.trim();
     if (!text) return;
 
-    const myMessage = {
-      _id: `local-${Date.now()}`,
-      text,
-      sender: DEMO_COLLABORATORS[3],
-      createdAt: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, myMessage]);
+    getSocket().emit("send_message", { projectId, text });
     setMessageText("");
-
-    // Simulated reply so the demo feels alive — not a real backend response.
-    const replyDelay = 900 + Math.random() * 900;
-    window.setTimeout(() => {
-      const others = DEMO_COLLABORATORS.filter((c) => c._id !== "you");
-      const replier = others[Math.floor(Math.random() * others.length)];
-      const replyText = DEMO_REPLIES[Math.floor(Math.random() * DEMO_REPLIES.length)];
-      setMessages((prev) => [
-        ...prev,
-        {
-          _id: `local-reply-${Date.now()}`,
-          text: replyText,
-          sender: replier,
-          createdAt: new Date().toISOString(),
-        },
-      ]);
-    }, replyDelay);
   };
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="project-chat-page">
+          <div className="loading-state">Loading chat...</div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -110,12 +113,12 @@ export default function ProjectChat() {
             </button>
 
             <div className="project-chat-sidebar-header">
-              <h2>{DEMO_PROJECT_TITLE}</h2>
-              <p>{DEMO_COLLABORATORS.length} collaborators</p>
+              <h2>{projectTitle}</h2>
+              <p>{collaborators.length} collaborators</p>
             </div>
 
             <div className="project-chat-collaborators">
-              {DEMO_COLLABORATORS.map((person) => (
+              {collaborators.map((person) => (
                 <div className="project-chat-collaborator" key={person._id}>
                   <span className="project-chat-collaborator-avatar">
                     {person.profilePicture ? (
@@ -137,8 +140,8 @@ export default function ProjectChat() {
           <section className="project-chat-main">
             <div className="project-chat-header">
               <div>
-                <h3>{DEMO_PROJECT_TITLE}</h3>
-                <span className="project-chat-status">Demo preview — not connected to real data</span>
+                <h3>{projectTitle}</h3>
+                {error && <span className="project-chat-status">{error}</span>}
               </div>
               <button
                 type="button"
@@ -154,7 +157,7 @@ export default function ProjectChat() {
 
             <div className="project-chat-messages">
               {messages.map((msg) => {
-                const isMine = msg.sender?._id === "you";
+                const isMine = msg.sender?._id === myId;
                 return (
                   <div key={msg._id} className={`project-chat-message ${isMine ? "mine" : ""}`}>
                     {!isMine && (
@@ -208,13 +211,13 @@ export default function ProjectChat() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="project-chat-call-header">
-              <h3>{DEMO_PROJECT_TITLE} — Group call</h3>
+              <h3>{projectTitle} — Group call</h3>
               <span className="project-chat-call-subtitle">Demo preview — no real audio or video</span>
             </div>
 
             <div className="project-chat-call-grid">
-              {DEMO_COLLABORATORS.map((person) => {
-                const isYou = person._id === "you";
+              {collaborators.map((person) => {
+                const isYou = person._id === myId;
                 return (
                   <div className="project-chat-call-tile" key={person._id}>
                     <div className={`project-chat-call-avatar ${isYou && cameraOff ? "" : "live"}`}>

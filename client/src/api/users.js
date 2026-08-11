@@ -2,6 +2,8 @@ import api from './axiosClient';
 
 export const updateProfile = (data) => api.put('/users/profile', data).then((res) => res.data);
 
+export const searchUsers = (params) => api.get('/users/search', { params }).then((res) => res.data);
+
 export const getSuggestions = () => api.get('/users/suggestions').then((res) => res.data);
 
 export const getFollowRequests = () => api.get('/users/follow-requests').then((res) => res.data);

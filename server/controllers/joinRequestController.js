@@ -170,7 +170,7 @@ export const getProjectJoinRequests = async (req, res) => {
 export const getMyJoinRequests = async (req, res) => {
   try {
     const joinRequests = await JoinRequest.find({ applicant: req.user._id })
-      .populate('project', 'title category')
+      .populate('project', 'title category description skillsRequired techStack totalMembers members')
       .populate('initiatedBy', 'fullName username')
       .sort({ createdAt: -1 });
 

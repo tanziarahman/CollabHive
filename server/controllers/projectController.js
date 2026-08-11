@@ -114,8 +114,9 @@ export const getProjects = async (req, res) => {
 export const getProjectById = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
-      .populate('createdBy', 'fullName username profilePicture email');
-    
+      .populate('createdBy', 'fullName username profilePicture email')
+      .populate('members.user', 'fullName username profilePicture');
+
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
@@ -167,6 +168,54 @@ export const getUserProjects = async (req, res) => {
     });
   } catch (error) {
     console.error('Get user projects error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get every project the logged-in user is involved in (created or joined as a member),
+//          with collaborator info for display (e.g. the Profile page's Projects tab)
+// @route   GET /api/projects/collaborations
+// @access  Private
+export const getMyCollaborations = async (req, res) => {
+  try {
+    const projects = await Project.find({
+      $or: [{ createdBy: req.user._id }, { 'members.user': req.user._id }],
+    })
+      .populate('createdBy', 'fullName username profilePicture')
+      .populate('members.user', 'fullName username profilePicture')
+      .sort({ createdAt: -1 });
+
+    const data = projects.map((project) => {
+      const collaboratorsById = new Map();
+      if (project.createdBy) {
+        collaboratorsById.set(project.createdBy._id.toString(), {
+          _id: project.createdBy._id,
+          fullName: project.createdBy.fullName,
+          profilePicture: project.createdBy.profilePicture,
+        });
+      }
+      project.members.forEach((m) => {
+        if (m.user) {
+          collaboratorsById.set(m.user._id.toString(), {
+            _id: m.user._id,
+            fullName: m.user.fullName,
+            profilePicture: m.user.profilePicture,
+          });
+        }
+      });
+
+      return {
+        _id: project._id,
+        title: project.title,
+        category: project.category,
+        description: project.description,
+        collaborators: Array.from(collaboratorsById.values()),
+      };
+    });
+
+    res.status(200).json({ success: true, count: data.length, data });
+  } catch (error) {
+    console.error('Get my collaborations error:', error);
     res.status(500).json({ message: error.message });
   }
 };

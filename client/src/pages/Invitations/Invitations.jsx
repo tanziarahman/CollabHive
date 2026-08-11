@@ -1,81 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
+import { getMyJoinRequests, acceptJoinRequest, rejectJoinRequest } from "../../api/joinRequests";
 import "./Invitations.css";
-
-const dummyInvitations = [
-  {
-    id: "1",
-    title: "AI Study Assistant",
-    description:
-      "An AI-powered study assistant that helps students create personalized study plans, generate quizzes, and track their learning progress.",
-    ownerId: "REPLACE_WITH_REAL_USER_ID_1",
-    owner: "Rafiq Islam",
-    role: "Frontend Developer",
-    skills: ["React", "JavaScript", "CSS", "Figma"],
-    techStack: ["React", "Node.js", "MongoDB", "Express"],
-    members: 2,
-    maxMembers: 4,
-  },
-  {
-    id: "2",
-    title: "Campus Connect",
-    description:
-      "A collaboration platform for university students to find teammates, share ideas, and work together on academic and personal projects.",
-    ownerId: "REPLACE_WITH_REAL_USER_ID_2",
-    owner: "Sarah Ahmed",
-    role: "Backend Developer",
-    skills: ["Node.js", "Express", "MongoDB", "REST API"],
-    techStack: ["Node.js", "Express", "MongoDB", "React"],
-    members: 3,
-    maxMembers: 5,
-  },
-  {
-    id: "3",
-    title: "JobMatch AI",
-    description:
-      "An intelligent job recommendation platform that matches candidates with relevant job opportunities based on their skills, experience, and interests.",
-    ownerId: "REPLACE_WITH_REAL_USER_ID_3",
-    owner: "Tanvir Hossain",
-    role: "Machine Learning Engineer",
-    skills: ["Python", "Machine Learning", "Pandas", "Scikit-learn"],
-    techStack: ["Python", "FastAPI", "Scikit-learn", "PostgreSQL"],
-    members: 2,
-    maxMembers: 4,
-  },
-  {
-    id: "4",
-    title: "BudgetBuddy",
-    description:
-      "A personal finance management application that allows users to track expenses, create budgets, and visualize their spending habits.",
-    ownerId: "REPLACE_WITH_REAL_USER_ID_4",
-    owner: "Meherin Chowdhury",
-    role: "React Developer",
-    skills: ["React", "JavaScript", "Chart.js", "CSS"],
-    techStack: ["React", "Node.js", "Express", "MongoDB"],
-    members: 3,
-    maxMembers: 4,
-  },
-];
 
 export default function Invitations() {
   const navigate = useNavigate();
+  const [invitations, setInvitations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [respondingId, setRespondingId] = useState(null);
 
-  const [invitations, setInvitations] =
-    useState(dummyInvitations);
+  useEffect(() => {
+    const loadInvitations = async () => {
+      try {
+        const res = await getMyJoinRequests();
+        const pendingInvites = (res.data || []).filter(
+          (jr) => jr.type === "invite" && jr.status === "pending"
+        );
+        setInvitations(pendingInvites);
+      } catch (err) {
+        setError(err.response?.data?.message || "Could not load invitations.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadInvitations();
+  }, []);
 
-  const handleAccept = (id) => {
-    // Replace with backend API later.
-    setInvitations((prev) =>
-      prev.filter((invitation) => invitation.id !== id)
-    );
-  };
-
-  const handleReject = (id) => {
-    // Replace with backend API later.
-    setInvitations((prev) =>
-      prev.filter((invitation) => invitation.id !== id)
-    );
+  const respond = async (id, action) => {
+    setRespondingId(id);
+    try {
+      if (action === "accept") {
+        await acceptJoinRequest(id);
+      } else {
+        await rejectJoinRequest(id);
+      }
+      setInvitations((prev) => prev.filter((invitation) => invitation._id !== id));
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not respond to this invitation.");
+    } finally {
+      setRespondingId(null);
+    }
   };
 
   const handleOwnerClick = (ownerId) => {
@@ -110,177 +76,187 @@ export default function Invitations() {
             </div>
           </div>
 
-          {/* INVITATIONS */}
-          {invitations.length > 0 ? (
+          {error && <div className="empty-state"><p>{error}</p></div>}
+
+          {loading ? (
+            <div className="empty-state"><p>Loading invitations...</p></div>
+          ) : !error && invitations.length > 0 ? (
             <div className="invitation-list">
 
-              {invitations.map((invitation) => (
-                <article
-                  className="invitation-card"
-                  key={invitation.id}
-                >
+              {invitations.map((invitation) => {
+                const project = invitation.project || {};
+                const members = project.members?.length || 0;
+                const maxMembers = project.totalMembers || 0;
 
-                  {/* TOP SECTION */}
-                  <div className="invitation-top">
+                return (
+                  <article
+                    className="invitation-card"
+                    key={invitation._id}
+                  >
 
-                    {/* PROJECT */}
-                    <div className="project-heading">
-                      <div className="invitation-title">
-                        <h2>{invitation.title}</h2>
+                    {/* TOP SECTION */}
+                    <div className="invitation-top">
 
-                        <p>
-                          You've been invited to join this
-                          collaboration.
-                        </p>
+                      {/* PROJECT */}
+                      <div className="project-heading">
+                        <div className="invitation-title">
+                          <h2>{project.title}</h2>
+
+                          <p>
+                            You've been invited to join this
+                            collaboration.
+                          </p>
+                        </div>
                       </div>
+
+                      {/* OWNER */}
+                      <div className="owner-section">
+                        <div
+                          className="owner-profile"
+                          onClick={() =>
+                            handleOwnerClick(
+                              invitation.initiatedBy?._id
+                            )
+                          }
+                        >
+                          <div className="owner-avatar">
+                            {invitation.initiatedBy?.fullName
+                              ?.charAt(0)
+                              .toUpperCase()}
+                          </div>
+
+                          <strong className="owner-name">
+                            {invitation.initiatedBy?.fullName}
+                          </strong>
+                        </div>
+                      </div>
+
                     </div>
 
-                    {/* OWNER */}
-                    <div className="owner-section">
-                      <div
-                        className="owner-profile"
-                        onClick={() =>
-                          handleOwnerClick(
-                            invitation.ownerId
-                          )
-                        }
-                      >
-                        <div className="owner-avatar">
-                          {invitation.owner
-                            .charAt(0)
-                            .toUpperCase()}
-                        </div>
+                    {/* PROJECT DETAILS */}
+                    <div className="invitation-details">
 
-                        <strong className="owner-name">
-                          {invitation.owner}
+                      {/* ROLE */}
+                      <div className="role-box">
+                        <span className="detail-label">
+                          INVITED ROLE
+                        </span>
+
+                        <strong>
+                          {invitation.role}
                         </strong>
                       </div>
-                    </div>
 
-                  </div>
+                      {/* DESCRIPTION */}
+                      <div className="project-info">
+                        <span className="detail-label">
+                          ABOUT THE PROJECT
+                        </span>
 
-                  {/* PROJECT DETAILS */}
-                  <div className="invitation-details">
-
-                    {/* ROLE */}
-                    <div className="role-box">
-                      <span className="detail-label">
-                        INVITED ROLE
-                      </span>
-
-                      <strong>
-                        {invitation.role}
-                      </strong>
-                    </div>
-
-                    {/* DESCRIPTION */}
-                    <div className="project-info">
-                      <span className="detail-label">
-                        ABOUT THE PROJECT
-                      </span>
-
-                      <p>
-                        {invitation.description}
-                      </p>
-                    </div>
-
-                    {/* SKILLS + TECH STACK IN SAME BLOCK */}
-                    <div className="skills-area">
-
-                      <span className="detail-label">
-                        SKILLS
-                      </span>
-
-                      <div className="skill-list">
-                        {invitation.skills.map(
-                          (skill) => (
-                            <span key={skill}>
-                              {skill}
-                            </span>
-                          )
-                        )}
+                        <p>
+                          {project.description}
+                        </p>
                       </div>
 
-                      <span
-                        className="detail-label"
-                        style={{ marginTop: "0.8rem" }}
-                      >
-                        TECH STACK
-                      </span>
+                      {/* SKILLS + TECH STACK IN SAME BLOCK */}
+                      <div className="skills-area">
 
-                      <div className="skill-list">
-                        {invitation.techStack.map(
-                          (tech) => (
-                            <span key={tech}>
-                              {tech}
-                            </span>
-                          )
-                        )}
+                        <span className="detail-label">
+                          SKILLS
+                        </span>
+
+                        <div className="skill-list">
+                          {(project.skillsRequired || []).map(
+                            (skill) => (
+                              <span key={skill}>
+                                {skill}
+                              </span>
+                            )
+                          )}
+                        </div>
+
+                        <span
+                          className="detail-label"
+                          style={{ marginTop: "0.8rem" }}
+                        >
+                          TECH STACK
+                        </span>
+
+                        <div className="skill-list">
+                          {(project.techStack || []).map(
+                            (tech) => (
+                              <span key={tech}>
+                                {tech}
+                              </span>
+                            )
+                          )}
+                        </div>
+
                       </div>
 
                     </div>
 
-                  </div>
+                    {/* BOTTOM */}
+                    <div className="invitation-bottom">
 
-                  {/* BOTTOM */}
-                  <div className="invitation-bottom">
+                      <div className="team-summary">
+                        <span>
+                          {members}/
+                          {maxMembers} members
+                        </span>
 
-                    <div className="team-summary">
-                      <span>
-                        {invitation.members}/
-                        {invitation.maxMembers} members
-                      </span>
+                        <span className="summary-divider">
+                          •
+                        </span>
 
-                      <span className="summary-divider">
-                        •
-                      </span>
+                        <span>
+                          {maxMembers - members}{" "}
+                          spot
+                          {maxMembers - members !== 1
+                            ? "s"
+                            : ""}{" "}
+                          available
+                        </span>
+                      </div>
 
-                      <span>
-                        {invitation.maxMembers -
-                          invitation.members}{" "}
-                        spot
-                        {invitation.maxMembers -
-                          invitation.members !==
-                        1
-                          ? "s"
-                          : ""}{" "}
-                        available
-                      </span>
+                      <div className="invitation-actions">
+
+                        <button
+                          className="reject-btn"
+                          disabled={respondingId === invitation._id}
+                          onClick={() =>
+                            respond(
+                              invitation._id,
+                              "reject"
+                            )
+                          }
+                        >
+                          Reject
+                        </button>
+
+                        <button
+                          className="accept-btn"
+                          disabled={respondingId === invitation._id}
+                          onClick={() =>
+                            respond(
+                              invitation._id,
+                              "accept"
+                            )
+                          }
+                        >
+                          Accept Invitation
+                        </button>
+
+                      </div>
+
                     </div>
 
-                    <div className="invitation-actions">
-
-                      <button
-                        className="reject-btn"
-                        onClick={() =>
-                          handleReject(
-                            invitation.id
-                          )
-                        }
-                      >
-                        Reject
-                      </button>
-
-                      <button
-                        className="accept-btn"
-                        onClick={() =>
-                          handleAccept(
-                            invitation.id
-                          )
-                        }
-                      >
-                        Accept Invitation
-                      </button>
-
-                    </div>
-
-                  </div>
-
-                </article>
-              ))}
+                  </article>
+                );
+              })}
 
             </div>
-          ) : (
+          ) : !error && (
 
             /* EMPTY STATE */
             <div className="empty-state">

@@ -5,11 +5,13 @@ import {
   getMyProjects,
   deleteProject,
   getProjectJoinRequests,
+  inviteUser,
 } from "../../api/projects";
 import {
   acceptJoinRequest,
   rejectJoinRequest,
 } from "../../api/joinRequests";
+import { searchUsers } from "../../api/users";
 import "./Posts.css";
 
 export default function Posts() {
@@ -50,230 +52,7 @@ export default function Posts() {
   const fetchMyProjects = async () => {
     try {
       const data = await getMyProjects();
-
-      const dummyProjects = [
-        {
-          _id: "project1",
-          title: "Campus Connect",
-          description:
-            "A platform that helps university students connect, collaborate, and create projects together.",
-          createdAt: "2026-08-01T10:00:00Z",
-
-          techStack: [
-            "React",
-            "Node.js",
-            "Express",
-            "MongoDB",
-          ],
-
-          skillsRequired: [
-            "React",
-            "Node.js",
-            "MongoDB",
-            "Figma",
-          ],
-
-          roleAllocations: [
-            {
-              role: "Frontend Developer",
-              count: 1,
-            },
-            {
-              role: "Backend Developer",
-              count: 1,
-            },
-            {
-              role: "UI/UX Designer",
-              count: 1,
-            },
-          ],
-
-          githubRepo:
-            "https://github.com/example/campus-connect",
-
-          demoLink:
-            "https://campus-connect-demo.example.com",
-
-          members: ["user1", "user2"],
-        },
-
-        {
-          _id: "project2",
-          title: "AI Study Assistant",
-          description:
-            "An AI-powered study assistant that generates summaries, quizzes, and personalized learning recommendations.",
-          createdAt: "2026-07-28T14:30:00Z",
-
-          techStack: [
-            "Python",
-            "FastAPI",
-            "React",
-            "PostgreSQL",
-          ],
-
-          skillsRequired: [
-            "Python",
-            "FastAPI",
-            "React",
-            "Machine Learning",
-          ],
-
-          roleAllocations: [
-            {
-              role: "ML Engineer",
-              count: 1,
-            },
-            {
-              role: "Frontend Developer",
-              count: 1,
-            },
-            {
-              role: "Backend Developer",
-              count: 1,
-            },
-          ],
-
-          githubRepo:
-            "https://github.com/example/ai-study-assistant",
-
-          demoLink: "",
-
-          members: ["user1"],
-        },
-
-        {
-          _id: "project3",
-          title: "BudgetBuddy",
-          description:
-            "A personal finance application for tracking expenses, setting budgets, and visualizing spending habits.",
-          createdAt: "2026-07-20T09:15:00Z",
-
-          techStack: [
-            "React",
-            "Express",
-            "MongoDB",
-            "Chart.js",
-          ],
-
-          skillsRequired: [
-            "React",
-            "Express",
-            "MongoDB",
-            "Chart.js",
-          ],
-
-          roleAllocations: [
-            {
-              role: "Frontend Developer",
-              count: 2,
-            },
-            {
-              role: "Backend Developer",
-              count: 1,
-            },
-          ],
-
-          githubRepo:
-            "https://github.com/example/budget-buddy",
-
-          demoLink:
-            "https://budget-buddy.example.com",
-
-          members: ["user1", "user3", "user4"],
-        },
-
-        {
-          _id: "project4",
-          title: "HealthTrack",
-          description:
-            "A web application that allows users to monitor daily activities, set fitness goals, and track their progress.",
-          createdAt: "2026-07-15T16:45:00Z",
-
-          techStack: [
-            "Next.js",
-            "TypeScript",
-            "PostgreSQL",
-            "Tailwind CSS",
-          ],
-
-          skillsRequired: [
-            "Next.js",
-            "TypeScript",
-            "PostgreSQL",
-            "Tailwind CSS",
-          ],
-
-          roleAllocations: [
-            {
-              role: "Full Stack Developer",
-              count: 1,
-            },
-            {
-              role: "UI/UX Designer",
-              count: 1,
-            },
-            {
-              role: "QA Engineer",
-              count: 1,
-            },
-          ],
-
-          githubRepo:
-            "https://github.com/example/health-track",
-
-          demoLink:
-            "https://health-track.example.com",
-
-          members: ["user1", "user5"],
-        },
-
-        {
-          _id: "project5",
-          title: "JobMatch AI",
-          description:
-            "An intelligent job recommendation platform that matches candidates with relevant job opportunities based on their skills.",
-          createdAt: "2026-07-05T11:20:00Z",
-
-          techStack: [
-            "Python",
-            "FastAPI",
-            "React",
-            "PostgreSQL",
-          ],
-
-          skillsRequired: [
-            "Python",
-            "Machine Learning",
-            "React",
-            "PostgreSQL",
-          ],
-
-          roleAllocations: [
-            {
-              role: "Machine Learning Engineer",
-              count: 1,
-            },
-            {
-              role: "React Developer",
-              count: 1,
-            },
-            {
-              role: "Backend Developer",
-              count: 1,
-            },
-          ],
-
-          githubRepo:
-            "https://github.com/example/jobmatch-ai",
-
-          demoLink:
-            "https://jobmatch-ai.example.com",
-
-          members: ["user1", "user2"],
-        },
-      ];
-
-      setProjects(dummyProjects);
+      setProjects(data.data || []);
       setError("");
     } catch (err) {
       setError(
@@ -367,93 +146,14 @@ export default function Posts() {
     setLoadingCandidates(true);
 
     try {
-      const token = localStorage.getItem("token");
-
-      const skillsQuery = (
-        project.skillsRequired || []
-      ).join(",");
-
-      const response = await fetch(
-        `http://localhost:5000/api/users/search?skills=${encodeURIComponent(
-          skillsQuery
-        )}&excludeProjectId=${project._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error();
-      }
-
-      const data = await response.json();
-
-      setInviteCandidates(data);
+      const skillsQuery = (project.skillsRequired || []).join(",");
+      const candidates = await searchUsers({
+        skills: skillsQuery,
+        excludeProjectId: project._id,
+      });
+      setInviteCandidates(candidates);
     } catch {
-      // Demo fallback until the backend search endpoint exists
-
-      const required =
-        project.skillsRequired || [];
-
-      const demoUsers = [
-        {
-          _id: "u1",
-          fullName: "Sarah Ahmed",
-          skills: [
-            "React",
-            "CSS",
-            "Figma",
-          ],
-        },
-        {
-          _id: "u2",
-          fullName: "Rafiq Islam",
-          skills: [
-            "Node.js",
-            "Express",
-            "MongoDB",
-          ],
-        },
-        {
-          _id: "u3",
-          fullName: "Meherin Chowdhury",
-          skills: [
-            "React",
-            "JavaScript",
-          ],
-        },
-        {
-          _id: "u4",
-          fullName: "Tanvir Hossain",
-          skills: [
-            "Python",
-            "FastAPI",
-          ],
-        },
-        {
-          _id: "u5",
-          fullName: "Nusrat Jahan",
-          skills: [
-            "React",
-            "Node.js",
-          ],
-        },
-      ];
-
-      const filtered = demoUsers
-        .map((u) => ({
-          ...u,
-          matchingSkills: u.skills.filter(
-            (s) => required.includes(s)
-          ),
-        }))
-        .filter(
-          (u) => u.matchingSkills.length > 0
-        );
-
-      setInviteCandidates(filtered);
+      setInviteCandidates([]);
     } finally {
       setLoadingCandidates(false);
     }
@@ -470,39 +170,14 @@ export default function Posts() {
     setInvitingId(candidateId);
 
     try {
-      const token =
-        localStorage.getItem("token");
-
-      const response = await fetch(
-        `http://localhost:5000/api/projects/${inviteContext.project._id}/invite`,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-
-          body: JSON.stringify({
-            userId: candidateId,
-            role: inviteContext.role,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error();
-      }
-    } catch {
-      // Backend endpoint not built yet
-      // Invite still marked as sent locally
+      await inviteUser(inviteContext.project._id, {
+        userId: candidateId,
+        role: inviteContext.role,
+      });
+      setInvitedIds((prev) => [...prev, candidateId]);
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not send invite.");
     } finally {
-      setInvitedIds((prev) => [
-        ...prev,
-        candidateId,
-      ]);
-
       setInvitingId(null);
     }
   };

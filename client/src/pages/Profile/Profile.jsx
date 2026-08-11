@@ -3,51 +3,12 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import { getMe } from "../../api/auth";
 import { updateProfile, getConnections } from "../../api/users";
+import { getMyCollaborations } from "../../api/projects";
 import "./Profile.css";
 
 const AVAILABILITY_OPTIONS = ["Available", "Busy", "Open to Offers"];
 const TABS = ["Info", "Education", "About", "Résumé", "Projects"];
 
-// Demo data only — the real "projects I've created/joined" backend isn't wired up yet,
-// this is here so the Projects tab UI can be previewed on its own.
-const DEMO_PROJECTS = [
-  {
-    _id: "demo-1",
-    title: "EcoTrack — Carbon Footprint App",
-    category: "Mobile App",
-    description:
-      "A mobile app that helps users track and reduce their daily carbon footprint through gamified challenges and community leaderboards.",
-    collaborators: [
-      { _id: "demo-u1", fullName: "Maria Chen", profilePicture: "" },
-      { _id: "demo-u2", fullName: "Alex Rivera", profilePicture: "" },
-      { _id: "demo-u3", fullName: "Sarah Kim", profilePicture: "" },
-    ],
-  },
-  {
-    _id: "demo-2",
-    title: "DevConnect — Developer Networking Platform",
-    category: "Web App",
-    description:
-      "A platform connecting developers based on tech stack and interests, with built-in project collaboration tools.",
-    collaborators: [
-      { _id: "demo-u4", fullName: "James Okafor", profilePicture: "" },
-      { _id: "demo-u1", fullName: "Maria Chen", profilePicture: "" },
-    ],
-  },
-  {
-    _id: "demo-3",
-    title: "StudyBuddy AI",
-    category: "AI / ML",
-    description:
-      "An AI-powered study companion that generates personalized quizzes and flashcards from lecture notes.",
-    collaborators: [
-      { _id: "demo-u5", fullName: "Priya Patel", profilePicture: "" },
-      { _id: "demo-u2", fullName: "Alex Rivera", profilePicture: "" },
-      { _id: "demo-u6", fullName: "Tom Wilson", profilePicture: "" },
-      { _id: "demo-u3", fullName: "Sarah Kim", profilePicture: "" },
-    ],
-  },
-];
 
 function TagField({ label, placeholder, values, onAdd, onRemove }) {
   const [draft, setDraft] = useState("");
@@ -135,6 +96,22 @@ export default function Profile() {
   const [connectionType, setConnectionType] = useState("");
   const [connectionsLoading, setConnectionsLoading] = useState(false);
   const [connectionCounts, setConnectionCounts] = useState({ followers: 0, following: 0 });
+  const [myCollaborations, setMyCollaborations] = useState([]);
+  const [collaborationsLoading, setCollaborationsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCollaborations = async () => {
+      try {
+        const res = await getMyCollaborations();
+        setMyCollaborations(res.data || []);
+      } catch {
+        setMyCollaborations([]);
+      } finally {
+        setCollaborationsLoading(false);
+      }
+    };
+    loadCollaborations();
+  }, []);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -705,13 +682,15 @@ export default function Profile() {
                     <span className="hex-dot" /> My projects
                   </h3>
 
-                  {DEMO_PROJECTS.length === 0 ? (
+                  {collaborationsLoading ? (
+                    <p className="pill-empty">Loading your projects...</p>
+                  ) : myCollaborations.length === 0 ? (
                     <p className="pill-empty">
                       You haven't created or joined any projects yet.
                     </p>
                   ) : (
                     <div className="my-projects-list">
-                      {DEMO_PROJECTS.map((project) => (
+                      {myCollaborations.map((project) => (
                         <div className="my-project-card" key={project._id}>
                           <div className="my-project-card-header">
                             <div>

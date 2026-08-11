@@ -6,6 +6,8 @@ export const getProjectFeed = () => api.get('/projects/feed').then((res) => res.
 
 export const getMyProjects = () => api.get('/projects/user/my-projects').then((res) => res.data);
 
+export const getMyCollaborations = () => api.get('/projects/collaborations').then((res) => res.data);
+
 export const getProjectById = (id) => api.get(`/projects/${id}`).then((res) => res.data);
 
 export const createProject = (data) => api.post('/projects', data).then((res) => res.data);

@@ -5,6 +5,7 @@ import {
   getProjectById,
   getProjectFeed,
   getUserProjects,
+  getMyCollaborations,
   updateProject,
   deleteProject,
   getSuggestedCollaborators,
@@ -28,6 +29,7 @@ router.get('/', getProjects);
 router.post('/', protect, createProject);
 router.get('/feed', protect, getProjectFeed);
 router.get('/user/my-projects', protect, getUserProjects);
+router.get('/collaborations', protect, getMyCollaborations);
 
 // Public route with a param — must come after '/feed' and other literal paths
 router.get('/:id', getProjectById);
