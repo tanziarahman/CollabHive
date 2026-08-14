@@ -68,10 +68,27 @@ export default function Profile() {
   const goNext = () => setActiveTab(TABS[(tabIndex + 1) % TABS.length]);
 
   const [photoUrl, setPhotoUrl] = useState(null);
+  const [pendingPhoto, setPendingPhoto] = useState(null);
   const photoInputRef = useRef(null);
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) setPhotoUrl(URL.createObjectURL(file));
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please choose an image file.");
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      alert("Please choose an image smaller than 3MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPhotoUrl(reader.result);
+      setPendingPhoto(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const [name, setName] = useState("");
@@ -278,7 +295,9 @@ export default function Profile() {
         interests,
         skills,
         availability: status,
+        ...(pendingPhoto ? { profilePicture: pendingPhoto } : {}),
       });
+      setPendingPhoto(null);
       setSaveMessage("Saved!");
     } catch (err) {
       setSaveMessage(err.response?.data?.message || "Could not save profile.");

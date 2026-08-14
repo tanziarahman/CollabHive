@@ -27,6 +27,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
     interests,
     experienceLevel,
     availability,
+    profilePicture,
   } = req.body;
 
   if (bio !== undefined) user.bio = bio;
@@ -36,6 +37,18 @@ export const updateProfile = asyncHandler(async (req, res) => {
   if (linkedinURL !== undefined) user.linkedinURL = linkedinURL;
   if (experienceLevel !== undefined) user.experienceLevel = experienceLevel;
   if (availability !== undefined) user.availability = availability;
+
+  if (profilePicture !== undefined) {
+    if (profilePicture !== '' && !/^data:image\/(png|jpe?g|gif|webp);base64,/.test(profilePicture)) {
+      res.status(400);
+      throw new Error('Profile picture must be a valid image file');
+    }
+    if (profilePicture.length > 4 * 1024 * 1024) {
+      res.status(400);
+      throw new Error('Profile picture is too large (max ~3MB)');
+    }
+    user.profilePicture = profilePicture;
+  }
 
   let skillsChanged = false;
 
