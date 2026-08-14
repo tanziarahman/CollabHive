@@ -152,6 +152,63 @@ export default function Profile() {
   const [invitedIds, setInvitedIds] = useState([]);
   const [invitingId, setInvitingId] = useState(null);
 
+  // Always-visible "recommended people to invite" preview per owned project,
+  // so the skill-match feature doesn't depend on the user noticing/clicking
+  // an "Invite for <role>" button first.
+  const [recommendationsByProject, setRecommendationsByProject] = useState({});
+  const [inlineInvitedIds, setInlineInvitedIds] = useState({});
+  const [inlineInvitingKey, setInlineInvitingKey] = useState(null);
+  const fetchedRecommendationsRef = useRef(new Set());
+
+  useEffect(() => {
+    myCollaborations.forEach((project) => {
+      if (!project.isOwner) return;
+      if (fetchedRecommendationsRef.current.has(project._id)) return;
+      fetchedRecommendationsRef.current.add(project._id);
+
+      setRecommendationsByProject((prev) => ({
+        ...prev,
+        [project._id]: { loading: true, candidates: [] },
+      }));
+
+      getSuggestedCollaborators(project._id, 5)
+        .then((res) => {
+          const candidates = (res.data || []).map((suggestion) => ({
+            ...suggestion.user,
+            matchScore: suggestion.matchScore,
+          }));
+          setRecommendationsByProject((prev) => ({
+            ...prev,
+            [project._id]: { loading: false, candidates },
+          }));
+        })
+        .catch(() => {
+          setRecommendationsByProject((prev) => ({
+            ...prev,
+            [project._id]: { loading: false, candidates: [] },
+          }));
+        });
+    });
+  }, [myCollaborations]);
+
+  const handleInlineInvite = async (project, candidateId) => {
+    const role = project.roleAllocations?.[0]?.role;
+    if (!role) return;
+    const key = `${project._id}:${candidateId}`;
+    setInlineInvitingKey(key);
+    try {
+      await inviteUser(project._id, { userId: candidateId, role });
+      setInlineInvitedIds((prev) => ({
+        ...prev,
+        [project._id]: [...(prev[project._id] || []), candidateId],
+      }));
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not send invite.");
+    } finally {
+      setInlineInvitingKey(null);
+    }
+  };
+
   const handleDeleteProject = async (projectId) => {
     if (!window.confirm("Delete this project? This cannot be undone.")) return;
     try {
@@ -843,6 +900,71 @@ export default function Profile() {
                                   </button>
                                 ))}
                               </div>
+
+                              <div className="my-project-collaborators-label">Recommended people to invite</div>
+                              {(() => {
+                                const rec = recommendationsByProject[project._id];
+                                if (!rec || rec.loading) {
+                                  return <p className="recommend-hint">Finding the best matches...</p>;
+                                }
+                                if (rec.candidates.length === 0) {
+                                  return (
+                                    <p className="recommend-hint">
+                                      No matching people found yet — add more skills to your profile or project to improve matches.
+                                    </p>
+                                  );
+                                }
+                                const invitedHere = inlineInvitedIds[project._id] || [];
+                                return (
+                                  <div className="recommend-list">
+                                    {rec.candidates.map((candidate) => {
+                                      const key = `${project._id}:${candidate._id}`;
+                                      const alreadyInvited = invitedHere.includes(candidate._id);
+                                      return (
+                                        <div className="recommend-row" key={candidate._id}>
+                                          <span className="my-project-collaborator-avatar">
+                                            {candidate.profilePicture ? (
+                                              <img src={candidate.profilePicture} alt="" />
+                                            ) : (
+                                              candidate.fullName?.charAt(0)
+                                            )}
+                                          </span>
+                                          <span className="recommend-name">
+                                            {candidate.fullName}
+                                            <small>
+                                              {Math.round((candidate.matchScore || 0) * 100)}% match
+                                              {(candidate.skills || []).length > 0
+                                                ? ` · ${candidate.skills.slice(0, 3).join(", ")}`
+                                                : ""}
+                                            </small>
+                                          </span>
+                                          <div className="recommend-row-actions">
+                                            <button
+                                              type="button"
+                                              className="recommend-invite-btn"
+                                              onClick={() => navigate(`/profile/${candidate._id}`)}
+                                            >
+                                              View
+                                            </button>
+                                            {alreadyInvited ? (
+                                              <span className="recommend-invited-label">Invited</span>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                className="recommend-invite-btn primary"
+                                                disabled={inlineInvitingKey === key}
+                                                onClick={() => handleInlineInvite(project, candidate._id)}
+                                              >
+                                                {inlineInvitingKey === key ? "Inviting..." : "Invite"}
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })()}
 
                               <div className="my-project-owner-actions">
                                 <button type="button" onClick={() => openApplicants(project)}>
