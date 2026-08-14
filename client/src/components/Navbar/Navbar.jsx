@@ -327,7 +327,7 @@ export default function Navbar({ hideSearch = false, searchValue, onSearchChange
     if (isControlledSearch) return;
 
     if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      navigate(`/follow-requests?q=${encodeURIComponent(searchQuery)}`);
       setSearchQuery("");
     }
   };
@@ -392,12 +392,12 @@ export default function Navbar({ hideSearch = false, searchValue, onSearchChange
           Posts
         </button>
 
-        {/* Follow Requests */}
+        {/* Find People */}
         <button
           className={`follow-requests-nav-btn ${location.pathname === "/follow-requests" ? "active" : ""}`}
           onClick={() => navigate("/follow-requests")}
-          aria-label="View follow requests"
-          title="Follow requests"
+          aria-label="Find people to follow"
+          title="Find people"
         >
           <svg
             width="20"

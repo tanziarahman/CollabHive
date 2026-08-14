@@ -3,10 +3,7 @@
 .eyebrow { margin: 0 0 .35rem; color: #f5b84c; font-size: .76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
 .requests-content h1 { margin: 0; font-size: 2.15rem; letter-spacing: -.04em; }
 .requests-subtitle { margin: .4rem 0 1.7rem; color: rgba(245,240,232,.58); font-size: .88rem; }
-.requests-search { display: flex; align-items: center; gap: .6rem; margin-bottom: 1.5rem; padding: .75rem 1rem; background: #151515; border: 1px solid rgba(245,240,232,.1); border-radius: 12px; color: rgba(245,240,232,.4); transition: border-color .2s; }
-.requests-search:focus-within { border-color: #f5b84c; color: #f5b84c; }
-.requests-search input { flex: 1; border: 0; background: transparent; outline: none; color: #f5f0e8; font-size: .88rem; font-family: inherit; }
-.requests-search input::placeholder { color: rgba(245,240,232,.35); }
+.section-label { margin: 0 0 1rem; font-size: 1.1rem; color: #f5f0e8; }
 .request-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.1rem; }
 
 .request-card {
@@ -78,6 +75,16 @@
 .request-decline { border: 1px solid rgba(245,240,232,.14); background: rgba(245,240,232,.06); color: #f5f0e8; }
 .request-decline:hover:not(:disabled) { background: rgba(245,240,232,.1); }
 .request-card-actions button:disabled { opacity: .5; cursor: not-allowed; }
+
+.request-status {
+  text-align: center;
+  padding: .55rem .85rem;
+  border-radius: 7px;
+  font-size: .82rem;
+  font-weight: 700;
+  color: rgba(245,240,232,.55);
+  border: 1px solid rgba(245,240,232,.1);
+}
 
 .requests-empty { padding: 2rem; border: 1px dashed rgba(245,240,232,.16); border-radius: 14px; color: rgba(245,240,232,.55); text-align: center; }
 
