@@ -27,7 +27,7 @@ export default function RegisterPage() {
     try {
       const data = await register(formData);
       setSession(data);
-      navigate("/dashboard");
+      navigate("/my-posts");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
     } finally {

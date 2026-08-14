@@ -8,6 +8,35 @@ import "./Profile.css";
 const AVAILABILITY_OPTIONS = ["Available", "Busy", "Open to Offers"];
 const TABS = ["Info", "Education", "About", "Résumé", "Projects"];
 
+// Demo data only — the "recent projects I've done" list in the sidebar isn't
+// wired up to a real backend yet, so these are canned entries with GitHub links.
+const DEMO_RECENT_PROJECTS = [
+  {
+    id: "recent-1",
+    name: "EcoTrack",
+    description: "A mobile app that helps users track and reduce their daily carbon footprint.",
+    githubLink: "https://github.com/example/ecotrack",
+  },
+  {
+    id: "recent-2",
+    name: "DevConnect",
+    description: "A developer networking platform with built-in project collaboration tools.",
+    githubLink: "https://github.com/example/devconnect",
+  },
+  {
+    id: "recent-3",
+    name: "StudyBuddy AI",
+    description: "An AI-powered study companion that generates quizzes from lecture notes.",
+    githubLink: "https://github.com/example/studybuddy-ai",
+  },
+  {
+    id: "recent-4",
+    name: "BudgetBuddy",
+    description: "A personal finance app for tracking expenses and visualizing spending habits.",
+    githubLink: "https://github.com/example/budget-buddy",
+  },
+];
+
 // Demo data only — the real "projects I've created/joined" backend isn't wired up yet,
 // this is here so the Projects tab UI can be previewed on its own.
 const DEMO_PROJECTS = [
@@ -121,16 +150,13 @@ export default function Profile() {
   const [linkedinProfile, setLinkedinProfile] = useState("");
   const [interests, setInterests] = useState([]);
   const [skills, setSkills] = useState([]);
-  const [projects, setProjects] = useState([]);
+  // Recent projects are demo-only for now — not an editable form, just a display list.
+  const projects = DEMO_RECENT_PROJECTS;
   const [profileLoading, setProfileLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [showAllSidebarProjects, setShowAllSidebarProjects] = useState(false);
-  const [projectDraft, setProjectDraft] = useState({
-    name: "",
-    githubLink: "",
-    description: "",
-  });
+  const [expandedSidebarProjectId, setExpandedSidebarProjectId] = useState(null);
   const [connectionList, setConnectionList] = useState([]);
   const [connectionType, setConnectionType] = useState("");
   const [connectionsLoading, setConnectionsLoading] = useState(false);
@@ -207,21 +233,6 @@ export default function Profile() {
       setSaving(false);
       window.setTimeout(() => setSaveMessage(""), 2500);
     }
-  };
-
-  const addProject = () => {
-    const v = projectDraft.name.trim();
-    if (!v) return;
-    setProjects((p) => [
-      ...p,
-      {
-        id: `${Date.now()}-${p.length}`,
-        name: v,
-        githubLink: projectDraft.githubLink.trim(),
-        description: projectDraft.description.trim(),
-      },
-    ]);
-    setProjectDraft({ name: "", githubLink: "", description: "" });
   };
 
   const downloadResume = () => {
@@ -327,7 +338,7 @@ export default function Profile() {
 
   return (
     <>
-      <Navbar />
+      <Navbar hideSearch />
 
       <div className="profile-page">
       <div className="page-body">
@@ -403,13 +414,36 @@ export default function Profile() {
             </div>
             {projects.length > 0 && (
               <div className="project-grid">
-                {(showAllSidebarProjects ? projects : projects.slice(0, 3)).map((p) => (
-                  <div className="project-tile" key={p.id}>
-                    <b>{p.name}</b>
-                    {p.description && <span>{p.description}</span>}
-                    {p.githubLink && <a href={p.githubLink} target="_blank" rel="noreferrer">GitHub ↗</a>}
-                  </div>
-                ))}
+                {(showAllSidebarProjects ? projects : projects.slice(0, 3)).map((p) => {
+                  const isExpanded = expandedSidebarProjectId === p.id;
+                  return (
+                    <div
+                      className={`project-tile ${isExpanded ? "expanded" : ""}`}
+                      key={p.id}
+                      onClick={() =>
+                        setExpandedSidebarProjectId((current) => (current === p.id ? null : p.id))
+                      }
+                    >
+                      <b>{p.name}</b>
+                      {isExpanded && (
+                        <div className="project-tile-dropdown">
+                          {p.githubLink ? (
+                            <a
+                              href={p.githubLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              GitHub ↗
+                            </a>
+                          ) : (
+                            <span className="project-tile-no-link">No GitHub link added</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -598,62 +632,6 @@ export default function Profile() {
                     onAdd={(v) => setSkills((a) => [...a, v])}
                     onRemove={(i) => setSkills((a) => a.filter((_, idx) => idx !== i))}
                   />
-                  <div className="field">
-                    <label className="field-label">Projects</label>
-                    <div className="project-add-form">
-                      <input
-                        type="text"
-                        value={projectDraft.name}
-                        placeholder="Project name"
-                        onChange={(e) => setProjectDraft((d) => ({ ...d, name: e.target.value }))}
-                      />
-                      <input
-                        type="text"
-                        value={projectDraft.githubLink}
-                        placeholder="GitHub link"
-                        onChange={(e) => setProjectDraft((d) => ({ ...d, githubLink: e.target.value }))}
-                      />
-                      <input
-                        type="text"
-                        value={projectDraft.description}
-                        placeholder="Project description"
-                        onChange={(e) => setProjectDraft((d) => ({ ...d, description: e.target.value }))}
-                      />
-
-                      <div className="project-add-actions">
-                        <button type="button" className="tag-add" onClick={addProject}>
-                          Add
-                        </button>
-                      </div>
-                    </div>
-                    <div className="card-list">
-                      {projects.map((p, i) => (
-                        <div className="pcard" key={p.id || `${p.name}-${i}`}>
-                          <div className="pcard-head">
-                            <b>{p.name}</b>
-                            <button
-                              type="button"
-                              className="pcard-remove"
-                              aria-label={`Remove ${p.name}`}
-                              onClick={() => setProjects((arr) => arr.filter((_, idx) => idx !== i))}
-                            >
-                              ×
-                            </button>
-                          </div>
-                          {p.description && <p className="pcard-description">{p.description}</p>}
-                          {p.githubLink && (
-                            <div className="pcard-links">
-                              {p.githubLink && (
-                                <a href={p.githubLink} target="_blank" rel="noreferrer">
-                                  GitHub ↗
-                                </a>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </div>
 
                 <div className="tab-nav">

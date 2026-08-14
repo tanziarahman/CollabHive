@@ -1,12 +1,39 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   getNotifications,
   markAsRead,
   markAllAsRead,
 } from "../../api/notifications";
+import { respondToFollowRequest } from "../../api/users";
 import { clearSession } from "../../utils/session";
+import {
+  isNotificationDismissed,
+  dismissNotificationId,
+  isDemoNotificationRead,
+  markDemoNotificationRead,
+} from "../../utils/notificationDismissals";
 import "./Navbar.css";
+
+// A single demo "invite" notification so the accept/reject UI and the
+// invite-details modal can be previewed even when no real invite exists yet.
+const DEMO_INVITE_NOTIFICATION = {
+  _id: "demo-invite-1",
+  type: "invite",
+  message: "Alex Rivera invited you to join EcoTrack — Carbon Footprint App",
+  sender: {
+    _id: "demo-sender-1",
+    fullName: "Alex Rivera",
+    username: "alexr",
+    profilePicture: "",
+  },
+  project: {
+    _id: "demo-project-1",
+    title: "EcoTrack — Carbon Footprint App",
+  },
+  isRead: false,
+  createdAt: new Date().toISOString(),
+};
 
 // Maps the backend's real notification types to an icon + color category.
 const NOTIF_STYLES = {
@@ -190,24 +217,40 @@ const DEFAULT_NOTIF_STYLE = {
   ),
 };
 
-export default function Navbar() {
+export default function Navbar({ hideSearch = false, searchValue, onSearchChange }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [searchQuery, setSearchQuery] = useState("");
+  // Pages that want live search results (e.g. Posts) pass searchValue +
+  // onSearchChange and control the query themselves. Pages that don't
+  // fall back to this internal state and the old navigate-to-/search behavior.
+  const isControlledSearch = onSearchChange !== undefined;
+  const [internalSearchQuery, setInternalSearchQuery] = useState("");
+  const searchQuery = isControlledSearch ? searchValue : internalSearchQuery;
+  const setSearchQuery = isControlledSearch ? onSearchChange : setInternalSearchQuery;
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [respondingId, setRespondingId] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   useEffect(() => {
     const loadNotifications = async () => {
+      const demoInvite = {
+        ...DEMO_INVITE_NOTIFICATION,
+        isRead: isDemoNotificationRead(DEMO_INVITE_NOTIFICATION._id),
+      };
+
+      let combined;
       try {
         const res = await getNotifications();
-        setNotifications(res.data || []);
+        combined = [demoInvite, ...(res.data || [])];
       } catch {
-        // Leave the bell empty if notifications can't be loaded.
+        // Still show the demo invite even if real notifications can't be loaded.
+        combined = [demoInvite];
       }
+      setNotifications(combined.filter((n) => !isNotificationDismissed(n)));
     };
 
     loadNotifications();
@@ -220,6 +263,8 @@ export default function Navbar() {
   const handleNotificationClick = async (notification) => {
     if (notification.isRead) return;
 
+    markDemoNotificationRead(notification._id);
+
     setNotifications((items) =>
       items.map((n) =>
         n._id === notification._id ? { ...n, isRead: true } : n
@@ -229,11 +274,14 @@ export default function Navbar() {
     try {
       await markAsRead(notification._id);
     } catch {
-      // Non-critical; the badge will just be slightly stale until next reload.
+      // Non-critical for real notifications; demo ones 404 here on purpose
+      // since they don't exist server-side — their read state is tracked locally.
     }
   };
 
   const handleMarkAllRead = async () => {
+    notifications.forEach((n) => markDemoNotificationRead(n._id));
+
     setNotifications((items) =>
       items.map((n) => ({ ...n, isRead: true }))
     );
@@ -245,13 +293,48 @@ export default function Navbar() {
     }
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
+  const handleFollowRespond = async (e, notification, action) => {
+    e.stopPropagation();
+    const senderId = notification.sender?._id || notification.sender;
+    if (!senderId) return;
 
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery("");
+    setRespondingId(notification._id);
+    try {
+      await respondToFollowRequest(senderId, action);
+      dismissNotificationId(notification._id);
+      setNotifications((items) =>
+        items.filter((n) => n._id !== notification._id)
+      );
+    } catch {
+      // Non-critical; leave the notification as-is so the user can retry.
+    } finally {
+      setRespondingId(null);
     }
+  };
+
+  const handleInviteRespond = (e, notification, action) => {
+    e?.stopPropagation?.();
+    dismissNotificationId(notification._id);
+    setNotifications((items) =>
+      items.filter((n) => n._id !== notification._id)
+    );
+    // Real accept/reject endpoint for invites isn't wired up yet — the
+    // notification is cleared locally so the interaction still feels real.
+    void action;
+  };
+
+  const handleDismissNotification = (e, notification) => {
+    e.stopPropagation();
+    dismissNotificationId(notification._id);
+    setNotifications((items) =>
+      items.filter((n) => n._id !== notification._id)
+    );
+  };
+
+  const handleOpenInviteDetails = (notification) => {
+    handleNotificationClick(notification);
+    setShowNotifications(false);
+    navigate(`/invitations/${notification._id}`, { state: { notification } });
   };
 
   const handleLogout = () => {
@@ -259,74 +342,82 @@ export default function Navbar() {
     navigate("/");
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+
+    // Controlled pages (e.g. Posts) filter live as the user types, so
+    // submitting the form doesn't need to do anything else.
+    if (isControlledSearch) return;
+
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
+    }
+  };
+
   return (
+    <>
     <nav className="navbar">
       {/* Left side - Logo */}
       <div className="navbar-left">
         <div
           className="navbar-logo"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/my-posts")}
         >
           Collab<span>Hive</span>
         </div>
       </div>
 
       {/* Center - Search Bar */}
-      <div className="navbar-center">
-        <form onSubmit={handleSearch} className="search-form">
-          <svg
-            className="search-icon"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <circle cx="10" cy="10" r="7" />
-            <line x1="15" y1="15" x2="21" y2="21" />
-          </svg>
+      {!hideSearch && (
+        <div className="navbar-center">
+          <form onSubmit={handleSearch} className="search-form">
+            <svg
+              className="search-icon"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="10" cy="10" r="7" />
+              <line x1="15" y1="15" x2="21" y2="21" />
+            </svg>
 
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search users or projects by skill or name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </form>
-      </div>
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search users or projects by skill or name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </form>
+        </div>
+      )}
 
       {/* Right side - Actions */}
       <div className="navbar-right">
 
         {/* Create Project Button */}
         <button
-          className="create-project-btn"
+          className={`my-posts-btn ${location.pathname === "/create-project" ? "active" : ""}`}
           onClick={() => navigate("/create-project")}
         >
-          Post Project
+          Project
         </button>
 
         {/* My Posts Button */}
         <button
-          className="my-posts-btn"
+          className={`my-posts-btn ${location.pathname === "/my-posts" ? "active" : ""}`}
           onClick={() => navigate("/my-posts")}
         >
           Posts
         </button>
 
-        {/* Invitations Button */}
-        <button
-          className="my-posts-btn"
-          onClick={() => navigate("/invitations")}
-        >
-          Invitations
-        </button>
-
         {/* Follow Requests */}
         <button
-          className="follow-requests-nav-btn"
+          className={`follow-requests-nav-btn ${location.pathname === "/follow-requests" ? "active" : ""}`}
           onClick={() => navigate("/follow-requests")}
           aria-label="View follow requests"
           title="Follow requests"
@@ -373,12 +464,14 @@ export default function Navbar() {
               <div className="notifications-header">
                 <h3>Notifications</h3>
 
-                <button
-                  className="mark-all-read"
-                  onClick={handleMarkAllRead}
-                >
-                  Mark all read
-                </button>
+                {notifications.length > 0 && (
+                  <button
+                    className="mark-all-read"
+                    onClick={handleMarkAllRead}
+                  >
+                    Mark all read
+                  </button>
+                )}
               </div>
 
               <div className="notifications-list">
@@ -394,7 +487,9 @@ export default function Navbar() {
                           !notif.isRead ? "unread" : ""
                         }`}
                         onClick={() =>
-                          handleNotificationClick(notif)
+                          notif.type === "invite"
+                            ? handleOpenInviteDetails(notif)
+                            : handleNotificationClick(notif)
                         }
                       >
                         <div
@@ -413,11 +508,69 @@ export default function Navbar() {
                               notif.createdAt
                             ).toLocaleString()}
                           </div>
+
+                          {notif.type === "follow_request" && (
+                            <div className="notification-actions">
+                              <button
+                                type="button"
+                                className="notif-action-accept"
+                                disabled={respondingId === notif._id}
+                                onClick={(e) =>
+                                  handleFollowRespond(e, notif, "accept")
+                                }
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                className="notif-action-decline"
+                                disabled={respondingId === notif._id}
+                                onClick={(e) =>
+                                  handleFollowRespond(e, notif, "decline")
+                                }
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          )}
+
+                          {notif.type === "invite" && (
+                            <div className="notification-actions">
+                              <button
+                                type="button"
+                                className="notif-action-decline"
+                                onClick={(e) =>
+                                  handleInviteRespond(e, notif, "rejected")
+                                }
+                              >
+                                Reject
+                              </button>
+                              <button
+                                type="button"
+                                className="notif-action-accept"
+                                onClick={(e) =>
+                                  handleInviteRespond(e, notif, "accepted")
+                                }
+                              >
+                                Accept
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         {!notif.isRead && (
                           <span className="notification-dot"></span>
                         )}
+
+                        <button
+                          type="button"
+                          className="notification-dismiss"
+                          aria-label="Dismiss notification"
+                          title="Dismiss"
+                          onClick={(e) => handleDismissNotification(e, notif)}
+                        >
+                          ✕
+                        </button>
                       </div>
                     );
                   })
@@ -519,6 +672,7 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
+    </>
   );
 }
 
