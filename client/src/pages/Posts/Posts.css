@@ -71,6 +71,18 @@
   margin-bottom: 0.5rem;
 }
 
+.match-score-badge {
+  flex-shrink: 0;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(245, 184, 76, 0.14);
+  border: 1px solid rgba(245, 184, 76, 0.35);
+  color: #f5b84c;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 /* POST CREATOR BYLINE */
 
 .post-creator {

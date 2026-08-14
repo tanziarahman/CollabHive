@@ -104,6 +104,15 @@ export default function Posts() {
                       {new Date(project.createdAt).toLocaleDateString()}
                     </p>
                   </div>
+
+                  {project.matchScore > 0 && (
+                    <span
+                      className="match-score-badge"
+                      title="How closely your skills match what this project needs"
+                    >
+                      {Math.round(project.matchScore * 100)}% match
+                    </span>
+                  )}
                 </div>
 
                 <p className="description">{project.description}</p>

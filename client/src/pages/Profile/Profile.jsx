@@ -2,11 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import { getMe } from "../../api/auth";
-import { updateProfile, getConnections, searchUsers } from "../../api/users";
+import { updateProfile, getConnections } from "../../api/users";
 import {
   getMyCollaborations,
   deleteProject,
   getProjectJoinRequests,
+  getSuggestedCollaborators,
   inviteUser,
 } from "../../api/projects";
 import { acceptJoinRequest, rejectJoinRequest } from "../../api/joinRequests";
@@ -198,11 +199,11 @@ export default function Profile() {
     setInvitedIds([]);
     setLoadingCandidates(true);
     try {
-      const skillsQuery = (project.skillsRequired || []).join(",");
-      const candidates = await searchUsers({
-        skills: skillsQuery,
-        excludeProjectId: project._id,
-      });
+      const res = await getSuggestedCollaborators(project._id, 10);
+      const candidates = (res.data || []).map((suggestion) => ({
+        ...suggestion.user,
+        matchScore: suggestion.matchScore,
+      }));
       setInviteCandidates(candidates);
     } catch {
       setInviteCandidates([]);
@@ -924,14 +925,15 @@ export default function Profile() {
         <div className="connections-modal-backdrop" onClick={closeInvite}>
           <section className="connections-modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
             <div className="connections-modal-header">
-              <h2>Invite for {inviteContext.role}</h2>
+              <h2>Recommended for {inviteContext.role}</h2>
               <button type="button" onClick={closeInvite} aria-label="Close">×</button>
             </div>
+            <p className="connections-hint">Ranked by how closely their skills match this project.</p>
             <div className="connections-list">
               {loadingCandidates ? (
-                <p className="connections-empty">Finding matching people...</p>
+                <p className="connections-empty">Finding the best matches...</p>
               ) : inviteCandidates.length === 0 ? (
-                <p className="connections-empty">No matching people found for this role's skills yet.</p>
+                <p className="connections-empty">No matching people found for this project's skills yet.</p>
               ) : (
                 inviteCandidates.map((candidate) => (
                   <div className="connection-person" key={candidate._id}>
@@ -944,7 +946,10 @@ export default function Profile() {
                     </span>
                     <span>
                       <b>{candidate.fullName}</b>
-                      <small>{(candidate.matchingSkills || candidate.skills || []).join(", ")}</small>
+                      <small>
+                        {Math.round((candidate.matchScore || 0) * 100)}% match
+                        {(candidate.skills || []).length > 0 ? ` · ${candidate.skills.slice(0, 3).join(", ")}` : ""}
+                      </small>
                     </span>
                     {invitedIds.includes(candidate._id) ? (
                       <em>Invited</em>

@@ -136,16 +136,33 @@ export const getProjectById = async (req, res) => {
 // @access  Private
 export const getProjectFeed = async (req, res) => {
   try {
-    const me = await User.findById(req.user._id).select('following');
+    const me = await User.findById(req.user._id).select('following +skillsEmbedding');
 
     const projects = await Project.find({ createdBy: { $in: me.following } })
       .populate('createdBy', 'fullName username profilePicture')
+      .select('+skillsEmbedding')
       .sort({ createdAt: -1 });
+
+    const data = projects.map((project) => ({
+      _id: project._id,
+      title: project.title,
+      description: project.description,
+      category: project.category,
+      skillsRequired: project.skillsRequired,
+      techStack: project.techStack,
+      roleAllocations: project.roleAllocations,
+      githubRepo: project.githubRepo,
+      demoLink: project.demoLink,
+      createdAt: project.createdAt,
+      createdBy: project.createdBy,
+      members: project.members,
+      matchScore: cosineSimilarity(me.skillsEmbedding, project.skillsEmbedding),
+    }));
 
     res.status(200).json({
       success: true,
-      count: projects.length,
-      data: projects,
+      count: data.length,
+      data,
     });
   } catch (error) {
     console.error('Get project feed error:', error);
@@ -308,7 +325,12 @@ export const getSuggestedCollaborators = async (req, res) => {
 
     const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
 
-    const candidates = await User.find({ _id: { $ne: req.user._id } })
+    const excludeIds = [req.user._id.toString(), ...project.members.map((m) => m.user.toString())];
+
+    const candidates = await User.find({
+      _id: { $nin: excludeIds },
+      'settings.discoverable': { $ne: false },
+    })
       .select('fullName username profilePicture bio skills interests experienceLevel +skillsEmbedding');
 
     const suggestions = candidates
