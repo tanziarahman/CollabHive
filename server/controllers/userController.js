@@ -81,11 +81,12 @@ export const updateProfile = asyncHandler(async (req, res) => {
   res.status(200).json(updatedUser);
 });
 
-// @desc    Search users by skill, for inviting collaborators to a project
+// @desc    Search users — either by name/username (general people search) or by
+//          skill (for inviting collaborators to a project)
 // @route   GET /api/users/search
 // @access  Private
 export const searchUsers = asyncHandler(async (req, res) => {
-  const { skills, excludeProjectId } = req.query;
+  const { skills, excludeProjectId, query } = req.query;
   const skillsList = (skills || '')
     .split(',')
     .map((s) => s.trim())
@@ -100,29 +101,48 @@ export const searchUsers = asyncHandler(async (req, res) => {
     }
   }
 
-  const query = {
+  const mongoQuery = {
     _id: { $nin: excludeIds },
     'settings.discoverable': { $ne: false },
   };
-  if (skillsList.length > 0) {
-    query.skills = { $in: skillsList };
+
+  const trimmedQuery = (query || '').trim();
+  if (trimmedQuery) {
+    const escaped = trimmedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escaped, 'i');
+    mongoQuery.$or = [{ fullName: regex }, { username: regex }];
+  } else if (skillsList.length > 0) {
+    mongoQuery.skills = { $in: skillsList };
   }
 
-  const users = await User.find(query)
+  const users = await User.find(mongoQuery)
     .select('fullName username profilePicture skills experienceLevel')
     .limit(20);
 
-  const withMatches = users.map((u) => ({
-    _id: u._id,
-    fullName: u.fullName,
-    username: u.username,
-    profilePicture: u.profilePicture,
-    skills: u.skills,
-    experienceLevel: u.experienceLevel,
-    matchingSkills: skillsList.length ? u.skills.filter((s) => skillsList.includes(s)) : [],
-  }));
+  const me = await User.findById(req.user._id).select(
+    'following followRequestsSent followRequestsReceived'
+  );
 
-  res.json(withMatches);
+  const results = users.map((u) => {
+    const idStr = u._id.toString();
+    let relationship = 'none';
+    if (me.following.some((id) => id.toString() === idStr)) relationship = 'following';
+    else if (me.followRequestsSent.some((id) => id.toString() === idStr)) relationship = 'requested';
+    else if (me.followRequestsReceived.some((id) => id.toString() === idStr)) relationship = 'incoming';
+
+    return {
+      _id: u._id,
+      fullName: u.fullName,
+      username: u.username,
+      profilePicture: u.profilePicture,
+      skills: u.skills,
+      experienceLevel: u.experienceLevel,
+      relationship,
+      matchingSkills: skillsList.length ? u.skills.filter((s) => skillsList.includes(s)) : [],
+    };
+  });
+
+  res.json(results);
 });
 
 export const getSuggestions = asyncHandler(async (req, res) => {

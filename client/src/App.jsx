@@ -9,6 +9,7 @@ import FollowRequests from "./pages/FollowRequests/FollowRequests";
 import Settings from "./pages/Settings/Settings";
 import ProjectChat from "./pages/ProjectChat/ProjectChat";
 import InvitationDetail from "./pages/InvitationDetail/InvitationDetail";
+import Search from "./pages/Search/Search";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { isLoggedIn } from "./utils/session";
 
@@ -29,6 +30,7 @@ function App() {
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/projects/:projectId/chat" element={<ProtectedRoute><ProjectChat /></ProtectedRoute>} />
       <Route path="/invitations/:notificationId" element={<ProtectedRoute><InvitationDetail /></ProtectedRoute>} />
+      <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
     </Routes>
   );
 }
