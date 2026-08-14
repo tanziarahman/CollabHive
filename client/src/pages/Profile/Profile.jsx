@@ -2,8 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import { getMe } from "../../api/auth";
-import { updateProfile, getConnections } from "../../api/users";
-import { getMyCollaborations } from "../../api/projects";
+import { updateProfile, getConnections, searchUsers } from "../../api/users";
+import {
+  getMyCollaborations,
+  deleteProject,
+  getProjectJoinRequests,
+  inviteUser,
+} from "../../api/projects";
+import { acceptJoinRequest, rejectJoinRequest } from "../../api/joinRequests";
 import "./Profile.css";
 
 const AVAILABILITY_OPTIONS = ["Available", "Busy", "Open to Offers"];
@@ -82,36 +88,132 @@ export default function Profile() {
   const [linkedinProfile, setLinkedinProfile] = useState("");
   const [interests, setInterests] = useState([]);
   const [skills, setSkills] = useState([]);
-  const [projects, setProjects] = useState([]);
   const [profileLoading, setProfileLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [showAllSidebarProjects, setShowAllSidebarProjects] = useState(false);
-  const [projectDraft, setProjectDraft] = useState({
-    name: "",
-    githubLink: "",
-    description: "",
-  });
+  const [expandedSidebarProjectId, setExpandedSidebarProjectId] = useState(null);
   const [connectionList, setConnectionList] = useState([]);
   const [connectionType, setConnectionType] = useState("");
   const [connectionsLoading, setConnectionsLoading] = useState(false);
   const [connectionCounts, setConnectionCounts] = useState({ followers: 0, following: 0 });
   const [myCollaborations, setMyCollaborations] = useState([]);
   const [collaborationsLoading, setCollaborationsLoading] = useState(true);
+  // "Recent projects" in the sidebar and the résumé's project list both reuse
+  // the same real collaborations data, reshaped to what those views expect.
+  const projects = myCollaborations.map((p) => ({
+    id: p._id,
+    name: p.title,
+    description: p.description,
+    githubLink: p.githubRepo || "",
+  }));
+
+  const loadCollaborations = async () => {
+    try {
+      const res = await getMyCollaborations();
+      setMyCollaborations(res.data || []);
+    } catch {
+      setMyCollaborations([]);
+    } finally {
+      setCollaborationsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadCollaborations = async () => {
-      try {
-        const res = await getMyCollaborations();
-        setMyCollaborations(res.data || []);
-      } catch {
-        setMyCollaborations([]);
-      } finally {
-        setCollaborationsLoading(false);
-      }
-    };
     loadCollaborations();
   }, []);
+
+  const [activeApplicantsProject, setActiveApplicantsProject] = useState(null);
+  const [activeProjectRequests, setActiveProjectRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+
+  const [inviteContext, setInviteContext] = useState(null);
+  const [inviteCandidates, setInviteCandidates] = useState([]);
+  const [loadingCandidates, setLoadingCandidates] = useState(false);
+  const [invitedIds, setInvitedIds] = useState([]);
+  const [invitingId, setInvitingId] = useState(null);
+
+  const handleDeleteProject = async (projectId) => {
+    if (!window.confirm("Delete this project? This cannot be undone.")) return;
+    try {
+      await deleteProject(projectId);
+      setMyCollaborations((prev) => prev.filter((p) => p._id !== projectId));
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not delete project.");
+    }
+  };
+
+  const openApplicants = async (project) => {
+    setActiveApplicantsProject(project);
+    setLoadingRequests(true);
+    try {
+      const res = await getProjectJoinRequests(project._id);
+      setActiveProjectRequests((res.data || []).filter((r) => r.type === "request"));
+    } catch {
+      setActiveProjectRequests([]);
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  const handleApplicantDecision = async (requestId, decision) => {
+    setActionLoadingId(requestId);
+    try {
+      if (decision === "accepted") {
+        await acceptJoinRequest(requestId);
+      } else {
+        await rejectJoinRequest(requestId);
+      }
+      setActiveProjectRequests((prev) =>
+        prev.map((r) => (r._id === requestId ? { ...r, status: decision } : r))
+      );
+      loadCollaborations();
+    } catch (err) {
+      alert(err.response?.data?.message || "Action failed.");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const openInvite = async (project, role) => {
+    setInviteContext({ project, role });
+    setInvitedIds([]);
+    setLoadingCandidates(true);
+    try {
+      const skillsQuery = (project.skillsRequired || []).join(",");
+      const candidates = await searchUsers({
+        skills: skillsQuery,
+        excludeProjectId: project._id,
+      });
+      setInviteCandidates(candidates);
+    } catch {
+      setInviteCandidates([]);
+    } finally {
+      setLoadingCandidates(false);
+    }
+  };
+
+  const closeInvite = () => {
+    setInviteContext(null);
+    setInviteCandidates([]);
+  };
+
+  const handleInvite = async (candidateId) => {
+    if (!inviteContext) return;
+    setInvitingId(candidateId);
+    try {
+      await inviteUser(inviteContext.project._id, {
+        userId: candidateId,
+        role: inviteContext.role,
+      });
+      setInvitedIds((prev) => [...prev, candidateId]);
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not send invite.");
+    } finally {
+      setInvitingId(null);
+    }
+  };
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -184,21 +286,6 @@ export default function Profile() {
       setSaving(false);
       window.setTimeout(() => setSaveMessage(""), 2500);
     }
-  };
-
-  const addProject = () => {
-    const v = projectDraft.name.trim();
-    if (!v) return;
-    setProjects((p) => [
-      ...p,
-      {
-        id: `${Date.now()}-${p.length}`,
-        name: v,
-        githubLink: projectDraft.githubLink.trim(),
-        description: projectDraft.description.trim(),
-      },
-    ]);
-    setProjectDraft({ name: "", githubLink: "", description: "" });
   };
 
   const downloadResume = () => {
@@ -304,7 +391,7 @@ export default function Profile() {
 
   return (
     <>
-      <Navbar />
+      <Navbar hideSearch />
 
       <div className="profile-page">
       <div className="page-body">
@@ -380,13 +467,36 @@ export default function Profile() {
             </div>
             {projects.length > 0 && (
               <div className="project-grid">
-                {(showAllSidebarProjects ? projects : projects.slice(0, 3)).map((p) => (
-                  <div className="project-tile" key={p.id}>
-                    <b>{p.name}</b>
-                    {p.description && <span>{p.description}</span>}
-                    {p.githubLink && <a href={p.githubLink} target="_blank" rel="noreferrer">GitHub ↗</a>}
-                  </div>
-                ))}
+                {(showAllSidebarProjects ? projects : projects.slice(0, 3)).map((p) => {
+                  const isExpanded = expandedSidebarProjectId === p.id;
+                  return (
+                    <div
+                      className={`project-tile ${isExpanded ? "expanded" : ""}`}
+                      key={p.id}
+                      onClick={() =>
+                        setExpandedSidebarProjectId((current) => (current === p.id ? null : p.id))
+                      }
+                    >
+                      <b>{p.name}</b>
+                      {isExpanded && (
+                        <div className="project-tile-dropdown">
+                          {p.githubLink ? (
+                            <a
+                              href={p.githubLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              GitHub ↗
+                            </a>
+                          ) : (
+                            <span className="project-tile-no-link">No GitHub link added</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -575,62 +685,6 @@ export default function Profile() {
                     onAdd={(v) => setSkills((a) => [...a, v])}
                     onRemove={(i) => setSkills((a) => a.filter((_, idx) => idx !== i))}
                   />
-                  <div className="field">
-                    <label className="field-label">Projects</label>
-                    <div className="project-add-form">
-                      <input
-                        type="text"
-                        value={projectDraft.name}
-                        placeholder="Project name"
-                        onChange={(e) => setProjectDraft((d) => ({ ...d, name: e.target.value }))}
-                      />
-                      <input
-                        type="text"
-                        value={projectDraft.githubLink}
-                        placeholder="GitHub link"
-                        onChange={(e) => setProjectDraft((d) => ({ ...d, githubLink: e.target.value }))}
-                      />
-                      <input
-                        type="text"
-                        value={projectDraft.description}
-                        placeholder="Project description"
-                        onChange={(e) => setProjectDraft((d) => ({ ...d, description: e.target.value }))}
-                      />
-
-                      <div className="project-add-actions">
-                        <button type="button" className="tag-add" onClick={addProject}>
-                          Add
-                        </button>
-                      </div>
-                    </div>
-                    <div className="card-list">
-                      {projects.map((p, i) => (
-                        <div className="pcard" key={p.id || `${p.name}-${i}`}>
-                          <div className="pcard-head">
-                            <b>{p.name}</b>
-                            <button
-                              type="button"
-                              className="pcard-remove"
-                              aria-label={`Remove ${p.name}`}
-                              onClick={() => setProjects((arr) => arr.filter((_, idx) => idx !== i))}
-                            >
-                              ×
-                            </button>
-                          </div>
-                          {p.description && <p className="pcard-description">{p.description}</p>}
-                          {p.githubLink && (
-                            <div className="pcard-links">
-                              {p.githubLink && (
-                                <a href={p.githubLink} target="_blank" rel="noreferrer">
-                                  GitHub ↗
-                                </a>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </div>
 
                 <div className="tab-nav">
@@ -729,6 +783,37 @@ export default function Profile() {
                               </span>
                             ))}
                           </div>
+
+                          {project.isOwner && (
+                            <>
+                              <div className="my-project-collaborators-label">Open roles</div>
+                              <div className="my-project-collaborators">
+                                {(project.roleAllocations || []).map((role) => (
+                                  <button
+                                    type="button"
+                                    key={role.role}
+                                    className="my-project-invite-btn"
+                                    onClick={() => openInvite(project, role.role)}
+                                  >
+                                    Invite for {role.role} ({role.count})
+                                  </button>
+                                ))}
+                              </div>
+
+                              <div className="my-project-owner-actions">
+                                <button type="button" onClick={() => openApplicants(project)}>
+                                  View Applicants
+                                </button>
+                                <button
+                                  type="button"
+                                  className="my-project-delete-btn"
+                                  onClick={() => handleDeleteProject(project._id)}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -755,6 +840,108 @@ export default function Profile() {
                   <em>View profile</em>
                 </button>
               ))}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {activeApplicantsProject && (
+        <div className="connections-modal-backdrop" onClick={() => setActiveApplicantsProject(null)}>
+          <section className="connections-modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <div className="connections-modal-header">
+              <h2>{activeApplicantsProject.title}</h2>
+              <button type="button" onClick={() => setActiveApplicantsProject(null)} aria-label="Close">×</button>
+            </div>
+            <div className="connections-list">
+              {loadingRequests ? (
+                <p className="connections-empty">Loading applicants...</p>
+              ) : activeProjectRequests.length === 0 ? (
+                <p className="connections-empty">No applicants yet.</p>
+              ) : (
+                activeProjectRequests.map((request) => (
+                  <div className="connection-person" key={request._id}>
+                    <span className="connection-avatar">
+                      {request.applicant?.profilePicture ? (
+                        <img src={request.applicant.profilePicture} alt="" />
+                      ) : (
+                        request.applicant?.fullName?.charAt(0)
+                      )}
+                    </span>
+                    <span>
+                      <b>{request.applicant?.fullName}</b>
+                      <small>{request.role}</small>
+                    </span>
+                    {request.status === "pending" ? (
+                      <div className="invitation-actions">
+                        <button
+                          type="button"
+                          className="reject-btn"
+                          disabled={actionLoadingId === request._id}
+                          onClick={() => handleApplicantDecision(request._id, "rejected")}
+                        >
+                          Reject
+                        </button>
+                        <button
+                          type="button"
+                          className="accept-btn"
+                          disabled={actionLoadingId === request._id}
+                          onClick={() => handleApplicantDecision(request._id, "accepted")}
+                        >
+                          Accept
+                        </button>
+                      </div>
+                    ) : (
+                      <em>{request.status === "accepted" ? "Accepted" : "Rejected"}</em>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {inviteContext && (
+        <div className="connections-modal-backdrop" onClick={closeInvite}>
+          <section className="connections-modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <div className="connections-modal-header">
+              <h2>Invite for {inviteContext.role}</h2>
+              <button type="button" onClick={closeInvite} aria-label="Close">×</button>
+            </div>
+            <div className="connections-list">
+              {loadingCandidates ? (
+                <p className="connections-empty">Finding matching people...</p>
+              ) : inviteCandidates.length === 0 ? (
+                <p className="connections-empty">No matching people found for this role's skills yet.</p>
+              ) : (
+                inviteCandidates.map((candidate) => (
+                  <div className="connection-person" key={candidate._id}>
+                    <span className="connection-avatar">
+                      {candidate.profilePicture ? (
+                        <img src={candidate.profilePicture} alt="" />
+                      ) : (
+                        candidate.fullName?.charAt(0)
+                      )}
+                    </span>
+                    <span>
+                      <b>{candidate.fullName}</b>
+                      <small>{(candidate.matchingSkills || candidate.skills || []).join(", ")}</small>
+                    </span>
+                    {invitedIds.includes(candidate._id) ? (
+                      <em>Invited</em>
+                    ) : (
+                      <button
+                        type="button"
+                        className="accept-btn"
+                        disabled={invitingId === candidate._id}
+                        onClick={() => handleInvite(candidate._id)}
+                      >
+                        {invitingId === candidate._id ? "Inviting..." : "Invite"}
+                      </button>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </section>
         </div>

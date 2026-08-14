@@ -23,10 +23,6 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: 280px 1fr;
-  background: #111;
-  border: 1px solid rgba(245, 240, 232, 0.08);
-  border-radius: 16px;
-  overflow: hidden;
 }
 
 /* Sidebar */

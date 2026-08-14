@@ -250,6 +250,101 @@
   border-color: #F5B84C;
 }
 
+/* Manual tag entry (skills, tech stack, roles) */
+.manual-tag-input {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.manual-tag-input input {
+  flex: 1;
+  background: rgba(245, 240, 232, 0.05);
+  border: 1px solid rgba(245, 240, 232, 0.12);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  color: #F5F0E8;
+  font-size: 0.88rem;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.manual-tag-input input:focus {
+  border-color: #F5B84C;
+  background: rgba(245, 184, 76, 0.05);
+}
+
+.manual-tag-add {
+  border: none;
+  background: #F5B84C;
+  color: #0D0D0D;
+  padding: 0 1.3rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.manual-tag-add:hover {
+  background: #f7c96d;
+}
+
+.manual-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(245, 184, 76, 0.1);
+  border: 1px solid rgba(245, 184, 76, 0.3);
+  color: #F5B84C;
+  padding: 0.4rem 0.7rem 0.4rem 0.9rem;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.manual-tag-chip button {
+  border: none;
+  background: none;
+  color: #F5B84C;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.7;
+}
+
+.manual-tag-chip button:hover {
+  opacity: 1;
+}
+
+.role-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.role-remove-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #ff8a8a;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.role-remove-btn:hover {
+  background: rgba(220, 53, 69, 0.15);
+}
+
 /* Role Allocations */
 .role-allocations {
   background: rgba(245, 240, 232, 0.03);

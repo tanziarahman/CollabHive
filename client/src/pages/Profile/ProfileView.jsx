@@ -1,9 +1,25 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getPublicProfile } from "../../api/users";
+import {
+  getPublicProfile,
+  getFollowRequests,
+  getConnections,
+  sendFollowRequest,
+  respondToFollowRequest,
+} from "../../api/users";
+import { getStoredUser } from "../../utils/session";
+import { dismissFollowRequestFrom } from "../../utils/notificationDismissals";
 import "./Profile.css";
 
 const TABS = ["Info", "Education", "About", "Résumé"];
+
+// Demo-only opening line for the DM preview — there's no real messaging
+// backend wired up yet, this just makes the "Message" button feel alive.
+const DEMO_DM_STARTERS = [
+  "Hey! Saw your profile — would love to connect.",
+  "Hi there! Are you open to collaborating on a project?",
+  "Hello! Your skills look like a great fit for something I'm working on.",
+];
 
 export default function ProfileView() {
   const { userId } = useParams();
@@ -12,10 +28,76 @@ export default function ProfileView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  const currentUser = getStoredUser();
+  const isOwnProfile = currentUser && currentUser._id === userId;
+
+  // "none" | "incoming" (they requested me) | "requested" (I requested them) | "following"
+  const [connectionState, setConnectionState] = useState("none");
+  const [connectionLoading, setConnectionLoading] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [dmDraft, setDmDraft] = useState("");
+  const [dmMessages, setDmMessages] = useState([]);
+
+  const fetchConnectionState = async () => {
+    try {
+      const [incoming, following] = await Promise.all([
+        getFollowRequests(),
+        getConnections("following"),
+      ]);
+
+      if ((incoming || []).some((p) => p._id === userId)) {
+        setConnectionState("incoming");
+      } else if ((following || []).some((p) => p._id === userId)) {
+        setConnectionState("following");
+      } else {
+        setConnectionState("none");
+      }
+    } catch {
+      // Leave the default "none" state if this can't be determined.
+    }
+  };
+
+  const handleSendFollow = async () => {
+    setConnectionLoading(true);
+    try {
+      await sendFollowRequest(userId);
+      setConnectionState("requested");
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not send follow request.");
+    } finally {
+      setConnectionLoading(false);
+    }
+  };
+
+  const handleConfirmRequest = async (action) => {
+    setConnectionLoading(true);
+    try {
+      await respondToFollowRequest(userId, action);
+      dismissFollowRequestFrom(userId);
+      setConnectionState(action === "accept" ? "following" : "none");
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not respond to this request.");
+    } finally {
+      setConnectionLoading(false);
+    }
+  };
+
+  const openMessageModal = () => {
+    if (dmMessages.length === 0) {
+      const starter =
+        DEMO_DM_STARTERS[Math.floor(Math.random() * DEMO_DM_STARTERS.length)];
+      setDmMessages([{ fromMe: false, text: starter }]);
+    }
+    setShowMessageModal(true);
+  };
+
+  const sendDmDraft = (e) => {
+    e.preventDefault();
+    const text = dmDraft.trim();
+    if (!text) return;
+    setDmMessages((prev) => [...prev, { fromMe: true, text }]);
+    setDmDraft("");
+  };
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -37,6 +119,12 @@ export default function ProfileView() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchProfile();
+    if (!isOwnProfile) fetchConnectionState();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   const downloadResume = () => {
     if (!profile) return;
@@ -209,6 +297,7 @@ export default function ProfileView() {
       .join("") || "?";
 
   return (
+    <>
     <div className="profile-page">
       <div className="page-body">
         <div className="topnav">
@@ -234,6 +323,60 @@ export default function ProfileView() {
                 {jobTitle || "No job title"} · {status}
               </div>
             </div>
+
+            {!isOwnProfile && (
+              <div className="profile-action-row">
+                {connectionState === "incoming" && (
+                  <>
+                    <button
+                      type="button"
+                      className="btn-confirm-request"
+                      disabled={connectionLoading}
+                      onClick={() => handleConfirmRequest("accept")}
+                    >
+                      Confirm request
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-decline-request"
+                      disabled={connectionLoading}
+                      onClick={() => handleConfirmRequest("decline")}
+                    >
+                      Decline
+                    </button>
+                  </>
+                )}
+
+                {connectionState === "following" && (
+                  <span className="btn-following-badge">Following</span>
+                )}
+
+                {connectionState === "requested" && (
+                  <button type="button" className="btn-follow-requested" disabled>
+                    Requested
+                  </button>
+                )}
+
+                {connectionState === "none" && (
+                  <button
+                    type="button"
+                    className="btn-follow"
+                    disabled={connectionLoading}
+                    onClick={handleSendFollow}
+                  >
+                    Follow
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  className="btn-message"
+                  onClick={openMessageModal}
+                >
+                  Message
+                </button>
+              </div>
+            )}
 
             <div className="stat-row">
               <div className="stat">
@@ -450,5 +593,47 @@ export default function ProfileView() {
         </div>
       </div>
     </div>
+
+    {showMessageModal && (
+      <div className="dm-modal-overlay" onClick={() => setShowMessageModal(false)}>
+        <div
+          className="dm-modal"
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="dm-modal-header">
+            <div>
+              <h3>{name || "User"}</h3>
+              <span className="dm-modal-subtitle">Demo preview — messaging isn't wired up yet</span>
+            </div>
+            <button type="button" className="close-btn" onClick={() => setShowMessageModal(false)}>
+              ✕
+            </button>
+          </div>
+
+          <div className="dm-modal-messages">
+            {dmMessages.map((msg, i) => (
+              <div key={i} className={`dm-bubble ${msg.fromMe ? "mine" : ""}`}>
+                {msg.text}
+              </div>
+            ))}
+          </div>
+
+          <form className="dm-modal-composer" onSubmit={sendDmDraft}>
+            <input
+              type="text"
+              placeholder="Type a message..."
+              value={dmDraft}
+              onChange={(e) => setDmDraft(e.target.value)}
+            />
+            <button type="submit" disabled={!dmDraft.trim()}>
+              Send
+            </button>
+          </form>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
