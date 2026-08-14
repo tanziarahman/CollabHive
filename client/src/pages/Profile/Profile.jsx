@@ -308,6 +308,24 @@ export default function Profile() {
     }
   };
 
+  // Auto-saves shortly after any edit, so adding a skill/interest (or editing
+  // bio, LinkedIn, availability, photo) is never silently lost if the user
+  // navigates away without noticing the separate "Save Profile" button.
+  // Skips the run that fires the moment getMe() hydrates these fields on load.
+  const hasHydrated = useRef(false);
+  useEffect(() => {
+    if (profileLoading) return undefined;
+    if (!hasHydrated.current) {
+      hasHydrated.current = true;
+      return undefined;
+    }
+    const timer = window.setTimeout(() => {
+      handleSaveProfile();
+    }, 800);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aboutMe, linkedinProfile, interests, skills, status, pendingPhoto, profileLoading]);
+
   const downloadResume = () => {
     const lines = [
       name || "Your name",
@@ -452,12 +470,18 @@ export default function Profile() {
               </button>
             </div>
 
-            <button type="button" className="edit-profile-btn" disabled={saving} onClick={handleSaveProfile}>
+            <button
+              type="button"
+              className="edit-profile-btn"
+              disabled={saving}
+              onClick={handleSaveProfile}
+              title="Changes save automatically a moment after you edit — click to save immediately"
+            >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 20h9" />
                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
               </svg>
-              {saving ? "Saving..." : saveMessage || "Save Profile"}
+              {saving ? "Saving..." : saveMessage || "All changes saved"}
             </button>
 
             <div className="stat-row">
