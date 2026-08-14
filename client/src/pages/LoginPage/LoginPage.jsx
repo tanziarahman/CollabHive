@@ -27,7 +27,7 @@ export default function LoginPage() {
     try {
       const data = await login(formData);
       setSession(data);
-      navigate("/dashboard");
+      navigate("/my-posts");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid username or password");
     } finally {
