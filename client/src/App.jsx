@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import LandingPage from "./pages/LandingPage/LandingPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import CreateProject from "./pages/CreateProject/CreateProject";
@@ -17,7 +18,7 @@ function App() {
     <Routes>
       <Route
         path="/"
-        element={<Navigate to={isLoggedIn() ? "/my-posts" : "/login"} replace />}
+        element={isLoggedIn() ? <Navigate to="/my-posts" replace /> : <LandingPage />}
       />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />

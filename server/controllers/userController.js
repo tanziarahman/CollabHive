@@ -72,7 +72,11 @@ export const updateProfile = asyncHandler(async (req, res) => {
 
   if (skillsChanged) {
     const embeddingText = [...user.skills, ...user.interests].join(', ');
-    user.skillsEmbedding = await generateEmbedding(embeddingText);
+    try {
+      user.skillsEmbedding = await generateEmbedding(embeddingText);
+    } catch (embeddingError) {
+      console.warn('Skill-embedding generation failed, keeping previous embedding:', embeddingError.message);
+    }
   }
 
   await user.save();

@@ -41,9 +41,18 @@ export const createProject = async (req, res) => {
       });
     }
 
-    // Embed required skills + tech stack for skill-matching suggestions
+    // Embed required skills + tech stack for skill-matching suggestions.
+    // This is a nice-to-have (powers "recommended collaborators"), not a
+    // requirement to publish — if it fails (e.g. no Gemini API key configured),
+    // the project should still be created with an empty embedding rather than
+    // blocking publishing entirely.
     const embeddingText = [...skillsRequired, ...(techStack || [])].join(', ');
-    const skillsEmbedding = await generateEmbedding(embeddingText);
+    let skillsEmbedding = [];
+    try {
+      skillsEmbedding = await generateEmbedding(embeddingText);
+    } catch (embeddingError) {
+      console.warn('Skill-embedding generation failed, continuing without it:', embeddingError.message);
+    }
 
     // Create project
     const project = await Project.create({
@@ -273,10 +282,15 @@ export const updateProject = async (req, res) => {
     if (githubRepo !== undefined) project.githubRepo = githubRepo;
     if (demoLink !== undefined) project.demoLink = demoLink;
 
-    // Regenerate skill-match embedding if the underlying skills changed
+    // Regenerate skill-match embedding if the underlying skills changed.
+    // Same as on create: this shouldn't block saving the rest of the update.
     if (skillsRequired !== undefined || techStack !== undefined) {
       const embeddingText = [...project.skillsRequired, ...project.techStack].join(', ');
-      project.skillsEmbedding = await generateEmbedding(embeddingText);
+      try {
+        project.skillsEmbedding = await generateEmbedding(embeddingText);
+      } catch (embeddingError) {
+        console.warn('Skill-embedding generation failed, keeping previous embedding:', embeddingError.message);
+      }
     }
 
     // .save() (rather than findByIdAndUpdate) so the pre('save') hook recalculates totalMembers

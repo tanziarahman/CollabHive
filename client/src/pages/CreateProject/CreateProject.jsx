@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import { getProjectConfig } from "../../api/config";
@@ -47,6 +47,7 @@ export default function CreateProject() {
     title: "",
     description: "",
     category: "",
+    customCategory: "",
 
     // Team Requirements
     skillsRequired: [],
@@ -56,15 +57,18 @@ export default function CreateProject() {
     // Additional Info
     duration: "",
 
-    // Links
-    githubRepo: "",
-    demoLink: "",
+    // Links & Resources — any number of named links/files (GitHub, docs, PDFs, etc.)
+    resources: [],
   });
 
   // Manual-entry drafts
   const [skillDraft, setSkillDraft] = useState("");
   const [techDraft, setTechDraft] = useState("");
   const [roleNameDraft, setRoleNameDraft] = useState("");
+  const [resourceNameDraft, setResourceNameDraft] = useState("");
+  const [resourceLinkDraft, setResourceLinkDraft] = useState("");
+  const [resourceFileError, setResourceFileError] = useState("");
+  const resourceFileInputRef = useRef(null);
 
   // Fetch config from backend once when the page loads
   useEffect(() => {
@@ -138,9 +142,65 @@ export default function CreateProject() {
       ...prev,
       roleAllocations: prev.roleAllocations
         .map((r) =>
-          r.role === roleName ? { ...r, count: Math.min(10, Math.max(1, r.count + delta)) } : r
+          r.role === roleName ? { ...r, count: Math.max(1, r.count + delta) } : r
         ),
     }));
+  };
+
+  // Links & Resources — any number of named links/files (GitHub, docs, PDFs, etc.)
+  const addResource = () => {
+    const name = resourceNameDraft.trim();
+    const url = resourceLinkDraft.trim();
+    if (!name || !url) return;
+    setFormData((prev) => ({
+      ...prev,
+      resources: [...prev.resources, { name, url }],
+    }));
+    setResourceNameDraft("");
+    setResourceLinkDraft("");
+  };
+
+  const removeResource = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      resources: prev.resources.filter((_, i) => i !== index),
+    }));
+  };
+
+  // Upload a PDF, Doc, image, or any other file directly instead of pasting a link.
+  const handleResourceFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setResourceFileError("");
+
+    if (file.size > 8 * 1024 * 1024) {
+      setResourceFileError("Please choose a file smaller than 8MB.");
+      e.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormData((prev) => ({
+        ...prev,
+        resources: [
+          ...prev.resources,
+          {
+            name: resourceNameDraft.trim() || file.name,
+            url: reader.result,
+            fileName: file.name,
+            isFile: true,
+          },
+        ],
+      }));
+      setResourceNameDraft("");
+      e.target.value = "";
+    };
+    reader.onerror = () => {
+      setResourceFileError("Could not read that file. Please try again.");
+      e.target.value = "";
+    };
+    reader.readAsDataURL(file);
   };
 
   const validateSection = () => {
@@ -156,6 +216,10 @@ export default function CreateProject() {
         }
         if (!formData.category) {
           setError("Please select a category");
+          return false;
+        }
+        if (formData.category === "Other" && !formData.customCategory.trim()) {
+          setError("Please specify your category");
           return false;
         }
         break;
@@ -195,8 +259,15 @@ export default function CreateProject() {
     setError("");
 
     try {
+      const { customCategory, resources, ...rest } = formData;
+      // Uploaded files are kept as data URLs, which can get large — the backend
+      // has no field to persist "resources" yet either way, so only send the
+      // lightweight link-based ones and skip file data to avoid an oversized request.
+      const linkResources = resources.filter((r) => !r.isFile);
       await createProject({
-        ...formData,
+        ...rest,
+        category: formData.category === "Other" ? customCategory.trim() : formData.category,
+        resources: linkResources,
         totalMembers: getTotalMembers()
       });
       navigate("/my-posts");
@@ -266,6 +337,20 @@ export default function CreateProject() {
               </select>
               <span className="hint">Covers projects and competitions across any field, not just software</span>
             </div>
+
+            {formData.category === "Other" && (
+              <div className="form-group">
+                <label>Specify Category <span className="required">*</span></label>
+                <input
+                  type="text"
+                  name="customCategory"
+                  placeholder="e.g., Culinary Arts Competition, Film Production..."
+                  value={formData.customCategory}
+                  onChange={handleChange}
+                />
+                <span className="hint">Tell us what field or discipline this falls under</span>
+              </div>
+            )}
           </div>
         );
         
@@ -393,7 +478,6 @@ export default function CreateProject() {
                               type="button"
                               className="counter-btn"
                               onClick={() => changeRoleCount(role, 1)}
-                              disabled={count >= 10}
                             >
                               +
                             </button>
@@ -412,7 +496,6 @@ export default function CreateProject() {
                   </div>
                 </div>
               )}
-              <span className="hint">Add any role your project or competition needs, across any discipline (max 10 per role)</span>
               {formData.roleAllocations.length > 0 && (
                 <div className="team-summary">
                   <strong>Total team members needed: {getTotalMembers()}</strong>
@@ -457,30 +540,89 @@ export default function CreateProject() {
           <div className="form-section">
             <div className="section-header">
               <h2>Links & Resources</h2>
-              <p>Share any relevant links for your project</p>
+              <p>Add any resources your team should have — GitHub repo, live demo, docs, PDFs, design files, anything</p>
             </div>
-            
+
             <div className="form-group">
-              <label>GitHub Repository</label>
+              <label>Add a Resource</label>
               <input
-                type="url"
-                name="githubRepo"
-                placeholder="https://github.com/username/project"
-                value={formData.githubRepo}
-                onChange={handleChange}
+                type="text"
+                className="resource-name-input"
+                placeholder="Resource name, e.g. GitHub Repo, Design Doc, Pitch Deck..."
+                value={resourceNameDraft}
+                onChange={(e) => setResourceNameDraft(e.target.value)}
               />
-            </div>
-            
-            <div className="form-group">
-              <label>Live Demo / Website</label>
+
+              <div className="resource-input-row">
+                <input
+                  type="text"
+                  placeholder="Paste a link — https://..."
+                  value={resourceLinkDraft}
+                  onChange={(e) => setResourceLinkDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addResource();
+                    }
+                  }}
+                />
+                <button type="button" className="manual-tag-add" onClick={addResource}>
+                  Add Link
+                </button>
+              </div>
+
+              <div className="resource-divider"><span>or</span></div>
+
               <input
-                type="url"
-                name="demoLink"
-                placeholder="https://project-demo.com"
-                value={formData.demoLink}
-                onChange={handleChange}
+                type="file"
+                ref={resourceFileInputRef}
+                onChange={handleResourceFileChange}
+                style={{ display: "none" }}
               />
+              <button
+                type="button"
+                className="resource-upload-btn"
+                onClick={() => resourceFileInputRef.current?.click()}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Upload a file (PDF, Doc, image, etc.)
+              </button>
+              {resourceFileError && <span className="resource-file-error">{resourceFileError}</span>}
+
+              <span className="hint">Any kind of resource works — a link to GitHub, a hosted demo, a Google Doc — or upload a PDF, Word doc, slide deck, image, or any other file directly.</span>
             </div>
+
+            {formData.resources.length > 0 && (
+              <div className="form-group">
+                <div className="resource-list">
+                  {formData.resources.map((resource, i) => (
+                    <div className="resource-item" key={`${resource.name}-${i}`}>
+                      <div className="resource-item-info">
+                        <span className="resource-item-name">
+                          {resource.isFile && <span className="resource-file-badge">FILE</span>}
+                          {resource.name}
+                        </span>
+                        <a href={resource.url} target="_blank" rel="noreferrer" className="resource-item-link">
+                          {resource.isFile ? resource.fileName : resource.url}
+                        </a>
+                      </div>
+                      <button
+                        type="button"
+                        className="role-remove-btn"
+                        aria-label={`Remove ${resource.name}`}
+                        onClick={() => removeResource(i)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         );
         
