@@ -67,6 +67,7 @@ export default function Posts() {
           const candidates = (res.data || []).map((suggestion) => ({
             ...suggestion.user,
             matchScore: suggestion.matchScore,
+            matchedSkills: suggestion.matchedSkills,
           }));
           setRecommendationsByProject((prev) => ({
             ...prev,
@@ -151,6 +152,7 @@ export default function Posts() {
       const candidates = (res.data || []).map((suggestion) => ({
         ...suggestion.user,
         matchScore: suggestion.matchScore,
+        matchedSkills: suggestion.matchedSkills,
       }));
       setInviteCandidates(candidates);
     } catch {
@@ -344,8 +346,8 @@ export default function Posts() {
                                         {candidate.fullName}
                                         <small>
                                           {Math.round((candidate.matchScore || 0) * 100)}% match
-                                          {(candidate.skills || []).length > 0
-                                            ? ` · ${candidate.skills.slice(0, 3).join(", ")}`
+                                          {(candidate.matchedSkills || []).length > 0
+                                            ? ` · Matches: ${candidate.matchedSkills.join(", ")}`
                                             : ""}
                                         </small>
                                       </span>
@@ -463,7 +465,7 @@ export default function Posts() {
               <h2>Recommended for {inviteContext.role}</h2>
               <button type="button" onClick={closeInvite} aria-label="Close">×</button>
             </div>
-            <p className="connections-hint">Ranked by how closely their skills match this project.</p>
+            <p className="connections-hint">Ranked by how many of this project's required skills each person has.</p>
             <div className="connections-list">
               {loadingCandidates ? (
                 <p className="connections-empty">Finding the best matches...</p>
@@ -483,7 +485,9 @@ export default function Posts() {
                       <b>{candidate.fullName}</b>
                       <small>
                         {Math.round((candidate.matchScore || 0) * 100)}% match
-                        {(candidate.skills || []).length > 0 ? ` · ${candidate.skills.slice(0, 3).join(", ")}` : ""}
+                        {(candidate.matchedSkills || []).length > 0
+                          ? ` · Matches: ${candidate.matchedSkills.join(", ")}`
+                          : ""}
                       </small>
                     </span>
                     {invitedIds.includes(candidate._id) ? (

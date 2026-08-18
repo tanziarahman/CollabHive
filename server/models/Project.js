@@ -47,13 +47,6 @@ const projectSchema = new mongoose.Schema(
       default: 0,
     },
 
-    // Embedding of skillsRequired + techStack, used for skill-matching. Regenerated on create/update.
-    skillsEmbedding: {
-      type: [Number],
-      default: [],
-      select: false,
-    },
-
     // Additional Info
     duration: {
       type: String,
@@ -101,12 +94,6 @@ const projectSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: {
-      transform: (doc, ret) => {
-        delete ret.skillsEmbedding;
-        return ret;
-      },
-    },
   }
 );
 

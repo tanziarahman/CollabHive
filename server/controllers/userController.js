@@ -1,7 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import Project from '../models/Project.js';
-import { generateEmbedding } from '../services/embeddingService.js';
 import { createNotification } from '../services/notificationService.js';
 
 const publicFields = 'fullName username profilePicture skills interests bio experienceLevel availability';
@@ -50,15 +49,12 @@ export const updateProfile = asyncHandler(async (req, res) => {
     user.profilePicture = profilePicture;
   }
 
-  let skillsChanged = false;
-
   if (skills !== undefined) {
     if (!Array.isArray(skills)) {
       res.status(400);
       throw new Error('skills must be an array of strings');
     }
     user.skills = skills;
-    skillsChanged = true;
   }
 
   if (interests !== undefined) {
@@ -67,16 +63,6 @@ export const updateProfile = asyncHandler(async (req, res) => {
       throw new Error('interests must be an array of strings');
     }
     user.interests = interests;
-    skillsChanged = true;
-  }
-
-  if (skillsChanged) {
-    const embeddingText = [...user.skills, ...user.interests].join(', ');
-    try {
-      user.skillsEmbedding = await generateEmbedding(embeddingText);
-    } catch (embeddingError) {
-      console.warn('Skill-embedding generation failed, keeping previous embedding:', embeddingError.message);
-    }
   }
 
   await user.save();

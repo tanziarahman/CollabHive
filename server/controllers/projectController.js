@@ -1,7 +1,6 @@
 import Project from '../models/Project.js';
 import User from '../models/User.js';
-import { generateEmbedding } from '../services/embeddingService.js';
-import { cosineSimilarity } from '../utils/cosineSimilarity.js';
+import { computeSkillMatch } from '../utils/matchScore.js';
 import { createNotification } from '../services/notificationService.js';
 
 // @desc    Create a new project
@@ -41,19 +40,6 @@ export const createProject = async (req, res) => {
       });
     }
 
-    // Embed required skills + tech stack for skill-matching suggestions.
-    // This is a nice-to-have (powers "recommended collaborators"), not a
-    // requirement to publish — if it fails (e.g. no Gemini API key configured),
-    // the project should still be created with an empty embedding rather than
-    // blocking publishing entirely.
-    const embeddingText = [...skillsRequired, ...(techStack || [])].join(', ');
-    let skillsEmbedding = [];
-    try {
-      skillsEmbedding = await generateEmbedding(embeddingText);
-    } catch (embeddingError) {
-      console.warn('Skill-embedding generation failed, continuing without it:', embeddingError.message);
-    }
-
     // Create project
     const project = await Project.create({
       title,
@@ -67,7 +53,6 @@ export const createProject = async (req, res) => {
       githubRepo: githubRepo || '',
       demoLink: demoLink || '',
       createdBy: req.user._id,  // From auth middleware
-      skillsEmbedding,
     });
 
     // Notify followers so a new project shows up in their notifications/feed
@@ -145,30 +130,33 @@ export const getProjectById = async (req, res) => {
 // @access  Private
 export const getProjectFeed = async (req, res) => {
   try {
-    const me = await User.findById(req.user._id).select('following +skillsEmbedding');
+    const me = await User.findById(req.user._id).select('following skills');
 
     const projects = await Project.find({ createdBy: { $in: me.following } })
       .populate('createdBy', 'fullName username profilePicture')
-      .select('+skillsEmbedding')
       .sort({ createdAt: -1 });
 
-    const data = projects.map((project) => ({
-      _id: project._id,
-      title: project.title,
-      description: project.description,
-      category: project.category,
-      skillsRequired: project.skillsRequired,
-      techStack: project.techStack,
-      roleAllocations: project.roleAllocations,
-      duration: project.duration,
-      commitmentLevel: project.commitmentLevel,
-      githubRepo: project.githubRepo,
-      demoLink: project.demoLink,
-      createdAt: project.createdAt,
-      createdBy: project.createdBy,
-      members: project.members,
-      matchScore: cosineSimilarity(me.skillsEmbedding, project.skillsEmbedding),
-    }));
+    const data = projects.map((project) => {
+      const { score, matchedSkills } = computeSkillMatch(me.skills, project);
+      return {
+        _id: project._id,
+        title: project.title,
+        description: project.description,
+        category: project.category,
+        skillsRequired: project.skillsRequired,
+        techStack: project.techStack,
+        roleAllocations: project.roleAllocations,
+        duration: project.duration,
+        commitmentLevel: project.commitmentLevel,
+        githubRepo: project.githubRepo,
+        demoLink: project.demoLink,
+        createdAt: project.createdAt,
+        createdBy: project.createdBy,
+        members: project.members,
+        matchScore: score,
+        matchedSkills,
+      };
+    });
 
     res.status(200).json({
       success: true,
@@ -286,17 +274,6 @@ export const updateProject = async (req, res) => {
     if (githubRepo !== undefined) project.githubRepo = githubRepo;
     if (demoLink !== undefined) project.demoLink = demoLink;
 
-    // Regenerate skill-match embedding if the underlying skills changed.
-    // Same as on create: this shouldn't block saving the rest of the update.
-    if (skillsRequired !== undefined || techStack !== undefined) {
-      const embeddingText = [...project.skillsRequired, ...project.techStack].join(', ');
-      try {
-        project.skillsEmbedding = await generateEmbedding(embeddingText);
-      } catch (embeddingError) {
-        console.warn('Skill-embedding generation failed, keeping previous embedding:', embeddingError.message);
-      }
-    }
-
     // .save() (rather than findByIdAndUpdate) so the pre('save') hook recalculates totalMembers
     await project.save();
 
@@ -335,9 +312,9 @@ export const deleteProject = async (req, res) => {
 export const getSuggestedCollaborators = async (req, res) => {
   try {
     // req.project is loaded + ownership-checked by isProjectOwner middleware
-    const project = await Project.findById(req.project._id).select('+skillsEmbedding');
+    const project = req.project;
 
-    if (!project.skillsEmbedding || project.skillsEmbedding.length === 0) {
+    if ((project.skillsRequired || []).length === 0 && (project.techStack || []).length === 0) {
       return res.status(200).json({ success: true, count: 0, data: [] });
     }
 
@@ -349,22 +326,26 @@ export const getSuggestedCollaborators = async (req, res) => {
       _id: { $nin: excludeIds },
       'settings.discoverable': { $ne: false },
     })
-      .select('fullName username profilePicture bio skills interests experienceLevel +skillsEmbedding');
+      .select('fullName username profilePicture bio skills interests experienceLevel');
 
     const suggestions = candidates
-      .map((candidate) => ({
-        user: {
-          _id: candidate._id,
-          fullName: candidate.fullName,
-          username: candidate.username,
-          profilePicture: candidate.profilePicture,
-          bio: candidate.bio,
-          skills: candidate.skills,
-          interests: candidate.interests,
-          experienceLevel: candidate.experienceLevel,
-        },
-        matchScore: cosineSimilarity(project.skillsEmbedding, candidate.skillsEmbedding),
-      }))
+      .map((candidate) => {
+        const { score, matchedSkills } = computeSkillMatch(candidate.skills, project);
+        return {
+          user: {
+            _id: candidate._id,
+            fullName: candidate.fullName,
+            username: candidate.username,
+            profilePicture: candidate.profilePicture,
+            bio: candidate.bio,
+            skills: candidate.skills,
+            interests: candidate.interests,
+            experienceLevel: candidate.experienceLevel,
+          },
+          matchScore: score,
+          matchedSkills,
+        };
+      })
       .filter((suggestion) => suggestion.matchScore > 0)
       .sort((a, b) => b.matchScore - a.matchScore)
       .slice(0, limit);
