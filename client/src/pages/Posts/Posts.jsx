@@ -4,12 +4,29 @@ import Navbar from "../../components/Navbar/Navbar";
 import {
   getMyCollaborations,
   deleteProject,
+  updateProject,
   getProjectJoinRequests,
   getSuggestedCollaborators,
   inviteUser,
 } from "../../api/projects";
 import { acceptJoinRequest, rejectJoinRequest } from "../../api/joinRequests";
+import { getProjectConfig } from "../../api/config";
+import { CATEGORY_OPTIONS } from "../../constants/projectCategories";
 import "./Posts.css";
+
+const emptyEditForm = {
+  title: "",
+  description: "",
+  category: "",
+  customCategory: "",
+  skillsRequired: [],
+  techStack: [],
+  roleAllocations: [],
+  duration: "",
+  commitmentLevel: "",
+  githubRepo: "",
+  demoLink: "",
+};
 
 export default function Posts() {
   const navigate = useNavigate();
@@ -111,6 +128,131 @@ export default function Posts() {
     }
   };
 
+  const [editingProjectId, setEditingProjectId] = useState(null);
+  const [editForm, setEditForm] = useState(emptyEditForm);
+  const [editSkillDraft, setEditSkillDraft] = useState("");
+  const [editTechDraft, setEditTechDraft] = useState("");
+  const [editRoleDraft, setEditRoleDraft] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [durationOptions, setDurationOptions] = useState([]);
+
+  useEffect(() => {
+    getProjectConfig()
+      .then((data) => setDurationOptions(data.durations || []))
+      .catch(() => setDurationOptions([]));
+  }, []);
+
+  const openEditProject = (project) => {
+    const isPreset = CATEGORY_OPTIONS.includes(project.category);
+    setEditForm({
+      title: project.title || "",
+      description: project.description || "",
+      category: isPreset ? project.category : "Other",
+      customCategory: isPreset ? "" : project.category || "",
+      skillsRequired: [...(project.skillsRequired || [])],
+      techStack: [...(project.techStack || [])],
+      roleAllocations: (project.roleAllocations || []).map((r) => ({ role: r.role, count: r.count })),
+      duration: project.duration || "",
+      commitmentLevel: project.commitmentLevel || "",
+      githubRepo: project.githubRepo || "",
+      demoLink: project.demoLink || "",
+    });
+    setEditSkillDraft("");
+    setEditTechDraft("");
+    setEditRoleDraft("");
+    setEditError("");
+    setEditingProjectId(project._id);
+  };
+
+  const closeEditProject = () => {
+    setEditingProjectId(null);
+  };
+
+  const handleEditFieldChange = (field, value) => {
+    setEditForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const addEditTagValue = (field, draft, setDraft) => {
+    const value = draft.trim();
+    if (!value) return;
+    setEditForm((prev) => {
+      if (prev[field].some((v) => v.toLowerCase() === value.toLowerCase())) return prev;
+      return { ...prev, [field]: [...prev[field], value] };
+    });
+    setDraft("");
+  };
+
+  const removeEditTagValue = (field, index) => {
+    setEditForm((prev) => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }));
+  };
+
+  const addEditRole = () => {
+    const roleName = editRoleDraft.trim();
+    if (!roleName) return;
+    setEditForm((prev) => {
+      if (prev.roleAllocations.some((r) => r.role.toLowerCase() === roleName.toLowerCase())) return prev;
+      return { ...prev, roleAllocations: [...prev.roleAllocations, { role: roleName, count: 1 }] };
+    });
+    setEditRoleDraft("");
+  };
+
+  const removeEditRole = (roleName) => {
+    setEditForm((prev) => ({
+      ...prev,
+      roleAllocations: prev.roleAllocations.filter((r) => r.role !== roleName),
+    }));
+  };
+
+  const changeEditRoleCount = (roleName, delta) => {
+    setEditForm((prev) => ({
+      ...prev,
+      roleAllocations: prev.roleAllocations.map((r) =>
+        r.role === roleName ? { ...r, count: Math.max(1, r.count + delta) } : r
+      ),
+    }));
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!editForm.title.trim() || !editForm.description.trim() || !editForm.category) {
+      setEditError("Title, description, and category are required.");
+      return;
+    }
+    if (editForm.category === "Other" && !editForm.customCategory.trim()) {
+      setEditError("Please specify your category.");
+      return;
+    }
+    if (editForm.skillsRequired.length === 0) {
+      setEditError("Please add at least one required skill.");
+      return;
+    }
+    if (editForm.roleAllocations.length === 0) {
+      setEditError("Please add at least one role.");
+      return;
+    }
+
+    setEditSaving(true);
+    setEditError("");
+    try {
+      const { customCategory, ...rest } = editForm;
+      const payload = {
+        ...rest,
+        category: editForm.category === "Other" ? customCategory.trim() : editForm.category,
+      };
+      const res = await updateProject(editingProjectId, payload);
+      setMyCollaborations((prev) =>
+        prev.map((p) => (p._id === editingProjectId ? { ...p, ...res.data } : p))
+      );
+      setEditingProjectId(null);
+    } catch (err) {
+      setEditError(err.response?.data?.message || "Could not save changes.");
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
   const openApplicants = async (project) => {
     setActiveApplicantsProject(project);
     setLoadingRequests(true);
@@ -182,6 +324,8 @@ export default function Posts() {
       setInvitingId(null);
     }
   };
+
+  const editingProject = myCollaborations.find((p) => p._id === editingProjectId) || null;
 
   return (
     <>
@@ -383,6 +527,9 @@ export default function Posts() {
                             <button type="button" onClick={() => openApplicants(project)}>
                               View Applicants
                             </button>
+                            <button type="button" onClick={() => openEditProject(project)}>
+                              Edit
+                            </button>
                             <button
                               type="button"
                               className="my-project-delete-btn"
@@ -506,6 +653,225 @@ export default function Posts() {
                 ))
               )}
             </div>
+          </section>
+        </div>
+      )}
+
+      {editingProject && (
+        <div className="connections-modal-backdrop" onClick={closeEditProject}>
+          <section
+            className="connections-modal edit-project-modal"
+            role="dialog"
+            aria-modal="true"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="connections-modal-header">
+              <h2>Edit {editingProject.title}</h2>
+              <button type="button" onClick={closeEditProject} aria-label="Close">×</button>
+            </div>
+
+            <form className="edit-project-body" onSubmit={handleEditSubmit}>
+              {editError && <div className="edit-project-error">{editError}</div>}
+
+              <div className="edit-form-group">
+                <label>Project Title</label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => handleEditFieldChange("title", e.target.value)}
+                />
+              </div>
+
+              <div className="edit-form-group">
+                <label>Description</label>
+                <textarea
+                  rows={4}
+                  value={editForm.description}
+                  onChange={(e) => handleEditFieldChange("description", e.target.value)}
+                />
+              </div>
+
+              <div className="edit-form-group">
+                <label>Category</label>
+                <select
+                  value={editForm.category}
+                  onChange={(e) => handleEditFieldChange("category", e.target.value)}
+                >
+                  <option value="">Select a category</option>
+                  {CATEGORY_OPTIONS.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              {editForm.category === "Other" && (
+                <div className="edit-form-group">
+                  <label>Specify category</label>
+                  <input
+                    type="text"
+                    value={editForm.customCategory}
+                    onChange={(e) => handleEditFieldChange("customCategory", e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="edit-form-group">
+                <label>Required Skills</label>
+                <div className="edit-tag-input-row">
+                  <input
+                    type="text"
+                    placeholder="Type a skill and press Add"
+                    value={editSkillDraft}
+                    onChange={(e) => setEditSkillDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addEditTagValue("skillsRequired", editSkillDraft, setEditSkillDraft);
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addEditTagValue("skillsRequired", editSkillDraft, setEditSkillDraft)}
+                  >
+                    Add
+                  </button>
+                </div>
+                <div className="edit-tag-list">
+                  {editForm.skillsRequired.map((skill, i) => (
+                    <span className="edit-tag-chip" key={`${skill}-${i}`}>
+                      {skill}
+                      <button type="button" aria-label={`Remove ${skill}`} onClick={() => removeEditTagValue("skillsRequired", i)}>×</button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="edit-form-group">
+                <label>Tech Stack</label>
+                <div className="edit-tag-input-row">
+                  <input
+                    type="text"
+                    placeholder="Type a tool/technology and press Add"
+                    value={editTechDraft}
+                    onChange={(e) => setEditTechDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addEditTagValue("techStack", editTechDraft, setEditTechDraft);
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addEditTagValue("techStack", editTechDraft, setEditTechDraft)}
+                  >
+                    Add
+                  </button>
+                </div>
+                <div className="edit-tag-list">
+                  {editForm.techStack.map((tech, i) => (
+                    <span className="edit-tag-chip" key={`${tech}-${i}`}>
+                      {tech}
+                      <button type="button" aria-label={`Remove ${tech}`} onClick={() => removeEditTagValue("techStack", i)}>×</button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="edit-form-group">
+                <label>Team Structure</label>
+                <div className="edit-tag-input-row">
+                  <input
+                    type="text"
+                    placeholder="Type a role and press Add Role"
+                    value={editRoleDraft}
+                    onChange={(e) => setEditRoleDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addEditRole();
+                      }
+                    }}
+                  />
+                  <button type="button" onClick={addEditRole}>Add Role</button>
+                </div>
+                {editForm.roleAllocations.length > 0 && (
+                  <div className="edit-role-list">
+                    {editForm.roleAllocations.map(({ role, count }) => (
+                      <div key={role} className="edit-role-row">
+                        <span className="edit-role-name">{role}</span>
+                        <div className="edit-role-counter">
+                          <button type="button" onClick={() => changeEditRoleCount(role, -1)} disabled={count <= 1}>−</button>
+                          <span>{count}</span>
+                          <button type="button" onClick={() => changeEditRoleCount(role, 1)}>+</button>
+                        </div>
+                        <button type="button" className="edit-role-remove" aria-label={`Remove ${role}`} onClick={() => removeEditRole(role)}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="edit-form-group">
+                <label>Expected Duration</label>
+                {durationOptions.length > 0 ? (
+                  <select
+                    value={editForm.duration}
+                    onChange={(e) => handleEditFieldChange("duration", e.target.value)}
+                  >
+                    <option value="">Select duration</option>
+                    {durationOptions.map((dur) => (
+                      <option key={dur} value={dur}>{dur}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={editForm.duration}
+                    onChange={(e) => handleEditFieldChange("duration", e.target.value)}
+                  />
+                )}
+              </div>
+
+              <div className="edit-form-group">
+                <label>Commitment Level</label>
+                <input
+                  type="text"
+                  value={editForm.commitmentLevel}
+                  onChange={(e) => handleEditFieldChange("commitmentLevel", e.target.value)}
+                />
+              </div>
+
+              <div className="edit-form-group">
+                <label>GitHub Repo</label>
+                <input
+                  type="url"
+                  placeholder="https://github.com/..."
+                  value={editForm.githubRepo}
+                  onChange={(e) => handleEditFieldChange("githubRepo", e.target.value)}
+                />
+              </div>
+
+              <div className="edit-form-group">
+                <label>Live Demo Link</label>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={editForm.demoLink}
+                  onChange={(e) => handleEditFieldChange("demoLink", e.target.value)}
+                />
+              </div>
+
+              <div className="edit-form-actions">
+                <button type="button" className="edit-cancel-btn" onClick={closeEditProject}>
+                  Cancel
+                </button>
+                <button type="submit" className="edit-save-btn" disabled={editSaving}>
+                  {editSaving ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
           </section>
         </div>
       )}

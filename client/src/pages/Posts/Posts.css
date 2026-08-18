@@ -589,3 +589,220 @@
   background: #e6a73c;
   border-color: #e6a73c;
 }
+
+/* Edit project modal */
+
+.edit-project-modal {
+  width: min(600px, 100%);
+  max-height: min(720px, calc(100vh - 40px));
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-project-body {
+  overflow-y: auto;
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edit-project-error {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(224, 100, 90, 0.1);
+  border: 1px solid rgba(224, 100, 90, 0.35);
+  color: #e0645a;
+  font-size: 12.5px;
+}
+
+.edit-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edit-form-group label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.edit-form-group input[type="text"],
+.edit-form-group input[type="url"],
+.edit-form-group textarea,
+.edit-form-group select {
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.edit-form-group textarea {
+  resize: vertical;
+}
+
+.edit-tag-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-tag-input-row input {
+  flex: 1;
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.edit-tag-input-row button,
+.edit-role-remove,
+.edit-role-counter button {
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.edit-tag-input-row button {
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.edit-tag-input-row button:hover {
+  border-color: #ffbd0a;
+  color: #ffbd0a;
+}
+
+.edit-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.edit-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 189, 10, 0.1);
+  border: 1px solid rgba(255, 189, 10, 0.3);
+  color: #ffbd0a;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.edit-tag-chip button {
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.edit-role-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edit-role-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.edit-role-name {
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.edit-role-counter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-role-counter button {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 13px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-role-counter button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.edit-role-remove {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.edit-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.edit-cancel-btn,
+.edit-save-btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.edit-cancel-btn {
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.edit-save-btn {
+  background: #ffbd0a;
+  border: 1px solid #ffbd0a;
+  color: #18130a;
+}
+
+.edit-save-btn:hover:not(:disabled) {
+  background: #e6a73c;
+  border-color: #e6a73c;
+}
+
+.edit-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

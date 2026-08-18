@@ -230,6 +230,8 @@ export const getMyCollaborations = async (req, res) => {
         roleAllocations: project.roleAllocations,
         skillsRequired: project.skillsRequired,
         techStack: project.techStack,
+        duration: project.duration,
+        commitmentLevel: project.commitmentLevel,
         isOwner: project.createdBy && project.createdBy._id.toString() === req.user._id.toString(),
         collaborators: Array.from(collaboratorsById.values()),
       };
