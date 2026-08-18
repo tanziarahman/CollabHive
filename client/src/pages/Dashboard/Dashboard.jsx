@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import { getMe } from "../../api/auth";
-import { getProjectFeed, createJoinRequest } from "../../api/projects";
+import { getProjectFeed, getProjects, createJoinRequest } from "../../api/projects";
 import { getSuggestions, sendFollowRequest } from "../../api/users";
 import "./Dashboard.css";
 
 export default function Dashboard() {
   const [projects, setProjects] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
   const [user, setUser] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [followingId, setFollowingId] = useState(null);
@@ -25,9 +26,10 @@ export default function Dashboard() {
     setLoading(true);
 
     // Each piece loads independently so one failing doesn't wipe out the others.
-    const [userResult, feedResult, suggestionsResult] = await Promise.allSettled([
+    const [userResult, feedResult, allProjectsResult, suggestionsResult] = await Promise.allSettled([
       getMe(),
       getProjectFeed(),
+      getProjects(),
       getSuggestions(),
     ]);
 
@@ -39,6 +41,10 @@ export default function Dashboard() {
 
     if (feedResult.status === "fulfilled") {
       setProjects(feedResult.value.data || []);
+    }
+
+    if (allProjectsResult.status === "fulfilled") {
+      setAllProjects(allProjectsResult.value.data || []);
     }
 
     if (suggestionsResult.status === "fulfilled") {
@@ -99,12 +105,17 @@ export default function Dashboard() {
     }
   };
 
-  const visibleProjects = searchTerm.trim()
-    ? projects.filter((project) => {
+  const isSearching = searchTerm.trim().length > 0;
+
+  // Searching looks across every project on the platform (not just the feed
+  // of people you follow), since that's what "search projects" should mean.
+  const visibleProjects = isSearching
+    ? allProjects.filter((project) => {
         const term = searchTerm.trim().toLowerCase();
         return (
           (project.title || "").toLowerCase().includes(term) ||
-          (project.category || "").toLowerCase().includes(term)
+          (project.category || "").toLowerCase().includes(term) ||
+          (project.createdBy?.fullName || "").toLowerCase().includes(term)
         );
       })
     : projects;
@@ -189,17 +200,17 @@ export default function Dashboard() {
 
           {/* Empty State */}
 
-          {projects.length === 0 ? (
-            <div className="empty-state">
-              <h2>No Projects Yet</h2>
-
-              <p>Follow other collaborators to see the projects they post here.</p>
-            </div>
-          ) : visibleProjects.length === 0 ? (
+          {isSearching && visibleProjects.length === 0 ? (
             <div className="empty-state">
               <h2>No matching projects</h2>
 
-              <p>No projects found matching &ldquo;{searchTerm}&rdquo;. Try a different name or category.</p>
+              <p>No projects found matching &ldquo;{searchTerm}&rdquo;. Try a different name, category, or creator.</p>
+            </div>
+          ) : !isSearching && projects.length === 0 ? (
+            <div className="empty-state">
+              <h2>No Projects Yet</h2>
+
+              <p>Follow other collaborators to see the projects they post here, or search above to browse every project on CollabHive.</p>
             </div>
           ) : (
             <div className="projects-grid">
