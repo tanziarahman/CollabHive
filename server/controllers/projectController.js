@@ -160,6 +160,8 @@ export const getProjectFeed = async (req, res) => {
       skillsRequired: project.skillsRequired,
       techStack: project.techStack,
       roleAllocations: project.roleAllocations,
+      duration: project.duration,
+      commitmentLevel: project.commitmentLevel,
       githubRepo: project.githubRepo,
       demoLink: project.demoLink,
       createdAt: project.createdAt,

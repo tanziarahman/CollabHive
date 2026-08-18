@@ -115,6 +115,21 @@
   font-size: 0.8rem;
 }
 
+.creator-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgba(245, 240, 232, 0.6);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.creator-link:hover {
+  color: #F5B84C;
+}
+
 .category-badge {
   background: rgba(245, 184, 76, 0.1);
   color: #F5B84C;

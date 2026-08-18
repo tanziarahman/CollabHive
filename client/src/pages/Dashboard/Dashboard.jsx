@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import { getMe } from "../../api/auth";
 import { getProjectFeed, getProjects, createJoinRequest } from "../../api/projects";
 import "./Dashboard.css";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [allProjects, setAllProjects] = useState([]);
   const [user, setUser] = useState(null);
@@ -170,7 +172,14 @@ export default function Dashboard() {
                       <h2>{project.title}</h2>
 
                       <p className="creator">
-                        Created by {project.createdBy?.fullName}
+                        Created by{" "}
+                        <button
+                          type="button"
+                          className="creator-link"
+                          onClick={() => navigate(`/profile/${project.createdBy?._id}`)}
+                        >
+                          {project.createdBy?.fullName}
+                        </button>
                       </p>
                     </div>
 
@@ -184,6 +193,19 @@ export default function Dashboard() {
                   {/* Description */}
 
                   <p className="project-description">{project.description}</p>
+
+                  {/* Timeline & Commitment */}
+
+                  {(project.duration || project.commitmentLevel) && (
+                    <div className="info-section">
+                      <h3>Timeline & Commitment</h3>
+
+                      <div className="tag-container">
+                        {project.duration && <span className="tag">{project.duration}</span>}
+                        {project.commitmentLevel && <span className="tag">{project.commitmentLevel}</span>}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Required Skills */}
 
