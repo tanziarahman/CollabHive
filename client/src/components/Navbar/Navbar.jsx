@@ -196,7 +196,7 @@ const DEFAULT_NOTIF_STYLE = {
   ),
 };
 
-export default function Navbar({ hideSearch = false, searchValue, onSearchChange }) {
+export default function Navbar({ hideSearch = false, searchValue, onSearchChange, searchPlaceholder }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -365,7 +365,7 @@ export default function Navbar({ hideSearch = false, searchValue, onSearchChange
             <input
               type="text"
               className="search-input"
-              placeholder="Search users or projects by skill or name..."
+              placeholder={searchPlaceholder || "Search users or projects by skill or name..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -376,12 +376,12 @@ export default function Navbar({ hideSearch = false, searchValue, onSearchChange
       {/* Right side - Actions */}
       <div className="navbar-right">
 
-        {/* My Posts Button */}
+        {/* My Projects Button */}
         <button
           className={`my-posts-btn ${location.pathname === "/my-posts" ? "active" : ""}`}
           onClick={() => navigate("/my-posts")}
         >
-          Posts
+          Projects
         </button>
 
         {/* Find People */}

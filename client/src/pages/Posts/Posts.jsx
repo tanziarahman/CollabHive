@@ -240,6 +240,46 @@ export default function Posts() {
 
                       <p className="my-project-description">{project.description}</p>
 
+                      {(project.skillsRequired || []).length > 0 && (
+                        <>
+                          <div className="my-project-collaborators-label">Required Skills</div>
+                          <div className="my-project-tags">
+                            {project.skillsRequired.map((skill) => (
+                              <span className="my-project-tag" key={skill}>{skill}</span>
+                            ))}
+                          </div>
+                        </>
+                      )}
+
+                      {(project.techStack || []).length > 0 && (
+                        <>
+                          <div className="my-project-collaborators-label">Tech Stack</div>
+                          <div className="my-project-tags">
+                            {project.techStack.map((tech) => (
+                              <span className="my-project-tag tech" key={tech}>{tech}</span>
+                            ))}
+                          </div>
+                        </>
+                      )}
+
+                      {(project.githubRepo || project.demoLink) && (
+                        <>
+                          <div className="my-project-collaborators-label">Resources</div>
+                          <div className="my-project-resources">
+                            {project.githubRepo && (
+                              <a href={project.githubRepo} target="_blank" rel="noreferrer" className="my-project-resource-link">
+                                GitHub
+                              </a>
+                            )}
+                            {project.demoLink && (
+                              <a href={project.demoLink} target="_blank" rel="noreferrer" className="my-project-resource-link">
+                                Live Demo
+                              </a>
+                            )}
+                          </div>
+                        </>
+                      )}
+
                       <div className="my-project-collaborators-label">Working on this</div>
                       <div className="my-project-collaborators">
                         {project.collaborators.map((person) => (

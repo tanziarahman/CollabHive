@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [expandedProject, setExpandedProject] = useState(null);
   const [selectedRole, setSelectedRole] = useState({});
   const [applyingProject, setApplyingProject] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   async function fetchDashboard() {
     setLoading(true);
@@ -98,6 +99,16 @@ export default function Dashboard() {
     }
   };
 
+  const visibleProjects = searchTerm.trim()
+    ? projects.filter((project) => {
+        const term = searchTerm.trim().toLowerCase();
+        return (
+          (project.title || "").toLowerCase().includes(term) ||
+          (project.category || "").toLowerCase().includes(term)
+        );
+      })
+    : projects;
+
   if (loading) {
     return (
       <>
@@ -124,7 +135,11 @@ export default function Dashboard() {
 
   return (
     <>
-      <Navbar />
+      <Navbar
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search projects by name or category..."
+      />
 
       <div className="dashboard-page">
         <div className="dashboard-container">
@@ -180,9 +195,15 @@ export default function Dashboard() {
 
               <p>Follow other collaborators to see the projects they post here.</p>
             </div>
+          ) : visibleProjects.length === 0 ? (
+            <div className="empty-state">
+              <h2>No matching projects</h2>
+
+              <p>No projects found matching &ldquo;{searchTerm}&rdquo;. Try a different name or category.</p>
+            </div>
           ) : (
             <div className="projects-grid">
-              {projects.map((project) => (
+              {visibleProjects.map((project) => (
                 <div className="project-card" key={project._id}>
                   {/* Header */}
 

@@ -89,7 +89,11 @@ export default function FollowRequests() {
 
   return (
     <>
-      <Navbar searchValue={query} onSearchChange={setQuery} />
+      <Navbar
+        searchValue={query}
+        onSearchChange={setQuery}
+        searchPlaceholder="Search people by name or username..."
+      />
       <main className="follow-requests-page">
         <section className="requests-content">
           <p className="eyebrow">Connect</p>

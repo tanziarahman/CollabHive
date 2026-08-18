@@ -236,8 +236,10 @@ export const getMyCollaborations = async (req, res) => {
         category: project.category,
         description: project.description,
         githubRepo: project.githubRepo,
+        demoLink: project.demoLink,
         roleAllocations: project.roleAllocations,
         skillsRequired: project.skillsRequired,
+        techStack: project.techStack,
         isOwner: project.createdBy && project.createdBy._id.toString() === req.user._id.toString(),
         collaborators: Array.from(collaboratorsById.values()),
       };
