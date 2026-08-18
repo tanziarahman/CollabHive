@@ -58,15 +58,28 @@ const projectSchema = new mongoose.Schema(
       default: 'Flexible (As needed)',
     },
 
-    // Links
-    githubRepo: {
-      type: String,
-      default: '',
-    },
-    demoLink: {
-      type: String,
-      default: '',
-    },
+    // Flexible list of named links/files (GitHub repo, live demo, docs, design
+    // files, anything) — any number of resources, matching what the
+    // create/edit project forms offer, rather than two fixed link fields.
+    resources: [{
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      url: {
+        type: String,
+        required: true,
+      },
+      isFile: {
+        type: Boolean,
+        default: false,
+      },
+      fileName: {
+        type: String,
+        default: '',
+      },
+    }],
 
     // Relations
     createdBy: {

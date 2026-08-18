@@ -17,26 +17,25 @@ export const createProject = async (req, res) => {
       roleAllocations,
       duration,
       commitmentLevel,
-      githubRepo,
-      demoLink,
+      resources,
     } = req.body;
 
     // Validation
     if (!title || !description || !category) {
-      return res.status(400).json({ 
-        message: 'Please provide title, description, and category' 
+      return res.status(400).json({
+        message: 'Please provide title, description, and category'
       });
     }
 
     if (!skillsRequired || skillsRequired.length === 0) {
-      return res.status(400).json({ 
-        message: 'Please select at least one required skill' 
+      return res.status(400).json({
+        message: 'Please select at least one required skill'
       });
     }
 
     if (!roleAllocations || roleAllocations.length === 0) {
-      return res.status(400).json({ 
-        message: 'Please specify at least one role' 
+      return res.status(400).json({
+        message: 'Please specify at least one role'
       });
     }
 
@@ -50,8 +49,7 @@ export const createProject = async (req, res) => {
       roleAllocations,
       duration: duration || '3-6 months',
       commitmentLevel: commitmentLevel || 'Flexible (As needed)',
-      githubRepo: githubRepo || '',
-      demoLink: demoLink || '',
+      resources: resources || [],
       createdBy: req.user._id,  // From auth middleware
     });
 
@@ -148,8 +146,7 @@ export const getProjectFeed = async (req, res) => {
         roleAllocations: project.roleAllocations,
         duration: project.duration,
         commitmentLevel: project.commitmentLevel,
-        githubRepo: project.githubRepo,
-        demoLink: project.demoLink,
+        resources: project.resources,
         createdAt: project.createdAt,
         createdBy: project.createdBy,
         members: project.members,
@@ -225,8 +222,7 @@ export const getMyCollaborations = async (req, res) => {
         title: project.title,
         category: project.category,
         description: project.description,
-        githubRepo: project.githubRepo,
-        demoLink: project.demoLink,
+        resources: project.resources,
         roleAllocations: project.roleAllocations,
         skillsRequired: project.skillsRequired,
         techStack: project.techStack,
@@ -261,8 +257,7 @@ export const updateProject = async (req, res) => {
       roleAllocations,
       duration,
       commitmentLevel,
-      githubRepo,
-      demoLink,
+      resources,
     } = req.body;
 
     if (title !== undefined) project.title = title;
@@ -273,8 +268,7 @@ export const updateProject = async (req, res) => {
     if (roleAllocations !== undefined) project.roleAllocations = roleAllocations;
     if (duration !== undefined) project.duration = duration;
     if (commitmentLevel !== undefined) project.commitmentLevel = commitmentLevel;
-    if (githubRepo !== undefined) project.githubRepo = githubRepo;
-    if (demoLink !== undefined) project.demoLink = demoLink;
+    if (resources !== undefined) project.resources = resources;
 
     // .save() (rather than findByIdAndUpdate) so the pre('save') hook recalculates totalMembers
     await project.save();

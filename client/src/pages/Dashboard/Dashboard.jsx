@@ -257,27 +257,17 @@ export default function Dashboard() {
 
                   <div className="project-footer">
                     <div className="resource-buttons">
-                      {project.githubRepo && (
+                      {(project.resources || []).map((resource, i) => (
                         <a
-                          href={project.githubRepo}
+                          href={resource.url}
                           target="_blank"
                           rel="noreferrer"
                           className="resource-btn"
+                          key={`${resource.name}-${i}`}
                         >
-                          GitHub
+                          {resource.name}
                         </a>
-                      )}
-
-                      {project.demoLink && (
-                        <a
-                          href={project.demoLink}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="resource-btn"
-                        >
-                          Live Demo
-                        </a>
-                      )}
+                      ))}
                     </div>
 
                     <button

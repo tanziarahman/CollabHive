@@ -116,7 +116,8 @@ export default function Profile() {
     id: p._id,
     name: p.title,
     description: p.description,
-    githubLink: p.githubRepo || "",
+    resourceLink: p.resources?.[0]?.url || "",
+    resourceName: p.resources?.[0]?.name || "",
   }));
 
   const loadCollaborations = async () => {
@@ -256,7 +257,7 @@ export default function Profile() {
       ...(projects.length
         ? projects.map(
             (p) => `- ${p.name}${p.description ? `: ${p.description}` : ""}${
-              p.githubLink ? ` | GitHub: ${p.githubLink}` : ""
+              p.resourceLink ? ` | ${p.resourceName || "Link"}: ${p.resourceLink}` : ""
             }`
           )
         : ["-"]),
@@ -425,17 +426,17 @@ export default function Profile() {
                       <b>{p.name}</b>
                       {isExpanded && (
                         <div className="project-tile-dropdown">
-                          {p.githubLink ? (
+                          {p.resourceLink ? (
                             <a
-                              href={p.githubLink}
+                              href={p.resourceLink}
                               target="_blank"
                               rel="noreferrer"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              GitHub ↗
+                              {p.resourceName || "Link"} ↗
                             </a>
                           ) : (
-                            <span className="project-tile-no-link">No GitHub link added</span>
+                            <span className="project-tile-no-link">No link added</span>
                           )}
                         </div>
                       )}

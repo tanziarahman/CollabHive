@@ -238,15 +238,10 @@ export default function CreateProject() {
     setError("");
 
     try {
-      const { customCategory, resources, ...rest } = formData;
-      // Uploaded files are kept as data URLs, which can get large — the backend
-      // has no field to persist "resources" yet either way, so only send the
-      // lightweight link-based ones and skip file data to avoid an oversized request.
-      const linkResources = resources.filter((r) => !r.isFile);
+      const { customCategory, ...rest } = formData;
       await createProject({
         ...rest,
         category: formData.category === "Other" ? customCategory.trim() : formData.category,
-        resources: linkResources,
         totalMembers: getTotalMembers()
       });
       navigate("/my-posts");

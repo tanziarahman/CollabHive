@@ -24,8 +24,7 @@ const emptyEditForm = {
   roleAllocations: [],
   duration: "",
   commitmentLevel: "",
-  githubRepo: "",
-  demoLink: "",
+  resources: [],
 };
 
 export default function Posts() {
@@ -133,6 +132,10 @@ export default function Posts() {
   const [editSkillDraft, setEditSkillDraft] = useState("");
   const [editTechDraft, setEditTechDraft] = useState("");
   const [editRoleDraft, setEditRoleDraft] = useState("");
+  const [editResourceNameDraft, setEditResourceNameDraft] = useState("");
+  const [editResourceLinkDraft, setEditResourceLinkDraft] = useState("");
+  const [editResourceFileError, setEditResourceFileError] = useState("");
+  const editResourceFileInputRef = useRef(null);
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
   const [durationOptions, setDurationOptions] = useState([]);
@@ -155,12 +158,14 @@ export default function Posts() {
       roleAllocations: (project.roleAllocations || []).map((r) => ({ role: r.role, count: r.count })),
       duration: project.duration || "",
       commitmentLevel: project.commitmentLevel || "",
-      githubRepo: project.githubRepo || "",
-      demoLink: project.demoLink || "",
+      resources: [...(project.resources || [])],
     });
     setEditSkillDraft("");
     setEditTechDraft("");
     setEditRoleDraft("");
+    setEditResourceNameDraft("");
+    setEditResourceLinkDraft("");
+    setEditResourceFileError("");
     setEditError("");
     setEditingProjectId(project._id);
   };
@@ -211,6 +216,54 @@ export default function Posts() {
         r.role === roleName ? { ...r, count: Math.max(1, r.count + delta) } : r
       ),
     }));
+  };
+
+  const addEditResource = () => {
+    const name = editResourceNameDraft.trim();
+    const url = editResourceLinkDraft.trim();
+    if (!name || !url) return;
+    setEditForm((prev) => ({ ...prev, resources: [...prev.resources, { name, url }] }));
+    setEditResourceNameDraft("");
+    setEditResourceLinkDraft("");
+  };
+
+  const removeEditResource = (index) => {
+    setEditForm((prev) => ({ ...prev, resources: prev.resources.filter((_, i) => i !== index) }));
+  };
+
+  const handleEditResourceFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditResourceFileError("");
+
+    if (file.size > 8 * 1024 * 1024) {
+      setEditResourceFileError("Please choose a file smaller than 8MB.");
+      e.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setEditForm((prev) => ({
+        ...prev,
+        resources: [
+          ...prev.resources,
+          {
+            name: editResourceNameDraft.trim() || file.name,
+            url: reader.result,
+            fileName: file.name,
+            isFile: true,
+          },
+        ],
+      }));
+      setEditResourceNameDraft("");
+      e.target.value = "";
+    };
+    reader.onerror = () => {
+      setEditResourceFileError("Could not read that file. Please try again.");
+      e.target.value = "";
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleEditSubmit = async (e) => {
@@ -408,20 +461,21 @@ export default function Posts() {
                         </>
                       )}
 
-                      {(project.githubRepo || project.demoLink) && (
+                      {(project.resources || []).length > 0 && (
                         <>
                           <div className="my-project-collaborators-label">Resources</div>
                           <div className="my-project-resources">
-                            {project.githubRepo && (
-                              <a href={project.githubRepo} target="_blank" rel="noreferrer" className="my-project-resource-link">
-                                GitHub
+                            {project.resources.map((resource, i) => (
+                              <a
+                                href={resource.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="my-project-resource-link"
+                                key={`${resource.name}-${i}`}
+                              >
+                                {resource.name}
                               </a>
-                            )}
-                            {project.demoLink && (
-                              <a href={project.demoLink} target="_blank" rel="noreferrer" className="my-project-resource-link">
-                                Live Demo
-                              </a>
-                            )}
+                            ))}
                           </div>
                         </>
                       )}
@@ -844,23 +898,57 @@ export default function Posts() {
               </div>
 
               <div className="edit-form-group">
-                <label>GitHub Repo</label>
+                <label>Links & Resources</label>
                 <input
-                  type="url"
-                  placeholder="https://github.com/..."
-                  value={editForm.githubRepo}
-                  onChange={(e) => handleEditFieldChange("githubRepo", e.target.value)}
+                  type="text"
+                  placeholder="Resource name, e.g. GitHub Repo, Design Doc, Pitch Deck..."
+                  value={editResourceNameDraft}
+                  onChange={(e) => setEditResourceNameDraft(e.target.value)}
                 />
-              </div>
+                <div className="edit-tag-input-row">
+                  <input
+                    type="text"
+                    placeholder="Paste a link — https://..."
+                    value={editResourceLinkDraft}
+                    onChange={(e) => setEditResourceLinkDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addEditResource();
+                      }
+                    }}
+                  />
+                  <button type="button" onClick={addEditResource}>Add Link</button>
+                </div>
 
-              <div className="edit-form-group">
-                <label>Live Demo Link</label>
                 <input
-                  type="url"
-                  placeholder="https://..."
-                  value={editForm.demoLink}
-                  onChange={(e) => handleEditFieldChange("demoLink", e.target.value)}
+                  type="file"
+                  ref={editResourceFileInputRef}
+                  onChange={handleEditResourceFileChange}
+                  style={{ display: "none" }}
                 />
+                <button
+                  type="button"
+                  className="edit-resource-upload-btn"
+                  onClick={() => editResourceFileInputRef.current?.click()}
+                >
+                  Upload a file (PDF, Doc, image, etc.)
+                </button>
+                {editResourceFileError && <span className="edit-resource-file-error">{editResourceFileError}</span>}
+
+                {editForm.resources.length > 0 && (
+                  <div className="edit-resource-list">
+                    {editForm.resources.map((resource, i) => (
+                      <div className="edit-resource-item" key={`${resource.name}-${i}`}>
+                        <span className="edit-resource-item-name">
+                          {resource.isFile && <span className="edit-resource-file-badge">FILE</span>}
+                          {resource.name}
+                        </span>
+                        <button type="button" className="edit-role-remove" aria-label={`Remove ${resource.name}`} onClick={() => removeEditResource(i)}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="edit-form-actions">

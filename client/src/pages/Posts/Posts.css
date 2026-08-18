@@ -806,3 +806,64 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.edit-resource-upload-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px dashed rgba(255, 189, 10, 0.4);
+  color: #ffbd0a;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.edit-resource-upload-btn:hover {
+  background: rgba(255, 189, 10, 0.08);
+}
+
+.edit-resource-file-error {
+  color: #e0645a;
+  font-size: 11.5px;
+}
+
+.edit-resource-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edit-resource-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.edit-resource-item-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.edit-resource-file-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 189, 10, 0.15);
+  color: #ffbd0a;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
