@@ -339,7 +339,7 @@ export default function Navbar({ hideSearch = false, searchValue, onSearchChange
       <div className="navbar-left">
         <div
           className="navbar-logo"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/dashboard")}
         >
           Collab<span>Hive</span>
         </div>
