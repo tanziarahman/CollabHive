@@ -446,20 +446,27 @@
 /* Radio Group */
 .radio-group {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  flex-wrap: nowrap;
+  gap: 0.6rem;
 }
 
 .radio-label {
   display: flex;
+  flex: 1;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   cursor: pointer;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 0.5rem;
   background: rgba(245, 240, 232, 0.05);
   border: 1px solid rgba(245, 240, 232, 0.12);
   border-radius: 30px;
   transition: all 0.2s;
+  text-align: center;
+}
+
+.radio-label span {
+  white-space: nowrap;
 }
 
 .radio-label:hover {
@@ -476,7 +483,7 @@
 }
 
 .radio-label span {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: rgba(245, 240, 232, 0.8);
 }
 
@@ -549,6 +556,149 @@
   font-size: 0.9rem;
 }
 
+/* Resources (Links & Resources step) */
+.resource-name-input {
+  width: 100%;
+  background: rgba(245, 240, 232, 0.05);
+  border: 1px solid rgba(245, 240, 232, 0.12);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  color: #F5F0E8;
+  font-size: 0.88rem;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s;
+  margin-bottom: 0.6rem;
+}
+
+.resource-name-input:focus {
+  border-color: #F5B84C;
+  background: rgba(245, 184, 76, 0.05);
+}
+
+.resource-input-row {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.resource-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.85rem 0;
+  color: rgba(245, 240, 232, 0.35);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.resource-divider::before,
+.resource-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(245, 240, 232, 0.1);
+}
+
+.resource-upload-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(245, 240, 232, 0.05);
+  border: 1px dashed rgba(245, 184, 76, 0.4);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  color: #F5B84C;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.resource-upload-btn:hover {
+  background: rgba(245, 184, 76, 0.08);
+  border-color: #F5B84C;
+}
+
+.resource-file-error {
+  display: block;
+  font-size: 0.75rem;
+  color: #f09595;
+  margin-top: 0.5rem;
+}
+
+.resource-file-badge {
+  display: inline-block;
+  background: rgba(245, 184, 76, 0.15);
+  color: #F5B84C;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+.resource-input-row input {
+  flex: 1;
+  background: rgba(245, 240, 232, 0.05);
+  border: 1px solid rgba(245, 240, 232, 0.12);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  color: #F5F0E8;
+  font-size: 0.88rem;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.resource-input-row input:focus {
+  border-color: #F5B84C;
+  background: rgba(245, 184, 76, 0.05);
+}
+
+.resource-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.resource-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: rgba(245, 240, 232, 0.03);
+  border: 1px solid rgba(245, 240, 232, 0.1);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+}
+
+.resource-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.resource-item-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #F5F0E8;
+}
+
+.resource-item-link {
+  font-size: 0.78rem;
+  color: #F5B84C;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .create-project-container {
@@ -578,5 +728,9 @@
 
   .radio-label {
     width: 100%;
+  }
+
+  .resource-input-row {
+    flex-direction: column;
   }
 }
