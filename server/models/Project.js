@@ -47,6 +47,13 @@ const projectSchema = new mongoose.Schema(
       default: 0,
     },
 
+    // Embedding of skillsRequired + techStack, used for skill-matching. Regenerated on create/update.
+    skillsEmbedding: {
+      type: [Number],
+      default: [],
+      select: false,
+    },
+
     // Additional Info
     duration: {
       type: String,
@@ -74,9 +81,32 @@ const projectSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+
+    // Users actually accepted onto the team (as opposed to roleAllocations, which is the target headcount)
+    members: [{
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+      },
+      role: {
+        type: String,
+        required: true,
+      },
+      joinedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    }],
   },
   {
     timestamps: true,
+    toJSON: {
+      transform: (doc, ret) => {
+        delete ret.skillsEmbedding;
+        return ret;
+      },
+    },
   }
 );
 

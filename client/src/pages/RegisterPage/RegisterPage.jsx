@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { register } from "../../api/auth";
+import { setSession } from "../../utils/session";
 import "./RegisterPage.css";
 
 export default function RegisterPage() {
@@ -23,23 +25,11 @@ export default function RegisterPage() {
     setLoading(true);
     
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Something went wrong");
-      }
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data));
-      navigate("/");
+      const data = await register(formData);
+      setSession(data);
+      navigate("/my-posts");
     } catch (err) {
-      setError(err.message || "Something went wrong");
+      setError(err.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }

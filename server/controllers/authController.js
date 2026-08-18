@@ -74,6 +74,12 @@ export const loginUser = asyncHandler(async (req, res) => {
 
   // Check if user exists and password matches
   if (user && (await user.matchPassword(password))) {
+    // Logging back in reactivates a soft-deactivated account.
+    if (user.isDeactivated) {
+      user.isDeactivated = false;
+      await user.save();
+    }
+
     res.json({
       _id: user._id,
       fullName: user.fullName,

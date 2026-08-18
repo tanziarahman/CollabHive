@@ -81,6 +81,12 @@ const userSchema = new mongoose.Schema(
       enum: ['Available', 'Busy', 'Open to Offers'],
       default: 'Available',
     },
+    // Embedding of skills + interests, used for skill-matching. Regenerated on profile update.
+    skillsEmbedding: {
+      type: [Number],
+      default: [],
+      select: false,
+    },
 
     // 🤝 CollabHive Specific
     projectsPosted: [
@@ -107,15 +113,47 @@ const userSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    followRequestsReceived: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    followRequestsSent: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     joinRequestsSent: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'JoinRequest',
       },
     ],
+
+    // ⚙️ Settings
+    settings: {
+      notifyFollowRequests: { type: Boolean, default: true },
+      notifyFollowAccepted: { type: Boolean, default: true },
+      notifyJoinRequests: { type: Boolean, default: true },
+      notifyJoinRequestUpdates: { type: Boolean, default: true },
+      discoverable: { type: Boolean, default: true },
+      autoAcceptFollowRequests: { type: Boolean, default: false },
+    },
+    isDeactivated: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true, // adds createdAt and updatedAt automatically
+    toJSON: {
+      transform: (doc, ret) => {
+        delete ret.skillsEmbedding;
+        return ret;
+      },
+    },
   }
 );
 

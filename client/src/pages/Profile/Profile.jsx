@@ -1,8 +1,21 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../../components/Navbar/Navbar";
+import { getMe } from "../../api/auth";
+import { updateProfile, getConnections } from "../../api/users";
+import {
+  getMyCollaborations,
+  deleteProject,
+  getProjectJoinRequests,
+  getSuggestedCollaborators,
+  inviteUser,
+} from "../../api/projects";
+import { acceptJoinRequest, rejectJoinRequest } from "../../api/joinRequests";
 import "./Profile.css";
 
-const JOB_STATUSES = ["Employed", "Unemployed", "Student"];
-const TABS = ["Info", "Education", "About", "Résumé"];
+const AVAILABILITY_OPTIONS = ["Available", "Busy", "Open to Offers"];
+const TABS = ["Info", "Education", "About", "Résumé", "Projects"];
+
 
 function TagField({ label, placeholder, values, onAdd, onRemove }) {
   const [draft, setDraft] = useState("");
@@ -49,21 +62,40 @@ function TagField({ label, placeholder, values, onAdd, onRemove }) {
 }
 
 export default function Profile() {
+  const navigate = useNavigate();
+  const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const [activeTab, setActiveTab] = useState("Info");
   const tabIndex = TABS.indexOf(activeTab);
   const goNext = () => setActiveTab(TABS[(tabIndex + 1) % TABS.length]);
 
   const [photoUrl, setPhotoUrl] = useState(null);
+  const [pendingPhoto, setPendingPhoto] = useState(null);
   const photoInputRef = useRef(null);
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) setPhotoUrl(URL.createObjectURL(file));
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please choose an image file.");
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      alert("Please choose an image smaller than 3MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPhotoUrl(reader.result);
+      setPendingPhoto(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("Employed");
+  const [status, setStatus] = useState("Available");
   const [jobTitle, setJobTitle] = useState("");
 
   const [school, setSchool] = useState("");
@@ -74,28 +106,282 @@ export default function Profile() {
   const [linkedinProfile, setLinkedinProfile] = useState("");
   const [interests, setInterests] = useState([]);
   const [skills, setSkills] = useState([]);
-  const [projects, setProjects] = useState([]);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
   const [showAllSidebarProjects, setShowAllSidebarProjects] = useState(false);
-  const [projectDraft, setProjectDraft] = useState({
-    name: "",
-    githubLink: "",
-    description: "",
-  });
+  const [expandedSidebarProjectId, setExpandedSidebarProjectId] = useState(null);
+  const [connectionList, setConnectionList] = useState([]);
+  const [connectionType, setConnectionType] = useState("");
+  const [connectionsLoading, setConnectionsLoading] = useState(false);
+  const [connectionCounts, setConnectionCounts] = useState({ followers: 0, following: 0 });
+  const [myCollaborations, setMyCollaborations] = useState([]);
+  const [collaborationsLoading, setCollaborationsLoading] = useState(true);
+  // "Recent projects" in the sidebar and the résumé's project list both reuse
+  // the same real collaborations data, reshaped to what those views expect.
+  const projects = myCollaborations.map((p) => ({
+    id: p._id,
+    name: p.title,
+    description: p.description,
+    githubLink: p.githubRepo || "",
+  }));
 
-  const addProject = () => {
-    const v = projectDraft.name.trim();
-    if (!v) return;
-    setProjects((p) => [
-      ...p,
-      {
-        id: `${Date.now()}-${p.length}`,
-        name: v,
-        githubLink: projectDraft.githubLink.trim(),
-        description: projectDraft.description.trim(),
-      },
-    ]);
-    setProjectDraft({ name: "", githubLink: "", description: "" });
+  const loadCollaborations = async () => {
+    try {
+      const res = await getMyCollaborations();
+      setMyCollaborations(res.data || []);
+    } catch {
+      setMyCollaborations([]);
+    } finally {
+      setCollaborationsLoading(false);
+    }
   };
+
+  useEffect(() => {
+    loadCollaborations();
+  }, []);
+
+  const [activeApplicantsProject, setActiveApplicantsProject] = useState(null);
+  const [activeProjectRequests, setActiveProjectRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+
+  const [inviteContext, setInviteContext] = useState(null);
+  const [inviteCandidates, setInviteCandidates] = useState([]);
+  const [loadingCandidates, setLoadingCandidates] = useState(false);
+  const [invitedIds, setInvitedIds] = useState([]);
+  const [invitingId, setInvitingId] = useState(null);
+
+  // Always-visible "recommended people to invite" preview per owned project,
+  // so the skill-match feature doesn't depend on the user noticing/clicking
+  // an "Invite for <role>" button first.
+  const [recommendationsByProject, setRecommendationsByProject] = useState({});
+  const [inlineInvitedIds, setInlineInvitedIds] = useState({});
+  const [inlineInvitingKey, setInlineInvitingKey] = useState(null);
+  const fetchedRecommendationsRef = useRef(new Set());
+
+  useEffect(() => {
+    myCollaborations.forEach((project) => {
+      if (!project.isOwner) return;
+      if (fetchedRecommendationsRef.current.has(project._id)) return;
+      fetchedRecommendationsRef.current.add(project._id);
+
+      setRecommendationsByProject((prev) => ({
+        ...prev,
+        [project._id]: { loading: true, candidates: [] },
+      }));
+
+      getSuggestedCollaborators(project._id, 5)
+        .then((res) => {
+          const candidates = (res.data || []).map((suggestion) => ({
+            ...suggestion.user,
+            matchScore: suggestion.matchScore,
+          }));
+          setRecommendationsByProject((prev) => ({
+            ...prev,
+            [project._id]: { loading: false, candidates },
+          }));
+        })
+        .catch(() => {
+          setRecommendationsByProject((prev) => ({
+            ...prev,
+            [project._id]: { loading: false, candidates: [] },
+          }));
+        });
+    });
+  }, [myCollaborations]);
+
+  const handleInlineInvite = async (project, candidateId) => {
+    const role = project.roleAllocations?.[0]?.role;
+    if (!role) return;
+    const key = `${project._id}:${candidateId}`;
+    setInlineInvitingKey(key);
+    try {
+      await inviteUser(project._id, { userId: candidateId, role });
+      setInlineInvitedIds((prev) => ({
+        ...prev,
+        [project._id]: [...(prev[project._id] || []), candidateId],
+      }));
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not send invite.");
+    } finally {
+      setInlineInvitingKey(null);
+    }
+  };
+
+  const handleDeleteProject = async (projectId) => {
+    if (!window.confirm("Delete this project? This cannot be undone.")) return;
+    try {
+      await deleteProject(projectId);
+      setMyCollaborations((prev) => prev.filter((p) => p._id !== projectId));
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not delete project.");
+    }
+  };
+
+  const openApplicants = async (project) => {
+    setActiveApplicantsProject(project);
+    setLoadingRequests(true);
+    try {
+      const res = await getProjectJoinRequests(project._id);
+      setActiveProjectRequests((res.data || []).filter((r) => r.type === "request"));
+    } catch {
+      setActiveProjectRequests([]);
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  const handleApplicantDecision = async (requestId, decision) => {
+    setActionLoadingId(requestId);
+    try {
+      if (decision === "accepted") {
+        await acceptJoinRequest(requestId);
+      } else {
+        await rejectJoinRequest(requestId);
+      }
+      setActiveProjectRequests((prev) =>
+        prev.map((r) => (r._id === requestId ? { ...r, status: decision } : r))
+      );
+      loadCollaborations();
+    } catch (err) {
+      alert(err.response?.data?.message || "Action failed.");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const openInvite = async (project, role) => {
+    setInviteContext({ project, role });
+    setInvitedIds([]);
+    setLoadingCandidates(true);
+    try {
+      const res = await getSuggestedCollaborators(project._id, 10);
+      const candidates = (res.data || []).map((suggestion) => ({
+        ...suggestion.user,
+        matchScore: suggestion.matchScore,
+      }));
+      setInviteCandidates(candidates);
+    } catch {
+      setInviteCandidates([]);
+    } finally {
+      setLoadingCandidates(false);
+    }
+  };
+
+  const closeInvite = () => {
+    setInviteContext(null);
+    setInviteCandidates([]);
+  };
+
+  const handleInvite = async (candidateId) => {
+    if (!inviteContext) return;
+    setInvitingId(candidateId);
+    try {
+      await inviteUser(inviteContext.project._id, {
+        userId: candidateId,
+        role: inviteContext.role,
+      });
+      setInvitedIds((prev) => [...prev, candidateId]);
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not send invite.");
+    } finally {
+      setInvitingId(null);
+    }
+  };
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const me = await getMe();
+        setName(me.fullName || "");
+        setEmail(me.email || "");
+        setStatus(me.availability || "Available");
+        setAboutMe(me.bio || "");
+        setLinkedinProfile(me.linkedinURL || "");
+        setInterests(me.interests || []);
+        setSkills(me.skills || []);
+        if (me.profilePicture) setPhotoUrl(me.profilePicture);
+      } catch {
+        // Fall back to whatever was cached at login; fields stay editable either way.
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    loadProfile();
+  }, []);
+
+  useEffect(() => {
+    const loadCounts = async () => {
+      try {
+        const [followers, following] = await Promise.all([
+          getConnections("followers"),
+          getConnections("following"),
+        ]);
+        setConnectionCounts({ followers: followers.length, following: following.length });
+      } catch {
+        setConnectionCounts({ followers: 0, following: 0 });
+      }
+    };
+    loadCounts();
+  }, []);
+
+  useEffect(() => {
+    if (!connectionType) return undefined;
+    const loadConnections = async () => {
+      setConnectionsLoading(true);
+      try {
+        const people = await getConnections(connectionType);
+        setConnectionList(people);
+        setConnectionCounts((counts) => ({ ...counts, [connectionType]: people.length }));
+      } catch {
+        setConnectionList([]);
+      } finally {
+        setConnectionsLoading(false);
+      }
+    };
+    loadConnections();
+  }, [connectionType]);
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    setSaveMessage("");
+    try {
+      await updateProfile({
+        bio: aboutMe,
+        linkedinURL: linkedinProfile,
+        interests,
+        skills,
+        availability: status,
+        ...(pendingPhoto ? { profilePicture: pendingPhoto } : {}),
+      });
+      setPendingPhoto(null);
+      setSaveMessage("Saved!");
+    } catch (err) {
+      setSaveMessage(err.response?.data?.message || "Could not save profile.");
+    } finally {
+      setSaving(false);
+      window.setTimeout(() => setSaveMessage(""), 2500);
+    }
+  };
+
+  // Auto-saves shortly after any edit, so adding a skill/interest (or editing
+  // bio, LinkedIn, availability, photo) is never silently lost if the user
+  // navigates away without noticing the separate "Save Profile" button.
+  // Skips the run that fires the moment getMe() hydrates these fields on load.
+  const hasHydrated = useRef(false);
+  useEffect(() => {
+    if (profileLoading) return undefined;
+    if (!hasHydrated.current) {
+      hasHydrated.current = true;
+      return undefined;
+    }
+    const timer = window.setTimeout(() => {
+      handleSaveProfile();
+    }, 800);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aboutMe, linkedinProfile, interests, skills, status, pendingPhoto, profileLoading]);
 
   const downloadResume = () => {
     const lines = [
@@ -199,56 +485,16 @@ export default function Profile() {
       .join("") || "?";
 
   return (
-    <div className="profile-page">
-      <div className="rail">
-        <div className="rail-logo">CH</div>
-        <div className="rail-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="7" />
-            <path d="M21 21l-4.3-4.3" />
-          </svg>
-        </div>
-        <div className="rail-icon active">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
-          </svg>
-        </div>
-        <div className="rail-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-        </div>
-        <div className="rail-spacer" />
-        <div className="rail-avatar">{initials !== "?" ? initials[0] : "U"}</div>
-      </div>
+    <>
+      <Navbar hideSearch />
 
+      <div className="profile-page">
       <div className="page-body">
-        <div className="topnav">
-          <div className="topnav-logo">CollabHive</div>
-          <div className="topnav-search">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="7" />
-              <path d="M21 21l-4.3-4.3" />
-            </svg>
-            <input type="text" placeholder="Search users or projects by skill or name..." />
-          </div>
-          <button type="button" className="topnav-create">
-            + Create Project
-          </button>
-          <div className="topnav-bell">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-          </div>
-          <div className="topnav-avatar">{initials !== "?" ? initials[0] : "U"}</div>
-        </div>
-
         <div className="banner" />
 
         <div className="columns">
           <aside className="profile-col">
+            <div className="profile-summary-card">
             <div className="avatar-frame hex">
               {photoUrl ? <img src={photoUrl} alt="Profile" /> : <span>{initials}</span>}
             </div>
@@ -264,11 +510,36 @@ export default function Profile() {
             </button>
 
             <div className="name-block">
-              <h1>{name || "Your name"}</h1>
+              <h1>{name || savedUser.fullName || "Your name"}</h1>
               <div className="role">
                 {jobTitle || "Add a job title"} · {status}
               </div>
             </div>
+
+            <div className="connection-row" aria-label="Your connections">
+              <button type="button" onClick={() => setConnectionType("followers")}>
+                <b>{connectionCounts.followers}</b>
+                <span>Followers</span>
+              </button>
+              <button type="button" onClick={() => setConnectionType("following")}>
+                <b>{connectionCounts.following}</b>
+                <span>Following</span>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              className="edit-profile-btn"
+              disabled={saving}
+              onClick={handleSaveProfile}
+              title="Changes save automatically a moment after you edit — click to save immediately"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+              {saving ? "Saving..." : saveMessage || "All changes saved"}
+            </button>
 
             <div className="stat-row">
               <div className="stat">
@@ -284,9 +555,11 @@ export default function Profile() {
                 <span>Certs</span>
               </div>
             </div>
+            </div>
 
+            <div className="recent-projects-card">
             <div className="side-label">
-              Projects
+              Recent projects
               {projects.length > 3 && (
                 <button type="button" className="sidebar-more" onClick={() => setShowAllSidebarProjects((show) => !show)}>
                   {showAllSidebarProjects ? "Less" : "More"}
@@ -295,13 +568,36 @@ export default function Profile() {
             </div>
             {projects.length > 0 && (
               <div className="project-grid">
-                {(showAllSidebarProjects ? projects : projects.slice(0, 3)).map((p) => (
-                  <div className="project-tile" key={p.id}>
-                    <b>{p.name}</b>
-                    {p.description && <span>{p.description}</span>}
-                    {p.githubLink && <a href={p.githubLink} target="_blank" rel="noreferrer">GitHub ↗</a>}
-                  </div>
-                ))}
+                {(showAllSidebarProjects ? projects : projects.slice(0, 3)).map((p) => {
+                  const isExpanded = expandedSidebarProjectId === p.id;
+                  return (
+                    <div
+                      className={`project-tile ${isExpanded ? "expanded" : ""}`}
+                      key={p.id}
+                      onClick={() =>
+                        setExpandedSidebarProjectId((current) => (current === p.id ? null : p.id))
+                      }
+                    >
+                      <b>{p.name}</b>
+                      {isExpanded && (
+                        <div className="project-tile-dropdown">
+                          {p.githubLink ? (
+                            <a
+                              href={p.githubLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              GitHub ↗
+                            </a>
+                          ) : (
+                            <span className="project-tile-no-link">No GitHub link added</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -317,6 +613,10 @@ export default function Profile() {
                 </div>
               </>
             )}
+            <button type="button" className="all-projects-link" onClick={() => setShowAllSidebarProjects((show) => !show)}>
+              {showAllSidebarProjects ? "Show less" : "View all projects..."}
+            </button>
+            </div>
           </aside>
 
           <main className="main-col">
@@ -350,7 +650,7 @@ export default function Profile() {
                   <div className="field-grid">
                     <div className="field">
                       <label className="field-label">Name</label>
-                      <input type="text" value={name} placeholder="Full name" onChange={(e) => setName(e.target.value)} />
+                      <input type="text" value={name} placeholder="Full name" readOnly title="Name can't be changed here" />
                     </div>
                     <div className="field">
                       <label className="field-label">Phone number</label>
@@ -358,7 +658,7 @@ export default function Profile() {
                     </div>
                     <div className="field">
                       <label className="field-label">Email</label>
-                      <input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} />
+                      <input type="email" value={email} placeholder="you@example.com" readOnly title="Email can't be changed here" />
                     </div>
                   </div>
                 </div>
@@ -369,9 +669,9 @@ export default function Profile() {
                   </h3>
                   <div className="field-grid">
                     <div className="field">
-                      <label className="field-label">Status</label>
+                      <label className="field-label">Availability</label>
                       <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                        {JOB_STATUSES.map((s) => (
+                        {AVAILABILITY_OPTIONS.map((s) => (
                           <option key={s} value={s}>
                             {s}
                           </option>
@@ -384,11 +684,27 @@ export default function Profile() {
                         type="text"
                         value={jobTitle}
                         placeholder="e.g. Senior Architect"
-                        disabled={status === "Unemployed"}
                         onChange={(e) => setJobTitle(e.target.value)}
                       />
                     </div>
                   </div>
+                </div>
+
+                <div className="info-block">
+                  <h3>
+                    <span className="hex-dot" /> Core Competencies
+                  </h3>
+                  {skills.length > 0 ? (
+                    <div className="pill-row">
+                      {skills.map((s, i) => (
+                        <span className="pill-tag" key={i}>
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="pill-empty">Add your skillset in the About tab to see it here.</p>
+                  )}
                 </div>
 
                 <div className="tab-nav">
@@ -470,62 +786,6 @@ export default function Profile() {
                     onAdd={(v) => setSkills((a) => [...a, v])}
                     onRemove={(i) => setSkills((a) => a.filter((_, idx) => idx !== i))}
                   />
-                  <div className="field">
-                    <label className="field-label">Projects</label>
-                    <div className="project-add-form">
-                      <input
-                        type="text"
-                        value={projectDraft.name}
-                        placeholder="Project name"
-                        onChange={(e) => setProjectDraft((d) => ({ ...d, name: e.target.value }))}
-                      />
-                      <input
-                        type="text"
-                        value={projectDraft.githubLink}
-                        placeholder="GitHub link"
-                        onChange={(e) => setProjectDraft((d) => ({ ...d, githubLink: e.target.value }))}
-                      />
-                      <input
-                        type="text"
-                        value={projectDraft.description}
-                        placeholder="Project description"
-                        onChange={(e) => setProjectDraft((d) => ({ ...d, description: e.target.value }))}
-                      />
-
-                      <div className="project-add-actions">
-                        <button type="button" className="tag-add" onClick={addProject}>
-                          Add
-                        </button>
-                      </div>
-                    </div>
-                    <div className="card-list">
-                      {projects.map((p, i) => (
-                        <div className="pcard" key={p.id || `${p.name}-${i}`}>
-                          <div className="pcard-head">
-                            <b>{p.name}</b>
-                            <button
-                              type="button"
-                              className="pcard-remove"
-                              aria-label={`Remove ${p.name}`}
-                              onClick={() => setProjects((arr) => arr.filter((_, idx) => idx !== i))}
-                            >
-                              ×
-                            </button>
-                          </div>
-                          {p.description && <p className="pcard-description">{p.description}</p>}
-                          {p.githubLink && (
-                            <div className="pcard-links">
-                              {p.githubLink && (
-                                <a href={p.githubLink} target="_blank" rel="noreferrer">
-                                  GitHub ↗
-                                </a>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </div>
 
                 <div className="tab-nav">
@@ -569,9 +829,294 @@ export default function Profile() {
                 </div>
               </div>
             )}
+
+            {activeTab === "Projects" && (
+              <div className="panel">
+                <div className="info-block">
+                  <h3>
+                    <span className="hex-dot" /> My projects
+                  </h3>
+
+                  {collaborationsLoading ? (
+                    <p className="pill-empty">Loading your projects...</p>
+                  ) : myCollaborations.length === 0 ? (
+                    <p className="pill-empty">
+                      You haven't created or joined any projects yet.
+                    </p>
+                  ) : (
+                    <div className="my-projects-list">
+                      {myCollaborations.map((project) => (
+                        <div className="my-project-card" key={project._id}>
+                          <div className="my-project-card-header">
+                            <div>
+                              <h4>{project.title}</h4>
+                              {project.category && (
+                                <span className="my-project-category">{project.category}</span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              className="my-project-chat-btn"
+                              onClick={() => navigate(`/projects/${project._id}/chat`)}
+                              aria-label={`Open group chat for ${project.title}`}
+                              title="Group chat"
+                            >
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                              </svg>
+                            </button>
+                          </div>
+
+                          <p className="my-project-description">{project.description}</p>
+
+                          <div className="my-project-collaborators-label">Working on this</div>
+                          <div className="my-project-collaborators">
+                            {project.collaborators.map((person) => (
+                              <span className="my-project-collaborator" key={person._id}>
+                                <span className="my-project-collaborator-avatar">
+                                  {person.profilePicture ? (
+                                    <img src={person.profilePicture} alt="" />
+                                  ) : (
+                                    person.fullName?.charAt(0)
+                                  )}
+                                </span>
+                                {person.fullName}
+                              </span>
+                            ))}
+                          </div>
+
+                          {project.isOwner && (
+                            <>
+                              <div className="my-project-collaborators-label">Open roles</div>
+                              <div className="my-project-collaborators">
+                                {(project.roleAllocations || []).map((role) => (
+                                  <button
+                                    type="button"
+                                    key={role.role}
+                                    className="my-project-invite-btn"
+                                    onClick={() => openInvite(project, role.role)}
+                                  >
+                                    Invite for {role.role} ({role.count})
+                                  </button>
+                                ))}
+                              </div>
+
+                              <div className="my-project-collaborators-label">Recommended people to invite</div>
+                              {(() => {
+                                const rec = recommendationsByProject[project._id];
+                                if (!rec || rec.loading) {
+                                  return <p className="recommend-hint">Finding the best matches...</p>;
+                                }
+                                if (rec.candidates.length === 0) {
+                                  return (
+                                    <p className="recommend-hint">
+                                      No matching people found yet — add more skills to your profile or project to improve matches.
+                                    </p>
+                                  );
+                                }
+                                const invitedHere = inlineInvitedIds[project._id] || [];
+                                return (
+                                  <div className="recommend-list">
+                                    {rec.candidates.map((candidate) => {
+                                      const key = `${project._id}:${candidate._id}`;
+                                      const alreadyInvited = invitedHere.includes(candidate._id);
+                                      return (
+                                        <div className="recommend-row" key={candidate._id}>
+                                          <span className="my-project-collaborator-avatar">
+                                            {candidate.profilePicture ? (
+                                              <img src={candidate.profilePicture} alt="" />
+                                            ) : (
+                                              candidate.fullName?.charAt(0)
+                                            )}
+                                          </span>
+                                          <span className="recommend-name">
+                                            {candidate.fullName}
+                                            <small>
+                                              {Math.round((candidate.matchScore || 0) * 100)}% match
+                                              {(candidate.skills || []).length > 0
+                                                ? ` · ${candidate.skills.slice(0, 3).join(", ")}`
+                                                : ""}
+                                            </small>
+                                          </span>
+                                          <div className="recommend-row-actions">
+                                            <button
+                                              type="button"
+                                              className="recommend-invite-btn"
+                                              onClick={() => navigate(`/profile/${candidate._id}`)}
+                                            >
+                                              View
+                                            </button>
+                                            {alreadyInvited ? (
+                                              <span className="recommend-invited-label">Invited</span>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                className="recommend-invite-btn primary"
+                                                disabled={inlineInvitingKey === key}
+                                                onClick={() => handleInlineInvite(project, candidate._id)}
+                                              >
+                                                {inlineInvitingKey === key ? "Inviting..." : "Invite"}
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })()}
+
+                              <div className="my-project-owner-actions">
+                                <button type="button" onClick={() => openApplicants(project)}>
+                                  View Applicants
+                                </button>
+                                <button
+                                  type="button"
+                                  className="my-project-delete-btn"
+                                  onClick={() => handleDeleteProject(project._id)}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </main>
         </div>
       </div>
-    </div>
+
+      {connectionType && (
+        <div className="connections-modal-backdrop" onClick={() => setConnectionType("")}>
+          <section className="connections-modal" role="dialog" aria-modal="true" aria-labelledby="connections-title" onClick={(event) => event.stopPropagation()}>
+            <div className="connections-modal-header">
+              <h2 id="connections-title">{connectionType === "followers" ? "Followers" : "Following"}</h2>
+              <button type="button" onClick={() => setConnectionType("")} aria-label="Close">×</button>
+            </div>
+            <div className="connections-list">
+              {connectionsLoading ? <p className="connections-empty">Loading...</p> : connectionList.length === 0 ? <p className="connections-empty">No {connectionType} yet.</p> : connectionList.map((person) => (
+                <button type="button" className="connection-person" key={person._id} onClick={() => navigate(`/profile/${person._id}`)}>
+                  <span className="connection-avatar">{person.profilePicture ? <img src={person.profilePicture} alt="" /> : person.fullName?.charAt(0)}</span>
+                  <span><b>{person.fullName}</b><small>@{person.username}</small></span>
+                  <em>View profile</em>
+                </button>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {activeApplicantsProject && (
+        <div className="connections-modal-backdrop" onClick={() => setActiveApplicantsProject(null)}>
+          <section className="connections-modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <div className="connections-modal-header">
+              <h2>{activeApplicantsProject.title}</h2>
+              <button type="button" onClick={() => setActiveApplicantsProject(null)} aria-label="Close">×</button>
+            </div>
+            <div className="connections-list">
+              {loadingRequests ? (
+                <p className="connections-empty">Loading applicants...</p>
+              ) : activeProjectRequests.length === 0 ? (
+                <p className="connections-empty">No applicants yet.</p>
+              ) : (
+                activeProjectRequests.map((request) => (
+                  <div className="connection-person" key={request._id}>
+                    <span className="connection-avatar">
+                      {request.applicant?.profilePicture ? (
+                        <img src={request.applicant.profilePicture} alt="" />
+                      ) : (
+                        request.applicant?.fullName?.charAt(0)
+                      )}
+                    </span>
+                    <span>
+                      <b>{request.applicant?.fullName}</b>
+                      <small>{request.role}</small>
+                    </span>
+                    {request.status === "pending" ? (
+                      <div className="invitation-actions">
+                        <button
+                          type="button"
+                          className="reject-btn"
+                          disabled={actionLoadingId === request._id}
+                          onClick={() => handleApplicantDecision(request._id, "rejected")}
+                        >
+                          Reject
+                        </button>
+                        <button
+                          type="button"
+                          className="accept-btn"
+                          disabled={actionLoadingId === request._id}
+                          onClick={() => handleApplicantDecision(request._id, "accepted")}
+                        >
+                          Accept
+                        </button>
+                      </div>
+                    ) : (
+                      <em>{request.status === "accepted" ? "Accepted" : "Rejected"}</em>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {inviteContext && (
+        <div className="connections-modal-backdrop" onClick={closeInvite}>
+          <section className="connections-modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <div className="connections-modal-header">
+              <h2>Recommended for {inviteContext.role}</h2>
+              <button type="button" onClick={closeInvite} aria-label="Close">×</button>
+            </div>
+            <p className="connections-hint">Ranked by how closely their skills match this project.</p>
+            <div className="connections-list">
+              {loadingCandidates ? (
+                <p className="connections-empty">Finding the best matches...</p>
+              ) : inviteCandidates.length === 0 ? (
+                <p className="connections-empty">No matching people found for this project's skills yet.</p>
+              ) : (
+                inviteCandidates.map((candidate) => (
+                  <div className="connection-person" key={candidate._id}>
+                    <span className="connection-avatar">
+                      {candidate.profilePicture ? (
+                        <img src={candidate.profilePicture} alt="" />
+                      ) : (
+                        candidate.fullName?.charAt(0)
+                      )}
+                    </span>
+                    <span>
+                      <b>{candidate.fullName}</b>
+                      <small>
+                        {Math.round((candidate.matchScore || 0) * 100)}% match
+                        {(candidate.skills || []).length > 0 ? ` · ${candidate.skills.slice(0, 3).join(", ")}` : ""}
+                      </small>
+                    </span>
+                    {invitedIds.includes(candidate._id) ? (
+                      <em>Invited</em>
+                    ) : (
+                      <button
+                        type="button"
+                        className="accept-btn"
+                        disabled={invitingId === candidate._id}
+                        onClick={() => handleInvite(candidate._id)}
+                      >
+                        {invitingId === candidate._id ? "Inviting..." : "Invite"}
+                      </button>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        </div>
+      )}
+      </div>
+    </>
   );
 }
