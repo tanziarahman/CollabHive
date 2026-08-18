@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
-import { getFollowRequests, respondToFollowRequest, searchUsers, sendFollowRequest } from "../../api/users";
+import { getFollowRequests, getSuggestions, respondToFollowRequest, searchUsers, sendFollowRequest } from "../../api/users";
 import { dismissFollowRequestFrom } from "../../utils/notificationDismissals";
 import "./FollowRequests.css";
 
@@ -20,6 +20,9 @@ export default function FollowRequests() {
   const [searchError, setSearchError] = useState("");
   const [sendingId, setSendingId] = useState(null);
 
+  const [suggestions, setSuggestions] = useState([]);
+  const [followingSuggestionId, setFollowingSuggestionId] = useState(null);
+
   useEffect(() => {
     const loadRequests = async () => {
       try {
@@ -32,6 +35,29 @@ export default function FollowRequests() {
     };
     loadRequests();
   }, []);
+
+  useEffect(() => {
+    const loadSuggestions = async () => {
+      try {
+        setSuggestions(await getSuggestions());
+      } catch {
+        setSuggestions([]);
+      }
+    };
+    loadSuggestions();
+  }, []);
+
+  const handleFollowSuggestion = async (person) => {
+    setFollowingSuggestionId(person._id);
+    try {
+      await sendFollowRequest(person._id);
+      setSuggestions((items) => items.filter((item) => item._id !== person._id));
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not send follow request.");
+    } finally {
+      setFollowingSuggestionId(null);
+    }
+  };
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -101,6 +127,36 @@ export default function FollowRequests() {
           <p className="requests-subtitle">
             Search for someone by name or username to view their profile or send a follow request.
           </p>
+
+          {!isSearching && suggestions.length > 0 && (
+            <section className="suggestions-section" aria-labelledby="suggestions-heading">
+              <div className="suggestions-heading">
+                <div>
+                  <p className="suggestions-eyebrow">Suggested connections</p>
+                  <h2 id="suggestions-heading">People you might want to collaborate with</h2>
+                </div>
+              </div>
+              <div className="suggestion-grid">
+                {suggestions.map((person) => (
+                  <article className="suggestion-card" key={person._id}>
+                    <button className="suggestion-avatar" onClick={() => navigate(`/profile/${person._id}`)} aria-label={`View ${person.fullName}'s profile`}>
+                      {person.profilePicture ? <img src={person.profilePicture} alt="" /> : person.fullName?.charAt(0)}
+                    </button>
+                    <p className="suggestion-role">{person.experienceLevel || "Community member"}</p>
+                    <h3>{person.fullName}</h3>
+                    <p className="suggestion-handle">@{person.username || "collabhive"}</p>
+                    <div className="skill-panel"><span>Top skills</span><p>{(person.skills || []).slice(0, 3).join(" · ") || "Open to collaborate"}</p></div>
+                    <div className="suggestion-actions">
+                      <button className="view-profile-btn" onClick={() => navigate(`/profile/${person._id}`)}>View profile</button>
+                      <button className="follow-btn" disabled={followingSuggestionId === person._id} onClick={() => handleFollowSuggestion(person)}>
+                        {followingSuggestionId === person._id ? "Sending..." : "Follow"}
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
 
           {isSearching ? (
             searching ? (

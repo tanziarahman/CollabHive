@@ -1,18 +1,13 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import { getMe } from "../../api/auth";
 import { getProjectFeed, getProjects, createJoinRequest } from "../../api/projects";
-import { getSuggestions, sendFollowRequest } from "../../api/users";
 import "./Dashboard.css";
 
 export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [allProjects, setAllProjects] = useState([]);
   const [user, setUser] = useState(null);
-  const [suggestions, setSuggestions] = useState([]);
-  const [followingId, setFollowingId] = useState(null);
-  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,11 +21,10 @@ export default function Dashboard() {
     setLoading(true);
 
     // Each piece loads independently so one failing doesn't wipe out the others.
-    const [userResult, feedResult, allProjectsResult, suggestionsResult] = await Promise.allSettled([
+    const [userResult, feedResult, allProjectsResult] = await Promise.allSettled([
       getMe(),
       getProjectFeed(),
       getProjects(),
-      getSuggestions(),
     ]);
 
     if (userResult.status === "fulfilled") {
@@ -47,28 +41,12 @@ export default function Dashboard() {
       setAllProjects(allProjectsResult.value.data || []);
     }
 
-    if (suggestionsResult.status === "fulfilled") {
-      setSuggestions(suggestionsResult.value || []);
-    }
-
     setLoading(false);
   }
 
   useEffect(() => {
     fetchDashboard();
   }, []);
-
-  const handleFollow = async (person) => {
-    setFollowingId(person._id);
-    try {
-      await sendFollowRequest(person._id);
-      setSuggestions((items) => items.filter((item) => item._id !== person._id));
-    } catch (err) {
-      alert(err.response?.data?.message || "Could not send follow request.");
-    } finally {
-      setFollowingId(null);
-    }
-  };
 
   const toggleApply = (projectId) => {
     if (expandedProject === projectId) {
@@ -166,37 +144,6 @@ export default function Dashboard() {
               </p>
             </div>
           </section>
-
-          {suggestions.length > 0 && (
-            <section className="suggestions-section" aria-labelledby="suggestions-heading">
-              <div className="suggestions-heading">
-                <div>
-                  <p className="suggestions-eyebrow">Suggested connections</p>
-                  <h2 id="suggestions-heading">People you might want to collaborate with</h2>
-                </div>
-                <button className="see-requests-link" onClick={() => navigate("/follow-requests")}>Follow requests</button>
-              </div>
-              <div className="suggestion-grid">
-                {suggestions.map((person) => (
-                  <article className="suggestion-card" key={person._id}>
-                    <button className="suggestion-avatar" onClick={() => navigate(`/profile/${person._id}`)} aria-label={`View ${person.fullName}'s profile`}>
-                      {person.profilePicture ? <img src={person.profilePicture} alt="" /> : person.fullName?.charAt(0)}
-                    </button>
-                    <p className="suggestion-role">{person.experienceLevel || "Community member"}</p>
-                    <h3>{person.fullName}</h3>
-                    <p className="suggestion-handle">@{person.username || "collabhive"}</p>
-                    <div className="skill-panel"><span>Top skills</span><p>{(person.skills || []).slice(0, 3).join(" · ") || "Open to collaborate"}</p></div>
-                    <div className="suggestion-actions">
-                      <button className="view-profile-btn" onClick={() => navigate(`/profile/${person._id}`)}>View profile</button>
-                      <button className="follow-btn" disabled={followingId === person._id} onClick={() => handleFollow(person)}>
-                        {followingId === person._id ? "Sending..." : "Follow"}
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-          )}
 
           {/* Empty State */}
 
