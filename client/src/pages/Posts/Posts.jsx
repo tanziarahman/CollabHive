@@ -19,6 +19,7 @@ const emptyEditForm = {
   description: "",
   category: "",
   customCategory: "",
+  status: "Active",
   skillsRequired: [],
   techStack: [],
   roleAllocations: [],
@@ -153,6 +154,7 @@ export default function Posts() {
       description: project.description || "",
       category: isPreset ? project.category : "Other",
       customCategory: isPreset ? "" : project.category || "",
+      status: project.status || "Active",
       skillsRequired: [...(project.skillsRequired || [])],
       techStack: [...(project.techStack || [])],
       roleAllocations: (project.roleAllocations || []).map((r) => ({ role: r.role, count: r.count })),
@@ -419,10 +421,19 @@ export default function Posts() {
                     <div className="my-project-card" key={project._id}>
                       <div className="my-project-card-header">
                         <div>
-                          <h4>{project.title}</h4>
-                          {project.category && (
-                            <span className="my-project-category">{project.category}</span>
-                          )}
+                          <h4 className="my-project-title-link" onClick={() => navigate(`/projects/${project._id}`)}>
+                            {project.title}
+                          </h4>
+                          <div className="my-project-badge-row">
+                            {project.status && (
+                              <span className={`my-project-status-badge status-${project.status.toLowerCase().replace(" ", "-")}`}>
+                                {project.status}
+                              </span>
+                            )}
+                            {project.category && (
+                              <span className="my-project-category">{project.category}</span>
+                            )}
+                          </div>
                         </div>
                         <button
                           type="button"
@@ -768,6 +779,18 @@ export default function Posts() {
                   />
                 </div>
               )}
+
+              <div className="edit-form-group">
+                <label>Status</label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => handleEditFieldChange("status", e.target.value)}
+                >
+                  <option value="Active">Active</option>
+                  <option value="On Hold">On Hold</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
 
               <div className="edit-form-group">
                 <label>Required Skills</label>

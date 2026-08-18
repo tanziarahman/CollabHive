@@ -89,6 +89,22 @@ const NOTIF_STYLES = {
     ),
   },
 
+  project_comment: {
+    className: "notif-applied",
+    icon: (
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      </svg>
+    ),
+  },
+
   invite: {
     className: "notif-invite",
     icon: (
@@ -455,11 +471,20 @@ export default function Navbar({ hideSearch = false, searchValue, onSearchChange
                         className={`notification-item ${
                           !notif.isRead ? "unread" : ""
                         }`}
-                        onClick={() =>
-                          notif.type === "invite"
-                            ? handleOpenInviteDetails(notif)
-                            : handleNotificationClick(notif)
-                        }
+                        onClick={() => {
+                          if (notif.type === "invite") {
+                            handleOpenInviteDetails(notif);
+                          } else if (
+                            (notif.type === "project_comment" || notif.type === "new_project") &&
+                            notif.project?._id
+                          ) {
+                            handleNotificationClick(notif);
+                            setShowNotifications(false);
+                            navigate(`/projects/${notif.project._id}`);
+                          } else {
+                            handleNotificationClick(notif);
+                          }
+                        }}
                       >
                         <div
                           className={`notification-icon ${style.className}`}

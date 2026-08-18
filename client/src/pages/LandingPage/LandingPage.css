@@ -184,7 +184,8 @@
 .lp-hero-visual {
   position: relative;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 .lp-hero-visual::before {
@@ -195,14 +196,117 @@
   z-index: 0;
 }
 
-.lp-hero-image {
+.lp-mock-card {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 480px;
-  height: auto;
+  max-width: 380px;
+  background: #fbf3ee;
+  border: 1px solid #e6d2c4;
   border-radius: 14px;
-  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.6), 0 0 60px rgba(193, 84, 60, 0.1);
+  padding: 1.25rem;
+  box-shadow: 0 30px 60px rgba(46, 35, 32, 0.14);
+  transform: rotate(-1.5deg);
+}
+
+.lp-mock-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.6rem;
+}
+
+.lp-mock-title {
+  margin: 0 0 2px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2e2320;
+}
+
+.lp-mock-sub {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #8a726a;
+}
+
+.lp-mock-match {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #2f8a5b;
+  background: rgba(47, 138, 91, 0.12);
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.lp-mock-tags {
+  display: flex;
+  gap: 6px;
+  margin: 0.7rem 0;
+  flex-wrap: wrap;
+}
+
+.lp-mock-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(193, 84, 60, 0.1);
+  color: #c1543c;
+}
+
+.lp-mock-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f2e2d6;
+}
+
+.lp-mock-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #c1543c;
+  color: #fbf3ee;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lp-mock-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #2e2320;
+}
+
+.lp-mock-invite {
+  margin-left: auto;
+  background: #c1543c;
+  color: #fbf3ee;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+}
+
+.lp-mock-floating-badge {
+  position: relative;
+  z-index: 2;
+  margin-top: -1.6rem;
+  margin-left: 2rem;
+  background: #2e2320;
+  color: #f7ece4;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.5rem 0.85rem;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 10px 24px rgba(46, 35, 32, 0.25);
 }
 
 /* Trusted by */

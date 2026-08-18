@@ -101,6 +101,20 @@
   font-family: "Space Grotesk", sans-serif;
 }
 
+.my-project-title-link {
+  cursor: pointer;
+}
+
+.my-project-title-link:hover {
+  color: #c1543c;
+}
+
+.my-project-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .my-project-category {
   font-size: 9px;
   font-weight: 600;
@@ -111,6 +125,31 @@
   border-radius: 999px;
   padding: 3px 9px;
   display: inline-block;
+}
+
+.my-project-status-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 999px;
+  padding: 3px 9px;
+  display: inline-block;
+}
+
+.my-project-status-badge.status-active {
+  color: #2f8a5b;
+  background: rgba(47, 138, 91, 0.14);
+}
+
+.my-project-status-badge.status-completed {
+  color: #3355c8;
+  background: rgba(51, 85, 200, 0.14);
+}
+
+.my-project-status-badge.status-on-hold {
+  color: #8a726a;
+  background: rgba(138, 114, 106, 0.14);
 }
 
 .my-project-chat-btn {

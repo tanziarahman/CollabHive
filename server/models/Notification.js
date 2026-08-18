@@ -24,6 +24,7 @@ const notificationSchema = new mongoose.Schema(
         'follow_request',
         'follow_accepted',
         'new_project',
+        'project_comment',
       ],
       required: true,
     },

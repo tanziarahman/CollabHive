@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [selectedRole, setSelectedRole] = useState({});
   const [applyingProject, setApplyingProject] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   async function fetchDashboard() {
     setLoading(true);
@@ -89,7 +90,7 @@ export default function Dashboard() {
 
   // Searching looks across every project on the platform (not just the feed
   // of people you follow), since that's what "search projects" should mean.
-  const visibleProjects = isSearching
+  const visibleProjects = (isSearching
     ? allProjects.filter((project) => {
         const term = searchTerm.trim().toLowerCase();
         return (
@@ -98,7 +99,8 @@ export default function Dashboard() {
           (project.createdBy?.fullName || "").toLowerCase().includes(term)
         );
       })
-    : projects;
+    : projects
+  ).filter((project) => statusFilter === "All" || (project.status || "Active") === statusFilter);
 
   if (loading) {
     return (
@@ -147,6 +149,20 @@ export default function Dashboard() {
             </div>
           </section>
 
+          <div className="status-filter-row">
+            <label htmlFor="status-filter">Status</label>
+            <select
+              id="status-filter"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="All">All</option>
+              <option value="Active">Active</option>
+              <option value="On Hold">On Hold</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+
           {/* Empty State */}
 
           {isSearching && visibleProjects.length === 0 ? (
@@ -169,7 +185,9 @@ export default function Dashboard() {
 
                   <div className="project-header">
                     <div>
-                      <h2>{project.title}</h2>
+                      <h2 className="project-title-link" onClick={() => navigate(`/projects/${project._id}`)}>
+                        {project.title}
+                      </h2>
 
                       <p className="creator">
                         Created by{" "}
@@ -183,11 +201,18 @@ export default function Dashboard() {
                       </p>
                     </div>
 
-                    {project.category && (
-                      <span className="category-badge">
-                        {project.category}
-                      </span>
-                    )}
+                    <div className="project-badges">
+                      {project.status && (
+                        <span className={`status-badge status-${project.status.toLowerCase().replace(" ", "-")}`}>
+                          {project.status}
+                        </span>
+                      )}
+                      {project.category && (
+                        <span className="category-badge">
+                          {project.category}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Description */}

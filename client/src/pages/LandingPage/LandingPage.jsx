@@ -1,6 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import landingHero from "../../assets/landing-hero.png";
 import "./LandingPage.css";
+
+const scrollToSection = (id) => {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+};
 
 // Sample of the real, multi-discipline category list from the Post Project form —
 // CollabHive isn't limited to software, so the landing page shouldn't look like it is.
@@ -64,9 +67,26 @@ export default function LandingPage() {
           Collab<span>Hive</span>
         </div>
         <div className="lp-nav-links">
-          <span>Features</span>
-          <span>How it Works</span>
-          <span>Community</span>
+          {[
+            { label: "Features", id: "features" },
+            { label: "How it Works", id: "how-it-works" },
+            { label: "Community", id: "community" },
+          ].map(({ label, id }) => (
+            <span
+              key={id}
+              role="button"
+              tabIndex={0}
+              onClick={() => scrollToSection(id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  scrollToSection(id);
+                }
+              }}
+            >
+              {label}
+            </span>
+          ))}
         </div>
         <div className="lp-nav-actions">
           <button className="lp-nav-login" onClick={() => navigate("/login")}>
@@ -104,12 +124,31 @@ export default function LandingPage() {
         </div>
 
         <div className="lp-hero-visual">
-          <img className="lp-hero-image" src={landingHero} alt="CollabHive dashboard on a desktop monitor" />
+          <div className="lp-mock-card">
+            <div className="lp-mock-card-header">
+              <div>
+                <p className="lp-mock-title">Aurora Weather App</p>
+                <p className="lp-mock-sub">Web Development · React, Node.js</p>
+              </div>
+              <span className="lp-mock-match">75% match</span>
+            </div>
+            <div className="lp-mock-tags">
+              <span className="lp-mock-tag">React</span>
+              <span className="lp-mock-tag">Node.js</span>
+              <span className="lp-mock-tag">Firebase</span>
+            </div>
+            <div className="lp-mock-row">
+              <span className="lp-mock-avatar">S</span>
+              <span className="lp-mock-name">Sam Ito</span>
+              <span className="lp-mock-invite">Invite</span>
+            </div>
+          </div>
+          <div className="lp-mock-floating-badge">✓ Matches: React, Node.js</div>
         </div>
       </section>
 
       {/* Categories */}
-      <section className="lp-trusted">
+      <section className="lp-trusted" id="community">
         <span className="lp-trusted-label">Built for Every Discipline</span>
         <div className="lp-trusted-logos">
           {CATEGORY_HIGHLIGHTS.map((name) => (
@@ -119,7 +158,7 @@ export default function LandingPage() {
       </section>
 
       {/* Feature grid */}
-      <section className="lp-features">
+      <section className="lp-features" id="features">
         <h2>From Idea to Team</h2>
         <p className="lp-section-sub">Everything you need to find the right people and get your project moving.</p>
 
@@ -135,7 +174,7 @@ export default function LandingPage() {
       </section>
 
       {/* Advantage */}
-      <section className="lp-advantage">
+      <section className="lp-advantage" id="how-it-works">
         <div className="lp-advantage-visual">
           {PREVIEW_TILES.map((tile, i) => (
             <div className={`lp-preview-tile tile-${i}`} key={tile.label}>

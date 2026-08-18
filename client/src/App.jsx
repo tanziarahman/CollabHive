@@ -9,6 +9,7 @@ import ProfileView from "./pages/Profile/ProfileView";
 import FollowRequests from "./pages/FollowRequests/FollowRequests";
 import Settings from "./pages/Settings/Settings";
 import ProjectChat from "./pages/ProjectChat/ProjectChat";
+import ProjectDetail from "./pages/ProjectDetail/ProjectDetail";
 import InvitationDetail from "./pages/InvitationDetail/InvitationDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -30,6 +31,7 @@ function App() {
       <Route path="/follow-requests" element={<ProtectedRoute><FollowRequests /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/projects/:projectId/chat" element={<ProtectedRoute><ProjectChat /></ProtectedRoute>} />
+      <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
       <Route path="/invitations/:notificationId" element={<ProtectedRoute><InvitationDetail /></ProtectedRoute>} />
     </Routes>
   );

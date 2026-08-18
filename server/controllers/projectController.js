@@ -39,7 +39,7 @@ export const createProject = async (req, res) => {
       });
     }
 
-    // Create project
+    // Create project (status always starts "Active" — changed later via edit)
     const project = await Project.create({
       title,
       description,
@@ -141,6 +141,7 @@ export const getProjectFeed = async (req, res) => {
         title: project.title,
         description: project.description,
         category: project.category,
+        status: project.status,
         skillsRequired: project.skillsRequired,
         techStack: project.techStack,
         roleAllocations: project.roleAllocations,
@@ -221,6 +222,7 @@ export const getMyCollaborations = async (req, res) => {
         _id: project._id,
         title: project.title,
         category: project.category,
+        status: project.status,
         description: project.description,
         resources: project.resources,
         roleAllocations: project.roleAllocations,
@@ -252,6 +254,7 @@ export const updateProject = async (req, res) => {
       title,
       description,
       category,
+      status,
       skillsRequired,
       techStack,
       roleAllocations,
@@ -263,6 +266,7 @@ export const updateProject = async (req, res) => {
     if (title !== undefined) project.title = title;
     if (description !== undefined) project.description = description;
     if (category !== undefined) project.category = category;
+    if (status !== undefined) project.status = status;
     if (skillsRequired !== undefined) project.skillsRequired = skillsRequired;
     if (techStack !== undefined) project.techStack = techStack;
     if (roleAllocations !== undefined) project.roleAllocations = roleAllocations;
@@ -353,6 +357,59 @@ export const getSuggestedCollaborators = async (req, res) => {
     });
   } catch (error) {
     console.error('Get suggested collaborators error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get projects similar to this one, ranked by skill/tech overlap
+//          (reuses the same explainable match logic used for people-to-project matching)
+// @route   GET /api/projects/:id/similar
+// @access  Public
+export const getSimilarProjects = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id).select('skillsRequired techStack');
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    const limit = Math.min(parseInt(req.query.limit, 10) || 6, 20);
+
+    const candidates = await Project.find({ _id: { $ne: project._id } })
+      .populate('createdBy', 'fullName username profilePicture')
+      .select('title description category status skillsRequired techStack roleAllocations createdBy createdAt');
+
+    const similar = candidates
+      .map((candidate) => {
+        const { score, matchedSkills } = computeSkillMatch(
+          [...(candidate.skillsRequired || []), ...(candidate.techStack || [])],
+          project
+        );
+        return {
+          _id: candidate._id,
+          title: candidate.title,
+          description: candidate.description,
+          category: candidate.category,
+          status: candidate.status,
+          skillsRequired: candidate.skillsRequired,
+          techStack: candidate.techStack,
+          roleAllocations: candidate.roleAllocations,
+          createdBy: candidate.createdBy,
+          createdAt: candidate.createdAt,
+          matchScore: score,
+          matchedSkills,
+        };
+      })
+      .filter((suggestion) => suggestion.matchScore > 0)
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, limit);
+
+    res.status(200).json({
+      success: true,
+      count: similar.length,
+      data: similar,
+    });
+  } catch (error) {
+    console.error('Get similar projects error:', error);
     res.status(500).json({ message: error.message });
   }
 };

@@ -9,6 +9,7 @@ import {
   updateProject,
   deleteProject,
   getSuggestedCollaborators,
+  getSimilarProjects,
 } from '../controllers/projectController.js';
 import {
   createJoinRequest,
@@ -16,6 +17,11 @@ import {
   getProjectJoinRequests,
 } from '../controllers/joinRequestController.js';
 import { getProjectMessages } from '../controllers/messageController.js';
+import {
+  getProjectComments,
+  addComment,
+  deleteComment,
+} from '../controllers/commentController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { isProjectOwner } from '../middleware/isProjectOwner.js';
 import { isProjectParticipant } from '../middleware/isProjectParticipant.js';
@@ -40,5 +46,9 @@ router.post('/:id/join-requests', protect, createJoinRequest);
 router.get('/:id/join-requests', protect, isProjectOwner, getProjectJoinRequests);
 router.post('/:id/invite', protect, isProjectOwner, inviteUser);
 router.get('/:id/messages', protect, isProjectParticipant, getProjectMessages);
+router.get('/:id/similar', getSimilarProjects);
+router.get('/:id/comments', protect, getProjectComments);
+router.post('/:id/comments', protect, addComment);
+router.delete('/:id/comments/:commentId', protect, deleteComment);
 
 export default router;

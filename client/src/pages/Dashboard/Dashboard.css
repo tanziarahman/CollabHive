@@ -110,6 +110,70 @@
   margin-bottom: 0.3rem;
 }
 
+.project-title-link {
+  cursor: pointer;
+}
+
+.project-title-link:hover {
+  color: #c1543c;
+}
+
+.project-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.status-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.status-badge.status-active {
+  color: #2f8a5b;
+  background: rgba(47, 138, 91, 0.12);
+}
+
+.status-badge.status-completed {
+  color: #3355c8;
+  background: rgba(51, 85, 200, 0.12);
+}
+
+.status-badge.status-on-hold {
+  color: #8a726a;
+  background: rgba(138, 114, 106, 0.12);
+}
+
+.status-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  justify-content: center;
+}
+
+.status-filter-row label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #8a726a;
+}
+
+.status-filter-row select {
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #fbf3ee;
+  border: 1px solid #e6d2c4;
+  color: #2e2320;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
 .creator {
   color: rgba(46, 35, 32, 0.4);
   font-size: 0.8rem;

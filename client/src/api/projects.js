@@ -19,6 +19,9 @@ export const deleteProject = (id) => api.delete(`/projects/${id}`).then((res) =>
 export const getSuggestedCollaborators = (id, limit) =>
   api.get(`/projects/${id}/suggestions`, { params: { limit } }).then((res) => res.data);
 
+export const getSimilarProjects = (id, limit) =>
+  api.get(`/projects/${id}/similar`, { params: { limit } }).then((res) => res.data);
+
 export const createJoinRequest = (projectId, data) =>
   api.post(`/projects/${projectId}/join-requests`, data).then((res) => res.data);
 

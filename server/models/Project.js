@@ -20,6 +20,12 @@ const projectSchema = new mongoose.Schema(
       required: [true, 'Category is required'],
     },
 
+    status: {
+      type: String,
+      enum: ['Active', 'Completed', 'On Hold'],
+      default: 'Active',
+    },
+
     // Team Requirements
     skillsRequired: [{
       type: String,
