@@ -1,10 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import "./LandingPage.css";
 
-const scrollToSection = (id) => {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-};
-
 // Sample of the real, multi-discipline category list from the Post Project form —
 // CollabHive isn't limited to software, so the landing page shouldn't look like it is.
 const CATEGORY_HIGHLIGHTS = ["Software & AI", "Robotics & Hardware", "Business & Startups", "Design", "Research", "Hackathons & Case Comps"];
@@ -27,7 +23,36 @@ const FEATURES = [
       </svg>
     ),
     title: "Skill-Matched Recommendations",
-    description: "Our matching engine compares required skills against every builder's profile and surfaces the best-fit collaborators for each open role — so you spend less time searching.",
+    description: "Compares required skills against every builder's profile and surfaces the best-fit collaborators for each open role, with the exact matched skills shown — no black-box scores.",
+  },
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+      </svg>
+    ),
+    title: "Similar Projects",
+    description: "Every project page surfaces others like it, ranked by the same skill-matching engine — so browsing turns up more relevant work, not just newest-first.",
+  },
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      </svg>
+    ),
+    title: "Comments & Q&A",
+    description: "Ask a project owner a question or leave a comment before you apply — no need to join first just to find out if a role's still open.",
+  },
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+        <line x1="4" y1="22" x2="4" y2="15" />
+      </svg>
+    ),
+    title: "Track Project Status",
+    description: "Mark a project Active, On Hold, or Completed, and filter the feed the same way — so it's obvious at a glance what's still looking for people.",
   },
   {
     icon: (
@@ -38,22 +63,9 @@ const FEATURES = [
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
-    title: "Follow, Get Notified, Team Up",
-    description: "Follow builders whose work you like, see their new projects show up in your feed, and get notified the moment a follow request, invite, or join request needs your response.",
+    title: "Follow, Chat & Get Notified",
+    description: "Follow builders whose work you like, message your team once you're on one, and get notified the moment a follow request, invite, or comment needs your response.",
   },
-];
-
-const ADVANTAGES = [
-  "Open to every discipline — software, hardware, business, design, research and more",
-  "Skill-based matching connects you with the right collaborators, faster",
-  "Follow builders you admire and see their new projects the moment they post",
-];
-
-const PREVIEW_TILES = [
-  { label: "Follow request accepted", sub: "Sarah wants to collaborate", type: "people" },
-  { label: "92% skill match", sub: "Recommended for EcoTrack", type: "level" },
-  { label: "Invite accepted", sub: "Join request approved", type: "check" },
-  { label: "New project posted", sub: "Someone you follow just shared one", type: "bolt" },
 ];
 
 export default function LandingPage() {
@@ -65,28 +77,6 @@ export default function LandingPage() {
       <nav className="lp-nav">
         <div className="lp-logo" onClick={() => navigate("/")}>
           Collab<span>Hive</span>
-        </div>
-        <div className="lp-nav-links">
-          {[
-            { label: "Features", id: "features" },
-            { label: "How it Works", id: "how-it-works" },
-            { label: "Community", id: "community" },
-          ].map(({ label, id }) => (
-            <span
-              key={id}
-              role="button"
-              tabIndex={0}
-              onClick={() => scrollToSection(id)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  scrollToSection(id);
-                }
-              }}
-            >
-              {label}
-            </span>
-          ))}
         </div>
         <div className="lp-nav-actions">
           <button className="lp-nav-login" onClick={() => navigate("/login")}>
@@ -148,7 +138,7 @@ export default function LandingPage() {
       </section>
 
       {/* Categories */}
-      <section className="lp-trusted" id="community">
+      <section className="lp-trusted">
         <span className="lp-trusted-label">Built for Every Discipline</span>
         <div className="lp-trusted-logos">
           {CATEGORY_HIGHLIGHTS.map((name) => (
@@ -158,76 +148,18 @@ export default function LandingPage() {
       </section>
 
       {/* Feature grid */}
-      <section className="lp-features" id="features">
-        <h2>From Idea to Team</h2>
-        <p className="lp-section-sub">Everything you need to find the right people and get your project moving.</p>
+      <section className="lp-features">
+        <h2>Everything You Need, From Idea to Team</h2>
+        <p className="lp-section-sub">Post a project, find the right people, and manage the whole thing from one place.</p>
 
         <div className="lp-feature-grid">
           {FEATURES.map((f, i) => (
             <div className="lp-feature-card" key={f.title}>
-              <div className={`lp-feature-icon tone-${i}`}>{f.icon}</div>
+              <div className={`lp-feature-icon tone-${i % 3}`}>{f.icon}</div>
               <h3>{f.title}</h3>
               <p>{f.description}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Advantage */}
-      <section className="lp-advantage" id="how-it-works">
-        <div className="lp-advantage-visual">
-          {PREVIEW_TILES.map((tile, i) => (
-            <div className={`lp-preview-tile tile-${i}`} key={tile.label}>
-              <div className={`lp-preview-icon type-${tile.type}`}>
-                {tile.type === "check" && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
-                {tile.type === "level" && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                  </svg>
-                )}
-                {tile.type === "bolt" && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                  </svg>
-                )}
-                {tile.type === "people" && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                )}
-              </div>
-              <div>
-                <b>{tile.label}</b>
-                <span>{tile.sub}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="lp-advantage-copy">
-          <h2>The Hive Advantage</h2>
-          <p>
-            Most collaboration tools assume you already have a team. CollabHive helps you build one — from
-            any field, not just tech. Post a project or a competition entry, tell us what roles and skills
-            you need, and our matching engine does the searching so you can focus on the work itself.
-          </p>
-          <ul className="lp-advantage-list">
-            {ADVANTAGES.map((item) => (
-              <li key={item}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                {item}
-              </li>
-            ))}
-          </ul>
         </div>
       </section>
 

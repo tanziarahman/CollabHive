@@ -152,6 +152,33 @@
   background: rgba(138, 114, 106, 0.14);
 }
 
+.my-project-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.my-project-details-btn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid #e6d2c4;
+  background: #f2e2d6;
+  color: #8a726a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.my-project-details-btn:hover {
+  background: #c1543c;
+  border-color: #c1543c;
+  color: #fbf3ee;
+}
+
 .my-project-chat-btn {
   flex-shrink: 0;
   width: 34px;
@@ -455,6 +482,11 @@
   justify-content: space-between;
   padding: 16px 18px;
   border-bottom: 1px solid var(--border-soft);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--surface);
+  flex-shrink: 0;
 }
 
 .connections-modal-header h2 {
@@ -632,18 +664,49 @@
 /* Edit project modal */
 
 .edit-project-modal {
-  width: min(600px, 100%);
-  max-height: min(720px, calc(100vh - 40px));
+  width: min(640px, 100%);
+  max-height: min(760px, calc(100vh - 40px));
   display: flex;
   flex-direction: column;
 }
 
 .edit-project-body {
   overflow-y: auto;
-  padding: 16px 20px 20px;
+  padding: 18px 22px 22px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
+}
+
+.edit-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 16px 18px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.edit-section-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #c1543c;
+}
+
+.edit-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 560px) {
+  .edit-form-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .edit-project-error {

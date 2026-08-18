@@ -295,12 +295,22 @@ export default function Dashboard() {
                       ))}
                     </div>
 
-                    <button
-                      className="apply-button"
-                      onClick={() => toggleApply(project._id)}
-                    >
-                      {expandedProject === project._id ? "Cancel" : "Apply"}
-                    </button>
+                    <div className="footer-actions">
+                      <button
+                        type="button"
+                        className="details-button"
+                        onClick={() => navigate(`/projects/${project._id}`)}
+                      >
+                        View Details &amp; Comments
+                      </button>
+
+                      <button
+                        className="apply-button"
+                        onClick={() => toggleApply(project._id)}
+                      >
+                        {expandedProject === project._id ? "Cancel" : "Apply"}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Apply Section */}

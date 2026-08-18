@@ -435,17 +435,32 @@ export default function Posts() {
                             )}
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          className="my-project-chat-btn"
-                          onClick={() => navigate(`/projects/${project._id}/chat`)}
-                          aria-label={`Open group chat for ${project.title}`}
-                          title="Group chat"
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                          </svg>
-                        </button>
+                        <div className="my-project-header-actions">
+                          <button
+                            type="button"
+                            className="my-project-details-btn"
+                            onClick={() => navigate(`/projects/${project._id}`)}
+                            aria-label={`View details and comments for ${project.title}`}
+                            title="View details & comments"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <circle cx="12" cy="12" r="10" />
+                              <line x1="12" y1="16" x2="12" y2="12" />
+                              <line x1="12" y1="8" x2="12.01" y2="8" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="my-project-chat-btn"
+                            onClick={() => navigate(`/projects/${project._id}/chat`)}
+                            aria-label={`Open group chat for ${project.title}`}
+                            title="Group chat"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
 
                       <p className="my-project-description">{project.description}</p>
@@ -738,61 +753,70 @@ export default function Posts() {
             <form className="edit-project-body" onSubmit={handleEditSubmit}>
               {editError && <div className="edit-project-error">{editError}</div>}
 
-              <div className="edit-form-group">
-                <label>Project Title</label>
-                <input
-                  type="text"
-                  value={editForm.title}
-                  onChange={(e) => handleEditFieldChange("title", e.target.value)}
-                />
-              </div>
+              <div className="edit-section">
+                <h4 className="edit-section-title">Basic Info</h4>
 
-              <div className="edit-form-group">
-                <label>Description</label>
-                <textarea
-                  rows={4}
-                  value={editForm.description}
-                  onChange={(e) => handleEditFieldChange("description", e.target.value)}
-                />
-              </div>
-
-              <div className="edit-form-group">
-                <label>Category</label>
-                <select
-                  value={editForm.category}
-                  onChange={(e) => handleEditFieldChange("category", e.target.value)}
-                >
-                  <option value="">Select a category</option>
-                  {CATEGORY_OPTIONS.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-
-              {editForm.category === "Other" && (
                 <div className="edit-form-group">
-                  <label>Specify category</label>
+                  <label>Project Title</label>
                   <input
                     type="text"
-                    value={editForm.customCategory}
-                    onChange={(e) => handleEditFieldChange("customCategory", e.target.value)}
+                    value={editForm.title}
+                    onChange={(e) => handleEditFieldChange("title", e.target.value)}
                   />
                 </div>
-              )}
 
-              <div className="edit-form-group">
-                <label>Status</label>
-                <select
-                  value={editForm.status}
-                  onChange={(e) => handleEditFieldChange("status", e.target.value)}
-                >
-                  <option value="Active">Active</option>
-                  <option value="On Hold">On Hold</option>
-                  <option value="Completed">Completed</option>
-                </select>
+                <div className="edit-form-group">
+                  <label>Description</label>
+                  <textarea
+                    rows={4}
+                    value={editForm.description}
+                    onChange={(e) => handleEditFieldChange("description", e.target.value)}
+                  />
+                </div>
+
+                <div className="edit-form-row">
+                  <div className="edit-form-group">
+                    <label>Category</label>
+                    <select
+                      value={editForm.category}
+                      onChange={(e) => handleEditFieldChange("category", e.target.value)}
+                    >
+                      <option value="">Select a category</option>
+                      {CATEGORY_OPTIONS.map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="edit-form-group">
+                    <label>Status</label>
+                    <select
+                      value={editForm.status}
+                      onChange={(e) => handleEditFieldChange("status", e.target.value)}
+                    >
+                      <option value="Active">Active</option>
+                      <option value="On Hold">On Hold</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                  </div>
+                </div>
+
+                {editForm.category === "Other" && (
+                  <div className="edit-form-group">
+                    <label>Specify category</label>
+                    <input
+                      type="text"
+                      value={editForm.customCategory}
+                      onChange={(e) => handleEditFieldChange("customCategory", e.target.value)}
+                    />
+                  </div>
+                )}
               </div>
 
-              <div className="edit-form-group">
+              <div className="edit-section">
+                <h4 className="edit-section-title">Skills &amp; Team</h4>
+
+                <div className="edit-form-group">
                 <label>Required Skills</label>
                 <div className="edit-tag-input-row">
                   <input
@@ -888,7 +912,11 @@ export default function Posts() {
                     ))}
                   </div>
                 )}
+                </div>
               </div>
+
+              <div className="edit-section">
+                <h4 className="edit-section-title">Timeline &amp; Resources</h4>
 
               <div className="edit-form-group">
                 <label>Expected Duration</label>
@@ -972,6 +1000,7 @@ export default function Posts() {
                     ))}
                   </div>
                 )}
+              </div>
               </div>
 
               <div className="edit-form-actions">
