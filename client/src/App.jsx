@@ -11,6 +11,7 @@ import Settings from "./pages/Settings/Settings";
 import ProjectChat from "./pages/ProjectChat/ProjectChat";
 import InvitationDetail from "./pages/InvitationDetail/InvitationDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Dashboard from "./pages/Dashboard/Dashboard";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         path="/"
         element={<LandingPage />}
       />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/create-project" element={<ProtectedRoute><CreateProject /></ProtectedRoute>} />
