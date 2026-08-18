@@ -1,17 +1,17 @@
 .my-posts-page {
-  --bg: #090909;
-  --surface: #181818;
-  --surface-2: #242424;
-  --surface-3: #2b2b2b;
-  --border: #292929;
-  --border-soft: #222;
-  --text: #f5f0e8;
-  --text-muted: #a7a19a;
-  --text-dim: #77716b;
-  --amber: #ffbd0a;
-  --accent: #ffbd0a;
-  --blue: #2563eb;
-  --amber-soft: rgba(255, 189, 10, 0.14);
+  --bg: #f7ece4;
+  --surface: #fbf3ee;
+  --surface-2: #f2e2d6;
+  --surface-3: #f2e2d6;
+  --border: #f2e2d6;
+  --border-soft: #f2e2d6;
+  --text: #2e2320;
+  --text-muted: #8a726a;
+  --text-dim: #8a726a;
+  --amber: #c1543c;
+  --accent: #c1543c;
+  --blue: #3355c8;
+  --amber-soft: rgba(193, 84, 60, 0.14);
   --radius-lg: 18px;
   --radius-md: 12px;
   --radius-sm: 8px;
@@ -79,8 +79,8 @@
 }
 
 .my-project-card {
-  background: #202020;
-  border: 1px solid #292929;
+  background: #fbf3ee;
+  border: 1px solid #f2e2d6;
   border-radius: 8px;
   padding: 14px 16px;
 }
@@ -97,7 +97,7 @@
   margin: 0 0 4px;
   font-size: 13px;
   font-weight: 700;
-  color: #f5f0e8;
+  color: #2e2320;
   font-family: "Space Grotesk", sans-serif;
 }
 
@@ -106,8 +106,8 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #ffbd0a;
-  background: rgba(255, 189, 10, 0.12);
+  color: #c1543c;
+  background: rgba(193, 84, 60, 0.12);
   border-radius: 999px;
   padding: 3px 9px;
   display: inline-block;
@@ -118,9 +118,9 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  border: 1px solid #333;
-  background: #262626;
-  color: #ffbd0a;
+  border: 1px solid #e6d2c4;
+  background: #f2e2d6;
+  color: #c1543c;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,14 +129,14 @@
 }
 
 .my-project-chat-btn:hover {
-  background: #ffbd0a;
-  border-color: #ffbd0a;
-  color: #18130a;
+  background: #c1543c;
+  border-color: #c1543c;
+  color: #fbf3ee;
 }
 
 .my-project-description {
   margin: 0 0 12px;
-  color: #a7a19a;
+  color: #8a726a;
   font-size: 11px;
   line-height: 1.6;
 }
@@ -146,7 +146,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #77716b;
+  color: #8a726a;
   margin-bottom: 6px;
   margin-top: 12px;
 }
@@ -162,17 +162,17 @@
   align-items: center;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(255, 189, 10, 0.1);
-  border: 1px solid rgba(255, 189, 10, 0.3);
-  color: #ffbd0a;
+  background: rgba(193, 84, 60, 0.1);
+  border: 1px solid rgba(193, 84, 60, 0.3);
+  color: #c1543c;
   font-size: 10.5px;
   font-weight: 600;
 }
 
 .my-project-tag.tech {
-  background: #262626;
-  border-color: #333;
-  color: #f5f0e8;
+  background: #f2e2d6;
+  border-color: #e6d2c4;
+  color: #2e2320;
 }
 
 .my-project-resources {
@@ -185,9 +185,9 @@
   align-items: center;
   padding: 5px 12px;
   border-radius: 6px;
-  background: #262626;
-  border: 1px solid #333;
-  color: #f5f0e8;
+  background: #f2e2d6;
+  border: 1px solid #e6d2c4;
+  color: #2e2320;
   font-size: 11px;
   font-weight: 600;
   text-decoration: none;
@@ -195,8 +195,8 @@
 }
 
 .my-project-resource-link:hover {
-  border-color: #ffbd0a;
-  color: #ffbd0a;
+  border-color: #c1543c;
+  color: #c1543c;
 }
 
 .my-project-collaborators {
@@ -211,9 +211,9 @@
   gap: 6px;
   padding: 4px 10px 4px 4px;
   border-radius: 999px;
-  background: #262626;
-  border: 1px solid #333;
-  color: #f5f0e8;
+  background: #f2e2d6;
+  border: 1px solid #e6d2c4;
+  color: #2e2320;
   font-size: 11px;
   font-weight: 600;
 }
@@ -223,9 +223,9 @@
   height: 22px;
   flex-shrink: 0;
   border-radius: 50%;
-  outline: 1px solid #ffbd0a;
-  background: #292929;
-  color: #ffbd0a;
+  outline: 1px solid #c1543c;
+  background: #f2e2d6;
+  color: #c1543c;
   font-size: 10px;
   font-weight: 700;
   display: flex;
@@ -246,9 +246,9 @@
   gap: 6px;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(255, 189, 10, 0.1);
-  border: 1px solid rgba(255, 189, 10, 0.35);
-  color: #ffbd0a;
+  background: rgba(193, 84, 60, 0.1);
+  border: 1px solid rgba(193, 84, 60, 0.35);
+  color: #c1543c;
   font-size: 11px;
   font-weight: 600;
   font-family: inherit;
@@ -257,9 +257,9 @@
 }
 
 .my-project-invite-btn:hover {
-  background: #ffbd0a;
-  border-color: #ffbd0a;
-  color: #18130a;
+  background: #c1543c;
+  border-color: #c1543c;
+  color: #fbf3ee;
 }
 
 .my-project-owner-actions {
@@ -271,9 +271,9 @@
 .my-project-owner-actions button {
   padding: 7px 14px;
   border-radius: 6px;
-  background: #262626;
-  border: 1px solid #333;
-  color: #f5f0e8;
+  background: #f2e2d6;
+  border: 1px solid #e6d2c4;
+  color: #2e2320;
   font-size: 11px;
   font-weight: 600;
   font-family: inherit;
@@ -282,25 +282,25 @@
 }
 
 .my-project-owner-actions button:hover {
-  background: #2f2f2f;
-  border-color: #444;
+  background: #f2e2d6;
+  border-color: #e6d2c4;
 }
 
 .my-project-owner-actions .my-project-delete-btn {
-  color: #e0645a;
-  border-color: rgba(224, 100, 90, 0.35);
-  background: rgba(224, 100, 90, 0.08);
+  color: #c9463d;
+  border-color: rgba(201, 70, 61, 0.35);
+  background: rgba(201, 70, 61, 0.08);
 }
 
 .my-project-owner-actions .my-project-delete-btn:hover {
-  background: #e0645a;
-  border-color: #e0645a;
-  color: #18130a;
+  background: #c9463d;
+  border-color: #c9463d;
+  color: #fbf3ee;
 }
 
 .recommend-hint {
   margin: 0 0 4px;
-  color: #77716b;
+  color: #8a726a;
   font-size: 11px;
 }
 
@@ -316,8 +316,8 @@
   gap: 10px;
   padding: 8px 10px;
   border-radius: 8px;
-  background: #262626;
-  border: 1px solid #2e2e2e;
+  background: #f2e2d6;
+  border: 1px solid #e6d2c4;
 }
 
 .recommend-name {
@@ -327,12 +327,12 @@
   min-width: 0;
   font-size: 12px;
   font-weight: 600;
-  color: #f5f0e8;
+  color: #2e2320;
 }
 
 .recommend-name small {
   margin-top: 2px;
-  color: #77716b;
+  color: #8a726a;
   font-size: 10.5px;
   font-weight: 500;
   overflow: hidden;
@@ -350,8 +350,8 @@
   padding: 6px 12px;
   border-radius: 999px;
   background: transparent;
-  border: 1px solid #3a3a3a;
-  color: #a7a19a;
+  border: 1px solid #e6d2c4;
+  color: #8a726a;
   font-size: 10.5px;
   font-weight: 600;
   font-family: inherit;
@@ -361,18 +361,18 @@
 }
 
 .recommend-invite-btn:hover {
-  border-color: #ffbd0a;
-  color: #ffbd0a;
+  border-color: #c1543c;
+  color: #c1543c;
 }
 
 .recommend-invite-btn.primary {
-  background: #ffbd0a;
-  border-color: #ffbd0a;
-  color: #18130a;
+  background: #c1543c;
+  border-color: #c1543c;
+  color: #fbf3ee;
 }
 
 .recommend-invite-btn.primary:hover {
-  background: #e8ab00;
+  background: #a8402b;
 }
 
 .recommend-invite-btn:disabled {
@@ -383,7 +383,7 @@
 .recommend-invited-label {
   font-size: 10.5px;
   font-weight: 600;
-  color: #6bbf7b;
+  color: #2f8a5b;
   flex-shrink: 0;
 }
 
@@ -531,25 +531,25 @@
 }
 
 .reject-btn {
-  background: rgba(224, 100, 90, 0.08);
-  border: 1px solid rgba(224, 100, 90, 0.35);
-  color: #e0645a;
+  background: rgba(201, 70, 61, 0.08);
+  border: 1px solid rgba(201, 70, 61, 0.35);
+  color: #c9463d;
 }
 
 .reject-btn:hover:not(:disabled) {
-  background: #e0645a;
-  border-color: #e0645a;
-  color: #18130a;
+  background: #c9463d;
+  border-color: #c9463d;
+  color: #fbf3ee;
 }
 
 .accept-btn {
-  background: #ffbd0a;
-  border: 1px solid #ffbd0a;
-  color: #18130a;
+  background: #c1543c;
+  border: 1px solid #c1543c;
+  color: #fbf3ee;
 }
 
 .accept-btn:hover:not(:disabled) {
-  background: #e6a73c;
+  background: #a8402b;
 }
 
 .reject-btn:disabled,
@@ -575,9 +575,9 @@
   gap: 6px;
   padding: 7px 14px;
   border-radius: 999px;
-  background: #ffbd0a;
-  border: 1px solid #ffbd0a;
-  color: #18130a;
+  background: #c1543c;
+  border: 1px solid #c1543c;
+  color: #fbf3ee;
   font-size: 12px;
   font-weight: 700;
   font-family: inherit;
@@ -586,8 +586,8 @@
 }
 
 .add-project-btn:hover {
-  background: #e6a73c;
-  border-color: #e6a73c;
+  background: #a8402b;
+  border-color: #a8402b;
 }
 
 /* Edit project modal */
@@ -610,9 +610,9 @@
 .edit-project-error {
   padding: 10px 12px;
   border-radius: 8px;
-  background: rgba(224, 100, 90, 0.1);
-  border: 1px solid rgba(224, 100, 90, 0.35);
-  color: #e0645a;
+  background: rgba(201, 70, 61, 0.1);
+  border: 1px solid rgba(201, 70, 61, 0.35);
+  color: #c9463d;
   font-size: 12.5px;
 }
 
@@ -682,8 +682,8 @@
 }
 
 .edit-tag-input-row button:hover {
-  border-color: #ffbd0a;
-  color: #ffbd0a;
+  border-color: #c1543c;
+  color: #c1543c;
 }
 
 .edit-tag-list {
@@ -698,9 +698,9 @@
   gap: 6px;
   padding: 4px 6px 4px 10px;
   border-radius: 999px;
-  background: rgba(255, 189, 10, 0.1);
-  border: 1px solid rgba(255, 189, 10, 0.3);
-  color: #ffbd0a;
+  background: rgba(193, 84, 60, 0.1);
+  border: 1px solid rgba(193, 84, 60, 0.3);
+  color: #c1543c;
   font-size: 11.5px;
   font-weight: 600;
 }
@@ -792,14 +792,14 @@
 }
 
 .edit-save-btn {
-  background: #ffbd0a;
-  border: 1px solid #ffbd0a;
-  color: #18130a;
+  background: #c1543c;
+  border: 1px solid #c1543c;
+  color: #fbf3ee;
 }
 
 .edit-save-btn:hover:not(:disabled) {
-  background: #e6a73c;
-  border-color: #e6a73c;
+  background: #a8402b;
+  border-color: #a8402b;
 }
 
 .edit-save-btn:disabled {
@@ -815,8 +815,8 @@
   padding: 8px 14px;
   border-radius: 8px;
   background: transparent;
-  border: 1px dashed rgba(255, 189, 10, 0.4);
-  color: #ffbd0a;
+  border: 1px dashed rgba(193, 84, 60, 0.4);
+  color: #c1543c;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -824,11 +824,11 @@
 }
 
 .edit-resource-upload-btn:hover {
-  background: rgba(255, 189, 10, 0.08);
+  background: rgba(193, 84, 60, 0.08);
 }
 
 .edit-resource-file-error {
-  color: #e0645a;
+  color: #c9463d;
   font-size: 11.5px;
 }
 
@@ -861,8 +861,8 @@
 .edit-resource-file-badge {
   padding: 2px 6px;
   border-radius: 4px;
-  background: rgba(255, 189, 10, 0.15);
-  color: #ffbd0a;
+  background: rgba(193, 84, 60, 0.15);
+  color: #c1543c;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.04em;

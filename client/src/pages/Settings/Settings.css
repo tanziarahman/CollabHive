@@ -1,5 +1,5 @@
 .settings-page {
-  background: #0d0d0d;
+  background: #f7ece4;
   min-height: 100vh;
   padding: 1.5rem 0 3rem;
 }
@@ -18,13 +18,13 @@
 .settings-header h1 {
   font-size: 2.2rem;
   font-weight: 700;
-  color: #f5f0e8;
+  color: #2e2320;
   margin-bottom: 0.5rem;
   letter-spacing: -0.5px;
 }
 
 .settings-header p {
-  color: rgba(245, 240, 232, 0.5);
+  color: rgba(46, 35, 32, 0.5);
   font-size: 0.95rem;
 }
 
@@ -36,26 +36,26 @@
 }
 
 .settings-alert.error {
-  background: rgba(226, 75, 74, 0.1);
-  border: 1px solid rgba(226, 75, 74, 0.3);
-  color: #f09595;
+  background: rgba(201, 70, 61, 0.1);
+  border: 1px solid rgba(201, 70, 61, 0.3);
+  color: #c9463d;
 }
 
 .loading-state {
   text-align: center;
   padding: 3rem;
-  color: rgba(245, 240, 232, 0.6);
+  color: rgba(46, 35, 32, 0.6);
   font-size: 0.9rem;
-  background: #111;
-  border: 1px solid rgba(245, 240, 232, 0.08);
+  background: #f7ece4;
+  border: 1px solid rgba(46, 35, 32, 0.08);
   border-radius: 16px;
 }
 
 /* Sections */
 
 .settings-section {
-  background: #111;
-  border: 1px solid rgba(245, 240, 232, 0.08);
+  background: #f7ece4;
+  border: 1px solid rgba(46, 35, 32, 0.08);
   border-radius: 16px;
   padding: 2rem;
   margin-bottom: 1.75rem;
@@ -64,19 +64,19 @@
 .settings-section-header {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(245, 240, 232, 0.08);
+  border-bottom: 1px solid rgba(46, 35, 32, 0.08);
 }
 
 .settings-section-header h2 {
   font-size: 1.3rem;
   font-weight: 600;
-  color: #f5f0e8;
+  color: #2e2320;
   margin-bottom: 0.25rem;
 }
 
 .settings-section-header p {
   font-size: 0.85rem;
-  color: rgba(245, 240, 232, 0.5);
+  color: rgba(46, 35, 32, 0.5);
 }
 
 /* Form fields */
@@ -97,16 +97,16 @@
 .settings-field label {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #f5f0e8;
+  color: #2e2320;
 }
 
 .settings-field input {
   width: 100%;
-  background: rgba(245, 240, 232, 0.05);
-  border: 1px solid rgba(245, 240, 232, 0.12);
+  background: rgba(46, 35, 32, 0.05);
+  border: 1px solid rgba(46, 35, 32, 0.12);
   border-radius: 10px;
   padding: 0.75rem 1rem;
-  color: #f5f0e8;
+  color: #2e2320;
   font-size: 0.9rem;
   outline: none;
   transition: all 0.2s;
@@ -115,12 +115,12 @@
 }
 
 .settings-field input:focus {
-  border-color: #f5b84c;
-  background: rgba(245, 184, 76, 0.05);
+  border-color: #c1543c;
+  background: rgba(193, 84, 60, 0.05);
 }
 
 .settings-error-text {
-  color: #f09595;
+  color: #c9463d;
   font-size: 0.8rem;
   margin: 0 0 1rem;
 }
@@ -132,7 +132,7 @@
 }
 
 .settings-inline-message {
-  color: #4fd196;
+  color: #2f8a5b;
   font-size: 0.82rem;
   font-weight: 600;
 }
@@ -152,12 +152,12 @@
 }
 
 .settings-btn-primary {
-  background: #f5b84c;
-  color: #0d0d0d;
+  background: #c1543c;
+  color: #f7ece4;
 }
 
 .settings-btn-primary:hover:not(:disabled) {
-  background: #f8ca6c;
+  background: #d97759;
   transform: translateY(-1px);
 }
 
@@ -167,13 +167,13 @@
 }
 
 .settings-btn-secondary {
-  background: rgba(245, 240, 232, 0.08);
-  color: #f5f0e8;
-  border: 1px solid rgba(245, 240, 232, 0.15);
+  background: rgba(46, 35, 32, 0.08);
+  color: #2e2320;
+  border: 1px solid rgba(46, 35, 32, 0.15);
 }
 
 .settings-btn-secondary:hover:not(:disabled) {
-  background: rgba(245, 240, 232, 0.12);
+  background: rgba(46, 35, 32, 0.12);
 }
 
 .settings-btn-secondary:disabled {
@@ -183,12 +183,12 @@
 
 .settings-btn-danger {
   background: transparent;
-  border: 1px solid rgba(220, 53, 69, 0.4);
-  color: #ff8a8a;
+  border: 1px solid rgba(201, 70, 61, 0.4);
+  color: #e0776d;
 }
 
 .settings-btn-danger:hover:not(:disabled) {
-  background: rgba(220, 53, 69, 0.15);
+  background: rgba(201, 70, 61, 0.15);
 }
 
 .settings-btn-danger:disabled {
@@ -209,7 +209,7 @@
   align-items: center;
   gap: 1.5rem;
   padding: 1rem 0;
-  border-bottom: 1px solid rgba(245, 240, 232, 0.06);
+  border-bottom: 1px solid rgba(46, 35, 32, 0.06);
 }
 
 .settings-toggle-row:last-child {
@@ -225,13 +225,13 @@
   margin: 0 0 0.25rem;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #f5f0e8;
+  color: #2e2320;
 }
 
 .settings-toggle-text p {
   margin: 0;
   font-size: 0.78rem;
-  color: rgba(245, 240, 232, 0.5);
+  color: rgba(46, 35, 32, 0.5);
 }
 
 .settings-switch {
@@ -251,7 +251,7 @@
 .settings-switch-slider {
   position: absolute;
   inset: 0;
-  background: rgba(245, 240, 232, 0.15);
+  background: rgba(46, 35, 32, 0.15);
   border-radius: 999px;
   transition: background 0.2s;
 }
@@ -263,18 +263,18 @@
   height: 18px;
   left: 3px;
   top: 3px;
-  background: #f5f0e8;
+  background: #2e2320;
   border-radius: 50%;
   transition: transform 0.2s;
 }
 
 .settings-switch input:checked + .settings-switch-slider {
-  background: #f5b84c;
+  background: #c1543c;
 }
 
 .settings-switch input:checked + .settings-switch-slider::before {
   transform: translateX(20px);
-  background: #0d0d0d;
+  background: #f7ece4;
 }
 
 .settings-switch input:disabled + .settings-switch-slider {
@@ -285,7 +285,7 @@
 /* Danger zone */
 
 .danger-zone {
-  border-color: rgba(220, 53, 69, 0.25);
+  border-color: rgba(201, 70, 61, 0.25);
 }
 
 .danger-row {
@@ -294,7 +294,7 @@
   align-items: center;
   gap: 1.5rem;
   padding: 1rem 0;
-  border-bottom: 1px solid rgba(245, 240, 232, 0.06);
+  border-bottom: 1px solid rgba(46, 35, 32, 0.06);
 }
 
 .danger-row:last-child {
@@ -310,13 +310,13 @@
   margin: 0 0 0.25rem;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #f5f0e8;
+  color: #2e2320;
 }
 
 .danger-row-text p {
   margin: 0;
   font-size: 0.8rem;
-  color: rgba(245, 240, 232, 0.5);
+  color: rgba(46, 35, 32, 0.5);
 }
 
 /* Delete confirmation modal */
@@ -339,8 +339,8 @@
 }
 
 .settings-modal {
-  background: #141414;
-  border: 1px solid rgba(245, 240, 232, 0.08);
+  background: #f7ece4;
+  border: 1px solid rgba(46, 35, 32, 0.08);
   border-radius: 16px;
   width: 100%;
   max-width: 440px;
@@ -348,14 +348,14 @@
 }
 
 .settings-modal h2 {
-  color: #f5f0e8;
+  color: #2e2320;
   font-size: 1.2rem;
   font-weight: 700;
   margin: 0 0 0.75rem;
 }
 
 .settings-modal p {
-  color: rgba(245, 240, 232, 0.6);
+  color: rgba(46, 35, 32, 0.6);
   font-size: 0.85rem;
   line-height: 1.55;
   margin: 0 0 1.25rem;
@@ -363,11 +363,11 @@
 
 .settings-modal input {
   width: 100%;
-  background: rgba(245, 240, 232, 0.05);
-  border: 1px solid rgba(245, 240, 232, 0.12);
+  background: rgba(46, 35, 32, 0.05);
+  border: 1px solid rgba(46, 35, 32, 0.12);
   border-radius: 10px;
   padding: 0.75rem 1rem;
-  color: #f5f0e8;
+  color: #2e2320;
   font-size: 0.9rem;
   outline: none;
   box-sizing: border-box;
@@ -375,8 +375,8 @@
 }
 
 .settings-modal input:focus {
-  border-color: #f5b84c;
-  background: rgba(245, 184, 76, 0.05);
+  border-color: #c1543c;
+  background: rgba(193, 84, 60, 0.05);
 }
 
 .settings-modal-actions {

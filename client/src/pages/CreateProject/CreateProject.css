@@ -1,5 +1,5 @@
 .create-project-page {
-  background: #0D0D0D;
+  background: #f7ece4;
   min-height: 100vh;
 }
 
@@ -17,13 +17,13 @@
 .create-project-header h1 {
   font-size: 2.2rem;
   font-weight: 700;
-  color: #F5F0E8;
+  color: #2e2320;
   margin-bottom: 0.5rem;
   letter-spacing: -0.5px;
 }
 
 .create-project-header p {
-  color: rgba(245, 240, 232, 0.5);
+  color: rgba(46, 35, 32, 0.5);
   font-size: 0.95rem;
 }
 
@@ -52,30 +52,30 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #1a1a1a;
-  border: 1px solid rgba(245, 240, 232, 0.15);
+  background: #fbf3ee;
+  border: 1px solid rgba(46, 35, 32, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  color: rgba(245, 240, 232, 0.5);
+  color: rgba(46, 35, 32, 0.5);
   transition: all 0.3s;
 }
 
 .step.active .step-number {
-  background: #F5B84C;
-  border-color: #F5B84C;
-  color: #0D0D0D;
+  background: #c1543c;
+  border-color: #c1543c;
+  color: #f7ece4;
 }
 
 .step-label {
   font-size: 0.75rem;
-  color: rgba(245, 240, 232, 0.4);
+  color: rgba(46, 35, 32, 0.4);
   font-weight: 500;
 }
 
 .step.active .step-label {
-  color: #F5B84C;
+  color: #c1543c;
 }
 
 .progress-line {
@@ -83,15 +83,15 @@
   top: 20px;
   left: 0;
   height: 2px;
-  background: #F5B84C;
+  background: #c1543c;
   transition: width 0.3s ease;
   z-index: 1;
 }
 
 /* Form Styles */
 .form-section {
-  background: #111;
-  border: 1px solid rgba(245, 240, 232, 0.08);
+  background: #f7ece4;
+  border: 1px solid rgba(46, 35, 32, 0.08);
   border-radius: 16px;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -100,19 +100,19 @@
 .section-header {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(245, 240, 232, 0.08);
+  border-bottom: 1px solid rgba(46, 35, 32, 0.08);
 }
 
 .section-header h2 {
   font-size: 1.3rem;
   font-weight: 600;
-  color: #F5F0E8;
+  color: #2e2320;
   margin-bottom: 0.25rem;
 }
 
 .section-header p {
   font-size: 0.85rem;
-  color: rgba(245, 240, 232, 0.5);
+  color: rgba(46, 35, 32, 0.5);
 }
 
 .form-group {
@@ -123,18 +123,18 @@
   display: block;
   font-size: 0.85rem;
   font-weight: 500;
-  color: #F5F0E8;
+  color: #2e2320;
   margin-bottom: 0.5rem;
 }
 
 .required {
-  color: #F5B84C;
+  color: #c1543c;
 }
 
 .hint {
   display: block;
   font-size: 0.7rem;
-  color: rgba(245, 240, 232, 0.4);
+  color: rgba(46, 35, 32, 0.4);
   margin-top: 0.4rem;
 }
 
@@ -142,11 +142,11 @@
 .form-group input,
 .form-group textarea {
   width: 100%;
-  background: rgba(245, 240, 232, 0.05);
-  border: 1px solid rgba(245, 240, 232, 0.12);
+  background: rgba(46, 35, 32, 0.05);
+  border: 1px solid rgba(46, 35, 32, 0.12);
   border-radius: 10px;
   padding: 0.75rem 1rem;
-  color: #F5F0E8;
+  color: #2e2320;
   font-size: 0.9rem;
   outline: none;
   transition: all 0.2s;
@@ -155,8 +155,8 @@
 
 .form-group input:focus,
 .form-group textarea:focus {
-  border-color: #F5B84C;
-  background: rgba(245, 184, 76, 0.05);
+  border-color: #c1543c;
+  background: rgba(193, 84, 60, 0.05);
 }
 
 .form-group textarea {
@@ -167,11 +167,11 @@
 /* Dropdown Select Styles - PUT THIS SECTION */
 .form-group select {
   width: 100%;
-  background: rgba(245, 240, 232, 0.05);
-  border: 1px solid rgba(245, 240, 232, 0.12);
+  background: rgba(46, 35, 32, 0.05);
+  border: 1px solid rgba(46, 35, 32, 0.12);
   border-radius: 10px;
   padding: 0.75rem 1rem;
-  color: #F5F0E8;
+  color: #2e2320;
   font-size: 0.9rem;
   outline: none;
   transition: all 0.2s;
@@ -185,16 +185,16 @@
 }
 
 .form-group select:focus {
-  border-color: #F5B84C;
-  background: rgba(245, 184, 76, 0.05);
+  border-color: #c1543c;
+  background: rgba(193, 84, 60, 0.05);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23F5B84C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
 }
 
 .form-group select option {
-  background: #1a1a1a;
-  color: #F5F0E8;
+  background: #fbf3ee;
+  color: #2e2320;
   padding: 0.75rem;
 }
 
@@ -202,14 +202,14 @@
 .form-group select option:hover,
 .form-group select option:focus,
 .form-group select option:checked {
-  background: rgba(245, 184, 76, 0.15);
-  color: #F5B84C;
+  background: rgba(193, 84, 60, 0.15);
+  color: #c1543c;
 }
 
 .form-group select:focus option,
 .form-group select:active option {
-  background: #1a1a1a;
-  color: #F5F0E8;
+  background: #fbf3ee;
+  color: #2e2320;
 }
 
 /* Form Row */
@@ -227,27 +227,27 @@
 }
 
 .tag-btn {
-  background: rgba(245, 240, 232, 0.05);
-  border: 1px solid rgba(245, 240, 232, 0.12);
+  background: rgba(46, 35, 32, 0.05);
+  border: 1px solid rgba(46, 35, 32, 0.12);
   border-radius: 30px;
   padding: 0.45rem 1.1rem;
   font-size: 0.8rem;
-  color: rgba(245, 240, 232, 0.7);
+  color: rgba(46, 35, 32, 0.7);
   cursor: pointer;
   transition: all 0.2s;
   font-weight: 500;
 }
 
 .tag-btn:hover {
-  background: rgba(245, 184, 76, 0.1);
-  border-color: rgba(245, 184, 76, 0.3);
+  background: rgba(193, 84, 60, 0.1);
+  border-color: rgba(193, 84, 60, 0.3);
   transform: translateY(-1px);
 }
 
 .tag-btn.active {
-  background: #F5B84C;
-  color: #0D0D0D;
-  border-color: #F5B84C;
+  background: #c1543c;
+  color: #f7ece4;
+  border-color: #c1543c;
 }
 
 /* Manual tag entry (skills, tech stack, roles) */
@@ -259,11 +259,11 @@
 
 .manual-tag-input input {
   flex: 1;
-  background: rgba(245, 240, 232, 0.05);
-  border: 1px solid rgba(245, 240, 232, 0.12);
+  background: rgba(46, 35, 32, 0.05);
+  border: 1px solid rgba(46, 35, 32, 0.12);
   border-radius: 10px;
   padding: 0.7rem 1rem;
-  color: #F5F0E8;
+  color: #2e2320;
   font-size: 0.88rem;
   outline: none;
   font-family: inherit;
@@ -271,14 +271,14 @@
 }
 
 .manual-tag-input input:focus {
-  border-color: #F5B84C;
-  background: rgba(245, 184, 76, 0.05);
+  border-color: #c1543c;
+  background: rgba(193, 84, 60, 0.05);
 }
 
 .manual-tag-add {
   border: none;
-  background: #F5B84C;
-  color: #0D0D0D;
+  background: #c1543c;
+  color: #f7ece4;
   padding: 0 1.3rem;
   border-radius: 10px;
   font-size: 0.82rem;
@@ -289,16 +289,16 @@
 }
 
 .manual-tag-add:hover {
-  background: #f7c96d;
+  background: #d97759;
 }
 
 .manual-tag-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(245, 184, 76, 0.1);
-  border: 1px solid rgba(245, 184, 76, 0.3);
-  color: #F5B84C;
+  background: rgba(193, 84, 60, 0.1);
+  border: 1px solid rgba(193, 84, 60, 0.3);
+  color: #c1543c;
   padding: 0.4rem 0.7rem 0.4rem 0.9rem;
   border-radius: 30px;
   font-size: 0.8rem;
@@ -308,7 +308,7 @@
 .manual-tag-chip button {
   border: none;
   background: none;
-  color: #F5B84C;
+  color: #c1543c;
   font-size: 1rem;
   line-height: 1;
   cursor: pointer;
@@ -331,8 +331,8 @@
   height: 28px;
   border-radius: 6px;
   background: transparent;
-  border: 1px solid rgba(220, 53, 69, 0.3);
-  color: #ff8a8a;
+  border: 1px solid rgba(201, 70, 61, 0.3);
+  color: #e0776d;
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s;
@@ -342,13 +342,13 @@
 }
 
 .role-remove-btn:hover {
-  background: rgba(220, 53, 69, 0.15);
+  background: rgba(201, 70, 61, 0.15);
 }
 
 /* Role Allocations */
 .role-allocations {
-  background: rgba(245, 240, 232, 0.03);
-  border: 1px solid rgba(245, 240, 232, 0.1);
+  background: rgba(46, 35, 32, 0.03);
+  border: 1px solid rgba(46, 35, 32, 0.1);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -357,11 +357,11 @@
   display: grid;
   grid-template-columns: 1fr auto;
   padding: 0.75rem 1rem;
-  background: rgba(245, 240, 232, 0.05);
-  border-bottom: 1px solid rgba(245, 240, 232, 0.1);
+  background: rgba(46, 35, 32, 0.05);
+  border-bottom: 1px solid rgba(46, 35, 32, 0.1);
   font-size: 0.8rem;
   font-weight: 600;
-  color: rgba(245, 240, 232, 0.7);
+  color: rgba(46, 35, 32, 0.7);
 }
 
 .role-list {
@@ -374,24 +374,24 @@
   grid-template-columns: 1fr auto;
   align-items: center;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(245, 240, 232, 0.05);
+  border-bottom: 1px solid rgba(46, 35, 32, 0.05);
   transition: background 0.2s;
 }
 
 .role-item:hover {
-  background: rgba(245, 184, 76, 0.05);
+  background: rgba(193, 84, 60, 0.05);
 }
 
 .role-name {
   font-size: 0.85rem;
-  color: #F5F0E8;
+  color: #2e2320;
 }
 
 .role-counter {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: rgba(245, 240, 232, 0.05);
+  background: rgba(46, 35, 32, 0.05);
   border-radius: 8px;
   padding: 0.25rem;
 }
@@ -402,7 +402,7 @@
   border-radius: 6px;
   background: transparent;
   border: none;
-  color: #F5F0E8;
+  color: #2e2320;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -413,8 +413,8 @@
 }
 
 .counter-btn:hover:not(:disabled) {
-  background: #F5B84C;
-  color: #0D0D0D;
+  background: #c1543c;
+  color: #f7ece4;
 }
 
 .counter-btn:disabled {
@@ -427,19 +427,19 @@
   text-align: center;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #F5B84C;
+  color: #c1543c;
 }
 
 .team-summary {
   margin-top: 1rem;
   padding: 0.75rem;
-  background: rgba(245, 184, 76, 0.1);
+  background: rgba(193, 84, 60, 0.1);
   border-radius: 8px;
   text-align: center;
 }
 
 .team-summary strong {
-  color: #F5B84C;
+  color: #c1543c;
   font-size: 0.9rem;
 }
 
@@ -458,8 +458,8 @@
   gap: 0.5rem;
   cursor: pointer;
   padding: 0.6rem 0.5rem;
-  background: rgba(245, 240, 232, 0.05);
-  border: 1px solid rgba(245, 240, 232, 0.12);
+  background: rgba(46, 35, 32, 0.05);
+  border: 1px solid rgba(46, 35, 32, 0.12);
   border-radius: 30px;
   transition: all 0.2s;
   text-align: center;
@@ -470,8 +470,8 @@
 }
 
 .radio-label:hover {
-  background: rgba(245, 184, 76, 0.1);
-  border-color: rgba(245, 184, 76, 0.3);
+  background: rgba(193, 84, 60, 0.1);
+  border-color: rgba(193, 84, 60, 0.3);
 }
 
 .radio-label input {
@@ -479,24 +479,24 @@
 }
 
 .radio-label input:checked + span {
-  color: #F5B84C;
+  color: #c1543c;
 }
 
 .radio-label span {
   font-size: 0.78rem;
-  color: rgba(245, 240, 232, 0.8);
+  color: rgba(46, 35, 32, 0.8);
 }
 
 .radio-label:has(input:checked) {
-  background: rgba(245, 184, 76, 0.15);
-  border-color: #F5B84C;
+  background: rgba(193, 84, 60, 0.15);
+  border-color: #c1543c;
 }
 
 /* Error Message */
 .error-message {
-  background: rgba(226, 75, 74, 0.1);
-  border: 1px solid rgba(226, 75, 74, 0.3);
-  color: #f09595;
+  background: rgba(201, 70, 61, 0.1);
+  border: 1px solid rgba(201, 70, 61, 0.3);
+  color: #c9463d;
   padding: 0.85rem 1rem;
   border-radius: 10px;
   margin-bottom: 1.5rem;
@@ -523,13 +523,13 @@
 }
 
 .btn-primary {
-  background: #F5B84C;
-  color: #0D0D0D;
+  background: #c1543c;
+  color: #f7ece4;
   margin-left: auto;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #f7c96d;
+  background: #d97759;
   transform: translateY(-2px);
 }
 
@@ -539,31 +539,31 @@
 }
 
 .btn-secondary {
-  background: rgba(245, 240, 232, 0.08);
-  color: #F5F0E8;
-  border: 1px solid rgba(245, 240, 232, 0.15);
+  background: rgba(46, 35, 32, 0.08);
+  color: #2e2320;
+  border: 1px solid rgba(46, 35, 32, 0.15);
 }
 
 .btn-secondary:hover {
-  background: rgba(245, 240, 232, 0.12);
+  background: rgba(46, 35, 32, 0.12);
   transform: translateY(-2px);
 }
 
 .loading-state {
   text-align: center;
   padding: 3rem;
-  color: rgba(245, 240, 232, 0.6);
+  color: rgba(46, 35, 32, 0.6);
   font-size: 0.9rem;
 }
 
 /* Resources (Links & Resources step) */
 .resource-name-input {
   width: 100%;
-  background: rgba(245, 240, 232, 0.05);
-  border: 1px solid rgba(245, 240, 232, 0.12);
+  background: rgba(46, 35, 32, 0.05);
+  border: 1px solid rgba(46, 35, 32, 0.12);
   border-radius: 10px;
   padding: 0.7rem 1rem;
-  color: #F5F0E8;
+  color: #2e2320;
   font-size: 0.88rem;
   outline: none;
   font-family: inherit;
@@ -572,8 +572,8 @@
 }
 
 .resource-name-input:focus {
-  border-color: #F5B84C;
-  background: rgba(245, 184, 76, 0.05);
+  border-color: #c1543c;
+  background: rgba(193, 84, 60, 0.05);
 }
 
 .resource-input-row {
@@ -587,7 +587,7 @@
   align-items: center;
   gap: 0.75rem;
   margin: 0.85rem 0;
-  color: rgba(245, 240, 232, 0.35);
+  color: rgba(46, 35, 32, 0.35);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -598,7 +598,7 @@
   content: "";
   flex: 1;
   height: 1px;
-  background: rgba(245, 240, 232, 0.1);
+  background: rgba(46, 35, 32, 0.1);
 }
 
 .resource-upload-btn {
@@ -607,11 +607,11 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: rgba(245, 240, 232, 0.05);
-  border: 1px dashed rgba(245, 184, 76, 0.4);
+  background: rgba(46, 35, 32, 0.05);
+  border: 1px dashed rgba(193, 84, 60, 0.4);
   border-radius: 10px;
   padding: 0.75rem 1rem;
-  color: #F5B84C;
+  color: #c1543c;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -619,21 +619,21 @@
 }
 
 .resource-upload-btn:hover {
-  background: rgba(245, 184, 76, 0.08);
-  border-color: #F5B84C;
+  background: rgba(193, 84, 60, 0.08);
+  border-color: #c1543c;
 }
 
 .resource-file-error {
   display: block;
   font-size: 0.75rem;
-  color: #f09595;
+  color: #c9463d;
   margin-top: 0.5rem;
 }
 
 .resource-file-badge {
   display: inline-block;
-  background: rgba(245, 184, 76, 0.15);
-  color: #F5B84C;
+  background: rgba(193, 84, 60, 0.15);
+  color: #c1543c;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -645,11 +645,11 @@
 
 .resource-input-row input {
   flex: 1;
-  background: rgba(245, 240, 232, 0.05);
-  border: 1px solid rgba(245, 240, 232, 0.12);
+  background: rgba(46, 35, 32, 0.05);
+  border: 1px solid rgba(46, 35, 32, 0.12);
   border-radius: 10px;
   padding: 0.7rem 1rem;
-  color: #F5F0E8;
+  color: #2e2320;
   font-size: 0.88rem;
   outline: none;
   font-family: inherit;
@@ -657,8 +657,8 @@
 }
 
 .resource-input-row input:focus {
-  border-color: #F5B84C;
-  background: rgba(245, 184, 76, 0.05);
+  border-color: #c1543c;
+  background: rgba(193, 84, 60, 0.05);
 }
 
 .resource-list {
@@ -672,8 +672,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  background: rgba(245, 240, 232, 0.03);
-  border: 1px solid rgba(245, 240, 232, 0.1);
+  background: rgba(46, 35, 32, 0.03);
+  border: 1px solid rgba(46, 35, 32, 0.1);
   border-radius: 10px;
   padding: 0.7rem 1rem;
 }
@@ -688,12 +688,12 @@
 .resource-item-name {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #F5F0E8;
+  color: #2e2320;
 }
 
 .resource-item-link {
   font-size: 0.78rem;
-  color: #F5B84C;
+  color: #c1543c;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -7,18 +7,18 @@
 
 .register-container {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-  background: #0D0D0D;
+  background: #f7ece4;
   height: 100vh;
   display: flex;
-  color: #F5F0E8;
+  color: #2e2320;
   overflow: hidden;
 }
 
 /* Left Panel */
 .left-panel {
   width: 45%;
-  background: #111;
-  border-right: 0.5px solid rgba(245, 240, 232, 0.08);
+  background: #f7ece4;
+  border-right: 0.5px solid rgba(46, 35, 32, 0.08);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -43,7 +43,7 @@
 .logo {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #F5B84C;
+  color: #c1543c;
   cursor: pointer;
   letter-spacing: -0.5px;
   position: absolute;
@@ -52,7 +52,7 @@
 }
 
 .logo span {
-  color: #F5F0E8;
+  color: #2e2320;
 }
 
 .tagline {
@@ -66,18 +66,18 @@
   font-weight: 800;
   letter-spacing: -1.5px;
   line-height: 1.2;
-  color: #F5F0E8;
+  color: #2e2320;
   margin-bottom: 1rem;
 }
 
 .tagline h2 em {
   font-style: normal;
-  color: #F5B84C;
+  color: #c1543c;
 }
 
 .tagline p {
   font-size: 0.85rem;
-  color: rgba(245, 240, 232, 0.5);
+  color: rgba(46, 35, 32, 0.5);
   line-height: 1.6;
 }
 
@@ -93,20 +93,20 @@
   font-size: 1.8rem;
   font-weight: 800;
   letter-spacing: -1px;
-  color: #F5F0E8;
+  color: #2e2320;
   margin-bottom: 0.4rem;
   text-align: center;
 }
 
 .form-subtitle {
   font-size: 0.85rem;
-  color: rgba(245, 240, 232, 0.45);
+  color: rgba(46, 35, 32, 0.45);
   margin-bottom: 1.5rem;
   text-align: center;
 }
 
 .form-subtitle a {
-  color: #F5B84C;
+  color: #c1543c;
   cursor: pointer;
   text-decoration: none;
 }
@@ -119,7 +119,7 @@
 .field label {
   display: block;
   font-size: 0.75rem;
-  color: rgba(245, 240, 232, 0.6);
+  color: rgba(46, 35, 32, 0.6);
   margin-bottom: 0.3rem;
   letter-spacing: 0.3px;
   text-align: left;
@@ -127,11 +127,11 @@
 
 .field input {
   width: 100%;
-  background: rgba(245, 240, 232, 0.05);
-  border: 0.5px solid rgba(245, 240, 232, 0.15);
+  background: rgba(46, 35, 32, 0.05);
+  border: 0.5px solid rgba(46, 35, 32, 0.15);
   border-radius: 8px;
   padding: 0.7rem 1rem;
-  color: #F5F0E8;
+  color: #2e2320;
   font-size: 0.9rem;
   outline: none;
   transition: border-color 0.2s;
@@ -139,12 +139,12 @@
 }
 
 .field input:focus {
-  border-color: #F5B84C;
-  background: rgba(245, 184, 76, 0.04);
+  border-color: #c1543c;
+  background: rgba(193, 84, 60, 0.04);
 }
 
 .field input::placeholder {
-  color: rgba(245, 240, 232, 0.25);
+  color: rgba(46, 35, 32, 0.25);
 }
 
 .password-wrap {
@@ -162,7 +162,7 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: rgba(245, 240, 232, 0.4);
+  color: rgba(46, 35, 32, 0.4);
   cursor: pointer;
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -170,13 +170,13 @@
 }
 
 .toggle-pw:hover {
-  color: #F5B84C;
+  color: #c1543c;
 }
 
 .error-msg {
-  background: rgba(226, 75, 74, 0.1);
-  border: 0.5px solid rgba(226, 75, 74, 0.3);
-  color: #f09595;
+  background: rgba(201, 70, 61, 0.1);
+  border: 0.5px solid rgba(201, 70, 61, 0.3);
+  color: #c9463d;
   font-size: 0.8rem;
   padding: 0.6rem 1rem;
   border-radius: 8px;
@@ -186,8 +186,8 @@
 
 .submit-btn {
   width: 100%;
-  background: #F5B84C;
-  color: #0D0D0D;
+  background: #c1543c;
+  color: #f7ece4;
   border: none;
   padding: 0.75rem;
   border-radius: 8px;
@@ -200,7 +200,7 @@
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: #f7c96d;
+  background: #d97759;
   transform: translateY(-1px);
 }
 
