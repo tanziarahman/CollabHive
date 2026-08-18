@@ -339,7 +339,7 @@ export default function Navbar({ hideSearch = false, searchValue, onSearchChange
       <div className="navbar-left">
         <div
           className="navbar-logo"
-          onClick={() => navigate("/my-posts")}
+          onClick={() => navigate("/")}
         >
           Collab<span>Hive</span>
         </div>
@@ -375,14 +375,6 @@ export default function Navbar({ hideSearch = false, searchValue, onSearchChange
 
       {/* Right side - Actions */}
       <div className="navbar-right">
-
-        {/* Create Project Button */}
-        <button
-          className={`my-posts-btn ${location.pathname === "/create-project" ? "active" : ""}`}
-          onClick={() => navigate("/create-project")}
-        >
-          Project
-        </button>
 
         {/* My Posts Button */}
         <button
@@ -652,4 +644,3 @@ export default function Navbar({ hideSearch = false, searchValue, onSearchChange
     </>
   );
 }
-

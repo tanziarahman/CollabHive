@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage/LandingPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
@@ -11,14 +11,13 @@ import Settings from "./pages/Settings/Settings";
 import ProjectChat from "./pages/ProjectChat/ProjectChat";
 import InvitationDetail from "./pages/InvitationDetail/InvitationDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { isLoggedIn } from "./utils/session";
 
 function App() {
   return (
     <Routes>
       <Route
         path="/"
-        element={isLoggedIn() ? <Navigate to="/my-posts" replace /> : <LandingPage />}
+        element={<LandingPage />}
       />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
