@@ -214,9 +214,14 @@ export default function ProjectDetail() {
               <div className="pd-section">
                 <h3>Open Roles</h3>
                 <div className="pd-tags">
-                  {project.roleAllocations.map((r) => (
-                    <span className="pd-tag" key={r.role}>{r.role} ({r.count})</span>
-                  ))}
+                  {project.roleAllocations.map((r) => {
+                    const remaining = r.remaining ?? r.count;
+                    return (
+                      <span className="pd-tag" key={r.role}>
+                        {r.role} ({remaining > 0 ? `${remaining} needed` : "filled"})
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -250,7 +255,8 @@ export default function ProjectDetail() {
               </div>
             )}
 
-            {!isOwner && !isMember && project.status === "Active" && (project.roleAllocations || []).length > 0 && (
+            {!isOwner && !isMember && project.status === "Active" &&
+              (project.roleAllocations || []).some((r) => (r.remaining ?? r.count) > 0) && (
               <div className="pd-apply-box">
                 {applied ? (
                   <p className="pd-applied-message">Application submitted — the project owner will review it.</p>
@@ -258,9 +264,11 @@ export default function ProjectDetail() {
                   <>
                     <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
                       <option value="">Select a role to apply for</option>
-                      {project.roleAllocations.map((r) => (
-                        <option key={r.role} value={r.role}>{r.role}</option>
-                      ))}
+                      {project.roleAllocations
+                        .filter((r) => (r.remaining ?? r.count) > 0)
+                        .map((r) => (
+                          <option key={r.role} value={r.role}>{r.role}</option>
+                        ))}
                     </select>
                     <button type="button" className="pd-apply-btn" disabled={applying} onClick={handleApply}>
                       {applying ? "Applying..." : "Apply"}

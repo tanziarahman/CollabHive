@@ -1,6 +1,7 @@
 import Project from '../models/Project.js';
 import User from '../models/User.js';
 import { computeSkillMatch } from '../utils/matchScore.js';
+import { computeOpenRoles } from '../utils/roleAvailability.js';
 import { createNotification } from '../services/notificationService.js';
 
 // @desc    Create a new project
@@ -88,11 +89,16 @@ export const getProjects = async (req, res) => {
     const projects = await Project.find()
       .populate('createdBy', 'fullName username profilePicture')
       .sort({ createdAt: -1 });
-    
+
+    const data = projects.map((project) => ({
+      ...project.toObject(),
+      roleAllocations: computeOpenRoles(project.roleAllocations, project.members),
+    }));
+
     res.status(200).json({
       success: true,
-      count: projects.length,
-      data: projects,
+      count: data.length,
+      data,
     });
   } catch (error) {
     console.error('Get projects error:', error);
@@ -112,10 +118,13 @@ export const getProjectById = async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
-    
+
     res.status(200).json({
       success: true,
-      data: project,
+      data: {
+        ...project.toObject(),
+        roleAllocations: computeOpenRoles(project.roleAllocations, project.members),
+      },
     });
   } catch (error) {
     console.error('Get project by ID error:', error);
@@ -144,7 +153,7 @@ export const getProjectFeed = async (req, res) => {
         status: project.status,
         skillsRequired: project.skillsRequired,
         techStack: project.techStack,
-        roleAllocations: project.roleAllocations,
+        roleAllocations: computeOpenRoles(project.roleAllocations, project.members),
         duration: project.duration,
         commitmentLevel: project.commitmentLevel,
         resources: project.resources,
@@ -225,7 +234,7 @@ export const getMyCollaborations = async (req, res) => {
         status: project.status,
         description: project.description,
         resources: project.resources,
-        roleAllocations: project.roleAllocations,
+        roleAllocations: computeOpenRoles(project.roleAllocations, project.members),
         skillsRequired: project.skillsRequired,
         techStack: project.techStack,
         duration: project.duration,

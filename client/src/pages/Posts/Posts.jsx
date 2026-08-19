@@ -101,7 +101,8 @@ export default function Posts() {
   }, [myCollaborations]);
 
   const handleInlineInvite = async (project, candidateId) => {
-    const role = project.roleAllocations?.[0]?.role;
+    const openRole = (project.roleAllocations || []).find((r) => (r.remaining ?? r.count) > 0);
+    const role = openRole?.role;
     if (!role) return;
     const key = `${project._id}:${candidateId}`;
     setInlineInvitingKey(key);
@@ -529,16 +530,20 @@ export default function Posts() {
                         <>
                           <div className="my-project-collaborators-label">Open roles</div>
                           <div className="my-project-collaborators">
-                            {(project.roleAllocations || []).map((role) => (
+                            {(project.roleAllocations || []).filter((role) => (role.remaining ?? role.count) > 0).map((role) => (
                               <button
                                 type="button"
                                 key={role.role}
                                 className="my-project-invite-btn"
                                 onClick={() => openInvite(project, role.role)}
                               >
-                                Invite for {role.role} ({role.count})
+                                Invite for {role.role} ({role.remaining ?? role.count})
                               </button>
                             ))}
+                            {(project.roleAllocations || []).length > 0 &&
+                              (project.roleAllocations || []).every((role) => (role.remaining ?? role.count) === 0) && (
+                                <span className="recommend-hint">All roles filled</span>
+                              )}
                           </div>
 
                           <div className="my-project-collaborators-label">Recommended people to invite</div>
@@ -555,6 +560,7 @@ export default function Posts() {
                               );
                             }
                             const invitedHere = inlineInvitedIds[project._id] || [];
+                            const hasOpenRole = (project.roleAllocations || []).some((r) => (r.remaining ?? r.count) > 0);
                             return (
                               <div className="recommend-list">
                                 {rec.candidates.map((candidate) => {
@@ -588,7 +594,7 @@ export default function Posts() {
                                         </button>
                                         {alreadyInvited ? (
                                           <span className="recommend-invited-label">Invited</span>
-                                        ) : (
+                                        ) : hasOpenRole ? (
                                           <button
                                             type="button"
                                             className="recommend-invite-btn primary"
@@ -597,7 +603,7 @@ export default function Posts() {
                                           >
                                             {inlineInvitingKey === key ? "Inviting..." : "Invite"}
                                           </button>
-                                        )}
+                                        ) : null}
                                       </div>
                                     </div>
                                   );

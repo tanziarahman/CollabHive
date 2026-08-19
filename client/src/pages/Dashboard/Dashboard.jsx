@@ -266,15 +266,18 @@ export default function Dashboard() {
                     <h3>Open Roles</h3>
 
                     <div className="roles-list">
-                      {(project.roleAllocations || []).map((role) => (
-                        <div className="role-card" key={role.role}>
-                          <span>{role.role}</span>
+                      {(project.roleAllocations || []).map((role) => {
+                        const remaining = role.remaining ?? role.count;
+                        return (
+                          <div className="role-card" key={role.role}>
+                            <span>{role.role}</span>
 
-                          <span className="role-count">
-                            {role.count} Needed
-                          </span>
-                        </div>
-                      ))}
+                            <span className="role-count">
+                              {remaining > 0 ? `${remaining} Needed` : "Filled"}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -304,12 +307,14 @@ export default function Dashboard() {
                         View Details &amp; Comments
                       </button>
 
-                      <button
-                        className="apply-button"
-                        onClick={() => toggleApply(project._id)}
-                      >
-                        {expandedProject === project._id ? "Cancel" : "Apply"}
-                      </button>
+                      {(project.roleAllocations || []).some((role) => (role.remaining ?? role.count) > 0) && (
+                        <button
+                          className="apply-button"
+                          onClick={() => toggleApply(project._id)}
+                        >
+                          {expandedProject === project._id ? "Cancel" : "Apply"}
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -327,11 +332,13 @@ export default function Dashboard() {
                       >
                         <option value="">Select Role</option>
 
-                        {(project.roleAllocations || []).map((role) => (
-                          <option key={role.role} value={role.role}>
-                            {role.role}
-                          </option>
-                        ))}
+                        {(project.roleAllocations || [])
+                          .filter((role) => (role.remaining ?? role.count) > 0)
+                          .map((role) => (
+                            <option key={role.role} value={role.role}>
+                              {role.role}
+                            </option>
+                          ))}
                       </select>
 
                       <button
