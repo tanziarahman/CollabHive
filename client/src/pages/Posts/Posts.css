@@ -458,12 +458,12 @@
 .connections-modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 1100;
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(46, 35, 32, 0.45);
-  backdrop-filter: blur(4px);
+  background: rgba(46, 35, 32, 0.6);
+  backdrop-filter: blur(6px);
 }
 
 .connections-modal {
