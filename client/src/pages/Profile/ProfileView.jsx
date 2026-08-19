@@ -304,8 +304,7 @@ export default function ProfileView() {
           <div className="topnav-logo" aria-label="CollabHive">
             <span>Collab</span>Hive
           </div>
-          <Link to="/posts" className="upload-link" style={{ marginLeft: "auto" }}>
-            ← Back
+          <Link to="/posts" className="upload-link" style={{ marginLeft: "auto" }}> 
           </Link>
         </div>
 
