@@ -143,27 +143,29 @@ export const getProjectFeed = async (req, res) => {
       .populate('createdBy', 'fullName username profilePicture')
       .sort({ createdAt: -1 });
 
-    const data = projects.map((project) => {
-      const { score, matchedSkills } = computeSkillMatch(me.skills, project);
-      return {
-        _id: project._id,
-        title: project.title,
-        description: project.description,
-        category: project.category,
-        status: project.status,
-        skillsRequired: project.skillsRequired,
-        techStack: project.techStack,
-        roleAllocations: computeOpenRoles(project.roleAllocations, project.members),
-        duration: project.duration,
-        commitmentLevel: project.commitmentLevel,
-        resources: project.resources,
-        createdAt: project.createdAt,
-        createdBy: project.createdBy,
-        members: project.members,
-        matchScore: score,
-        matchedSkills,
-      };
-    });
+    const data = await Promise.all(
+      projects.map(async (project) => {
+        const { score, matchedSkills } = await computeSkillMatch(me.skills, project);
+        return {
+          _id: project._id,
+          title: project.title,
+          description: project.description,
+          category: project.category,
+          status: project.status,
+          skillsRequired: project.skillsRequired,
+          techStack: project.techStack,
+          roleAllocations: computeOpenRoles(project.roleAllocations, project.members),
+          duration: project.duration,
+          commitmentLevel: project.commitmentLevel,
+          resources: project.resources,
+          createdAt: project.createdAt,
+          createdBy: project.createdBy,
+          members: project.members,
+          matchScore: score,
+          matchedSkills,
+        };
+      })
+    );
 
     res.status(200).json({
       success: true,
@@ -337,24 +339,27 @@ export const getSuggestedCollaborators = async (req, res) => {
     })
       .select('fullName username profilePicture bio skills interests experienceLevel');
 
-    const suggestions = candidates
-      .map((candidate) => {
-        const { score, matchedSkills } = computeSkillMatch(candidate.skills, project);
-        return {
-          user: {
-            _id: candidate._id,
-            fullName: candidate.fullName,
-            username: candidate.username,
-            profilePicture: candidate.profilePicture,
-            bio: candidate.bio,
-            skills: candidate.skills,
-            interests: candidate.interests,
-            experienceLevel: candidate.experienceLevel,
-          },
-          matchScore: score,
-          matchedSkills,
-        };
-      })
+    const suggestions = (
+      await Promise.all(
+        candidates.map(async (candidate) => {
+          const { score, matchedSkills } = await computeSkillMatch(candidate.skills, project);
+          return {
+            user: {
+              _id: candidate._id,
+              fullName: candidate.fullName,
+              username: candidate.username,
+              profilePicture: candidate.profilePicture,
+              bio: candidate.bio,
+              skills: candidate.skills,
+              interests: candidate.interests,
+              experienceLevel: candidate.experienceLevel,
+            },
+            matchScore: score,
+            matchedSkills,
+          };
+        })
+      )
+    )
       .filter((suggestion) => suggestion.matchScore > 0)
       .sort((a, b) => b.matchScore - a.matchScore)
       .slice(0, limit);
@@ -387,27 +392,30 @@ export const getSimilarProjects = async (req, res) => {
       .populate('createdBy', 'fullName username profilePicture')
       .select('title description category status skillsRequired techStack roleAllocations createdBy createdAt');
 
-    const similar = candidates
-      .map((candidate) => {
-        const { score, matchedSkills } = computeSkillMatch(
-          [...(candidate.skillsRequired || []), ...(candidate.techStack || [])],
-          project
-        );
-        return {
-          _id: candidate._id,
-          title: candidate.title,
-          description: candidate.description,
-          category: candidate.category,
-          status: candidate.status,
-          skillsRequired: candidate.skillsRequired,
-          techStack: candidate.techStack,
-          roleAllocations: candidate.roleAllocations,
-          createdBy: candidate.createdBy,
-          createdAt: candidate.createdAt,
-          matchScore: score,
-          matchedSkills,
-        };
-      })
+    const similar = (
+      await Promise.all(
+        candidates.map(async (candidate) => {
+          const { score, matchedSkills } = await computeSkillMatch(
+            [...(candidate.skillsRequired || []), ...(candidate.techStack || [])],
+            project
+          );
+          return {
+            _id: candidate._id,
+            title: candidate.title,
+            description: candidate.description,
+            category: candidate.category,
+            status: candidate.status,
+            skillsRequired: candidate.skillsRequired,
+            techStack: candidate.techStack,
+            roleAllocations: candidate.roleAllocations,
+            createdBy: candidate.createdBy,
+            createdAt: candidate.createdAt,
+            matchScore: score,
+            matchedSkills,
+          };
+        })
+      )
+    )
       .filter((suggestion) => suggestion.matchScore > 0)
       .sort((a, b) => b.matchScore - a.matchScore)
       .slice(0, limit);
