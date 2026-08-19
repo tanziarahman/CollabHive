@@ -456,6 +456,23 @@
 /* Modals (applicants / invite) */
 
 .connections-modal-backdrop {
+  --bg: #f7ece4;
+  --surface: #fbf3ee;
+  --surface-2: #f2e2d6;
+  --surface-3: #f2e2d6;
+  --border: #f2e2d6;
+  --border-soft: #f2e2d6;
+  --text: #2e2320;
+  --text-muted: #8a726a;
+  --text-dim: #8a726a;
+  --amber: #c1543c;
+  --accent: #c1543c;
+  --blue: #3355c8;
+  --amber-soft: rgba(193, 84, 60, 0.14);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+
   position: fixed;
   inset: 0;
   z-index: 1100;
