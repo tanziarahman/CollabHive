@@ -462,7 +462,7 @@
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.72);
+  background: rgba(46, 35, 32, 0.45);
   backdrop-filter: blur(4px);
 }
 

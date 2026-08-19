@@ -179,7 +179,9 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="projects-grid">
-              {visibleProjects.map((project) => (
+              {visibleProjects.map((project) => {
+                const isOwnProject = project.createdBy?._id === user?._id;
+                return (
                 <div className="project-card" key={project._id}>
                   {/* Header */}
 
@@ -307,7 +309,7 @@ export default function Dashboard() {
                         View Details &amp; Comments
                       </button>
 
-                      {(project.roleAllocations || []).some((role) => (role.remaining ?? role.count) > 0) && (
+                      {!isOwnProject && (project.roleAllocations || []).some((role) => (role.remaining ?? role.count) > 0) && (
                         <button
                           className="apply-button"
                           onClick={() => toggleApply(project._id)}
@@ -320,7 +322,7 @@ export default function Dashboard() {
 
                   {/* Apply Section */}
 
-                  {expandedProject === project._id && (
+                  {!isOwnProject && expandedProject === project._id && (
                     <div className="apply-box">
                       <label>Select the role you want to apply for</label>
 
@@ -353,7 +355,8 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
