@@ -80,11 +80,14 @@ export default function CreateProject() {
 
   // Manual skill / tech stack entry (replaces the old CS-only preset buttons)
   const addTagValue = (field, draft, setDraft) => {
-    const value = draft.trim();
-    if (!value) return;
+    const parts = draft.split(",").map((p) => p.trim()).filter(Boolean);
+    if (parts.length === 0) return;
     setFormData((prev) => {
-      if (prev[field].some((v) => v.toLowerCase() === value.toLowerCase())) return prev;
-      return { ...prev, [field]: [...prev[field], value] };
+      const next = [...prev[field]];
+      parts.forEach((value) => {
+        if (!next.some((v) => v.toLowerCase() === value.toLowerCase())) next.push(value);
+      });
+      return { ...prev, [field]: next };
     });
     setDraft("");
   };

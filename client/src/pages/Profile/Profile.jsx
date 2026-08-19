@@ -14,9 +14,9 @@ function TagField({ label, placeholder, values, onAdd, onRemove }) {
   const [draft, setDraft] = useState("");
 
   const commit = () => {
-    const v = draft.trim();
-    if (!v) return;
-    onAdd(v);
+    const parts = draft.split(",").map((p) => p.trim()).filter(Boolean);
+    if (parts.length === 0) return;
+    parts.forEach((v) => onAdd(v));
     setDraft("");
   };
 
