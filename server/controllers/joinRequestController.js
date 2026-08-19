@@ -38,6 +38,9 @@ export const createJoinRequest = async (req, res) => {
     if (project.createdBy.toString() === req.user._id.toString()) {
       return res.status(400).json({ message: 'You cannot request to join your own project' });
     }
+    if (project.status !== 'Active') {
+      return res.status(400).json({ message: 'This project is not accepting new members right now' });
+    }
 
     const { role, message } = req.body;
     if (!role) {
@@ -100,6 +103,9 @@ export const inviteUser = async (req, res) => {
     }
     if (userId === req.user._id.toString()) {
       return res.status(400).json({ message: 'You cannot invite yourself' });
+    }
+    if (project.status !== 'Active') {
+      return res.status(400).json({ message: 'This project is not accepting new members right now' });
     }
     if (!roleExists(project, role)) {
       return res.status(400).json({ message: 'That role is not open on this project' });

@@ -309,7 +309,7 @@ export default function Dashboard() {
                         View Details &amp; Comments
                       </button>
 
-                      {!isOwnProject && (project.roleAllocations || []).some((role) => (role.remaining ?? role.count) > 0) && (
+                      {!isOwnProject && project.status === "Active" && (project.roleAllocations || []).some((role) => (role.remaining ?? role.count) > 0) && (
                         <button
                           className="apply-button"
                           onClick={() => toggleApply(project._id)}

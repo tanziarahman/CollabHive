@@ -530,20 +530,26 @@ export default function Posts() {
                         <>
                           <div className="my-project-collaborators-label">Open roles</div>
                           <div className="my-project-collaborators">
-                            {(project.roleAllocations || []).filter((role) => (role.remaining ?? role.count) > 0).map((role) => (
-                              <button
-                                type="button"
-                                key={role.role}
-                                className="my-project-invite-btn"
-                                onClick={() => openInvite(project, role.role)}
-                              >
-                                Invite for {role.role} ({role.remaining ?? role.count})
-                              </button>
-                            ))}
-                            {(project.roleAllocations || []).length > 0 &&
-                              (project.roleAllocations || []).every((role) => (role.remaining ?? role.count) === 0) && (
-                                <span className="recommend-hint">All roles filled</span>
-                              )}
+                            {project.status !== "Active" ? (
+                              <span className="recommend-hint">Set this project's status to Active to invite new collaborators.</span>
+                            ) : (
+                              <>
+                                {(project.roleAllocations || []).filter((role) => (role.remaining ?? role.count) > 0).map((role) => (
+                                  <button
+                                    type="button"
+                                    key={role.role}
+                                    className="my-project-invite-btn"
+                                    onClick={() => openInvite(project, role.role)}
+                                  >
+                                    Invite for {role.role} ({role.remaining ?? role.count})
+                                  </button>
+                                ))}
+                                {(project.roleAllocations || []).length > 0 &&
+                                  (project.roleAllocations || []).every((role) => (role.remaining ?? role.count) === 0) && (
+                                    <span className="recommend-hint">All roles filled</span>
+                                  )}
+                              </>
+                            )}
                           </div>
 
                           <div className="my-project-collaborators-label">Recommended people to invite</div>
@@ -560,7 +566,7 @@ export default function Posts() {
                               );
                             }
                             const invitedHere = inlineInvitedIds[project._id] || [];
-                            const hasOpenRole = (project.roleAllocations || []).some((r) => (r.remaining ?? r.count) > 0);
+                            const hasOpenRole = project.status === "Active" && (project.roleAllocations || []).some((r) => (r.remaining ?? r.count) > 0);
                             return (
                               <div className="recommend-list">
                                 {rec.candidates.map((candidate) => {
