@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import Project from '../models/Project.js';
 import Message from '../models/Message.js';
 import { isProjectMember } from '../utils/projectAccess.js';
+import { createNotification } from '../services/notificationService.js';
 
 export const initSocket = (httpServer) => {
   const io = new Server(httpServer, {
@@ -87,6 +88,28 @@ export const initSocket = (httpServer) => {
             profilePicture: socket.user.profilePicture,
           },
         });
+
+        // Notify every other team member — the socket event only reaches people
+        // with the chat open right now, so anyone not currently viewing it
+        // needs a persistent notification to find out a message came in.
+        const recipientIds = new Set([
+          project.createdBy.toString(),
+          ...project.members.map((m) => m.user.toString()),
+        ]);
+        recipientIds.delete(socket.user._id.toString());
+
+        const preview = text.trim().slice(0, 80);
+        await Promise.all(
+          Array.from(recipientIds).map((recipientId) =>
+            createNotification({
+              recipient: recipientId,
+              sender: socket.user._id,
+              type: 'new_message',
+              project: project._id,
+              message: `${socket.user.fullName} sent a message in "${project.title}": ${preview}`,
+            })
+          )
+        );
       } catch (error) {
         socket.emit('error_message', { message: error.message });
       }
